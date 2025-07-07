@@ -19,19 +19,12 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Detectar el tipo de request
-  const { historial, mensaje, messages, model, prompt } = req.body;
+  // --- NUEVA LÓGICA DE ORQUESTADOR ---
+  // Espera: { historial: [...], mensaje: 'texto' }
+  const { historial, mensaje, model } = req.body;
 
-  let finalMessages = [];
-
-  // Caso 1: Quiz o llamada directa con messages array
-  if (Array.isArray(messages)) {
-    finalMessages = messages;
-  }
-  // Caso 2: Llamada del orquestador con historial y mensaje
-  else if (historial || mensaje) {
-    // Prompt del sistema para orquestador
-    const systemPrompt = `
+  // Prompt del sistema para orquestador
+  const systemPrompt = `
 Eres VIDA, un asistente virtual experto en donación de órganos, tejidos y sangre en México. Analiza el historial de la conversación y el mensaje del usuario. Detecta la intención principal (por ejemplo: deseo de donar, indecisión, duelo, dudas familiares, etc.).
 
 1. Responde SIEMPRE de forma empática, cálida y natural, siguiendo las reglas de estilo y alcance temático del sistema.
@@ -44,28 +37,20 @@ Eres VIDA, un asistente virtual experto en donación de órganos, tejidos y sang
 Recuerda: El JSON debe ir al final, en una sola línea, solo si corresponde activar un módulo. Si no, no incluyas nada extra.
 `;
 
-    finalMessages = [
-      { role: 'system', content: systemPrompt }
-    ];
-    if (Array.isArray(historial)) {
-      finalMessages = finalMessages.concat(historial);
-    }
-    if (mensaje) {
-      finalMessages.push({ role: 'user', content: mensaje });
-    }
+  // Construir el array de mensajes para OpenAI
+  let messages = [
+    { role: 'system', content: systemPrompt }
+  ];
+  if (Array.isArray(historial)) {
+    messages = messages.concat(historial);
   }
-  // Caso 3: Formato legacy con prompt array
-  else if (Array.isArray(prompt)) {
-    finalMessages = prompt;
-  }
-  else {
-    res.status(400).json({ error: 'Formato de request inválido. Se requiere messages, historial+mensaje, o prompt.' });
-    return;
+  if (mensaje) {
+    messages.push({ role: 'user', content: mensaje });
   }
 
   const openaiPayload = {
     model: model || 'gpt-3.5-turbo',
-    messages: finalMessages,
+    messages,
     temperature: 0.7,
     max_tokens: 700
   };

@@ -1220,22 +1220,48 @@
             if (moduloObj && moduloObj.activarModulo) {
                 switch (moduloObj.activarModulo) {
                     case 'donorPath':
+                        // Limpia el estado de todos los módulos antes de activar donorPath
+                        currentIndecisionStep = null;
+                        currentGriefStep = null;
+                        currentFamilyDonationStep = null;
+                        currentQuizQuestionIndex = -1;
+                        quizQuestions = [];
                         currentDonorPathStep = 'introduction';
                         displayDonorPathStep(currentDonorPathStep);
                         break;
                     case 'indecision':
+                        currentDonorPathStep = null;
+                        currentGriefStep = null;
+                        currentFamilyDonationStep = null;
+                        currentQuizQuestionIndex = -1;
+                        quizQuestions = [];
                         currentIndecisionStep = 'initial';
                         displayIndecisionStep(currentIndecisionStep);
                         break;
                     case 'grief':
+                        currentDonorPathStep = null;
+                        currentIndecisionStep = null;
+                        currentFamilyDonationStep = null;
+                        currentQuizQuestionIndex = -1;
+                        quizQuestions = [];
                         currentGriefStep = 'initial';
                         displayGriefStep(currentGriefStep);
                         break;
                     case 'familyDonation':
+                        currentDonorPathStep = null;
+                        currentIndecisionStep = null;
+                        currentGriefStep = null;
+                        currentQuizQuestionIndex = -1;
+                        quizQuestions = [];
                         currentFamilyDonationStep = 'initial';
                         displayFamilyDonationStep(currentFamilyDonationStep);
                         break;
                     case 'quiz':
+                        currentDonorPathStep = null;
+                        currentIndecisionStep = null;
+                        currentGriefStep = null;
+                        currentFamilyDonationStep = null;
+                        quizQuestions = [];
                         startQuiz();
                         break;
                     default:

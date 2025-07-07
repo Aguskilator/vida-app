@@ -439,6 +439,15 @@
     </div>
 
     <script>
+        // --- Quiz Integration ---
+        startQuizBtn.addEventListener('click', () => {
+            // Opción 1: Abrir quiz en nueva ventana
+            // window.open('quiz.html', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+            
+            // Opción 2: Redirigir a la página del quiz
+            window.location.href = 'quiz.html';
+        });
+
         // --- DOM Elements ---
         const welcomeScreen = document.getElementById('welcome-screen');
         const chatScreen = document.getElementById('chat-screen');
@@ -815,6 +824,11 @@
                 await generateSuggestedQuestions();
             }
         }
+
+        // --- Quiz Integration ---
+        startQuizBtn.addEventListener('click', () => {
+            window.open('quiz.html', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+        });
 
         // --- Nuevo: Instrucción para la IA en el prompt del sistema ---
         const systemPrompt = `

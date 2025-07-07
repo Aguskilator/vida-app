@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo de Quiz - VIDA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --vida-text-dark: #0D47A1;
+            --vida-btn-green: #66BB6A;
+            --vida-btn-green-hover: #43A047;
+            --vida-text-secondary: #757575;
+            --vida-btn-feedback: #4FC3F7;
+            --vida-quiz-btn-correct: #4CAF50;
+            --vida-quiz-btn-incorrect: #F44336;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2f1 100%);
+        }
+
+        .quiz-card {
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transition: transform 0.3s ease;
+        }
+        .quiz-card:hover {
+            transform: translateY(-5px);
+        }
+        .quiz-answer-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-answer-btn:hover {
+            transform: scale(1.03);
+        }
+        .quiz-answer-btn.correct {
+            background-color: var(--vida-quiz-btn-correct) !important;
+            color: white;
+            border-color: var(--vida-quiz-btn-correct) !important;
+        }
+        .quiz-answer-btn.incorrect {
+            background-color: var(--vida-quiz-btn-incorrect) !important;
+            color: white;
+            border-color: var(--vida-quiz-btn-incorrect) !important;
+        }
+        .quiz-answer-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        #quiz-feedback {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, opacity 0.5s ease-out, margin-top 0.5s ease-out;
+        }
+        #quiz-feedback.visible {
+            max-height: 200px;
+            opacity: 1;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen" class="w-full">
+        <header class="w-full max-w-3xl mx-auto flex justify-between items-center mb-8">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-[var(--vida-text-dark)] rounded-full flex items-center justify-center shadow">
+                    <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-[var(--vida-text-dark)]">Desmitificador Express</h2>
+            </div>
+            <button id="exit-quiz-btn" class="text-gray-500 hover:bg-gray-200 p-2 rounded-full" title="Salir del Quiz">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </header>
+
+        <main id="quiz-main-content" class="w-full max-w-3xl mx-auto">
+            <!-- Vista Inicial del Quiz -->
+            <div id="quiz-start-view" class="text-center p-8 bg-white rounded-2xl shadow-lg">
+                <h3 class="text-3xl font-bold text-[var(--vida-text-dark)]">Pon a prueba tus conocimientos</h3>
+                <p class="mt-4 text-lg text-slate-600">Te haré 20 preguntas de verdadero o falso para desmentir los mitos más comunes sobre la donación.</p>
+                <p class="mt-2 text-md text-slate-500">El quiz se divide en 4 rondas de 5 preguntas cada una.</p>
+                <button id="begin-quiz-btn" class="mt-8 bg-[var(--vida-btn-green)] text-white font-bold py-4 px-10 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105">
+                    ¡Estoy listo!
+                </button>
+            </div>
+
+            <!-- Vista del Quiz Activo -->
+            <div id="quiz-active-view" class="hidden">
+                <div class="quiz-card p-6 md:p-8 w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <div id="quiz-progress" class="font-semibold text-[var(--vida-text-secondary)]"></div>
+                        <div id="quiz-round-info" class="font-semibold text-[var(--vida-text-dark)]"></div>
+                    </div>
+                    <p id="quiz-question" class="text-2xl md:text-3xl font-medium text-slate-800 min-h-[100px] flex items-center justify-center text-center"></p>
+                    <div id="quiz-answer-buttons" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    <div id="quiz-feedback" class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p id="quiz-feedback-text" class="text-center text-slate-700"></p>
+                    </div>
+                </div>
+                <div id="quiz-navigation" class="mt-6 text-center"></div>
+            </div>
+
+            <!-- Vista de Resultados Parciales -->
+            <div id="quiz-partial-results-view" class="hidden text-center p-8 bg-white rounded-2xl shadow-lg">
+                <h3 class="text-3xl font-bold text-[var(--vida-text-dark)]">¡Ronda completada!</h3>
+                <div id="partial-results-content" class="mt-6">
+                    <p id="round-score-text" class="text-2xl text-slate-600 mb-4"></p>
+                    <p id="total-progress-text" class="text-lg text-slate-500 mb-4"></p>
+                    <div id="round-feedback" class="text-lg text-slate-700 mb-6"></div>
+                </div>
+                <div class="mt-8">
+                    <button id="continue-quiz-btn" class="bg-[var(--vida-btn-green)] text-white font-bold py-4 px-10 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105">
+                        Continuar con la siguiente ronda
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Vista de Resultados Finales del Quiz -->
+            <div id="quiz-results-view" class="hidden text-center p-8 bg-white rounded-2xl shadow-lg">
+                 <h3 class="text-3xl font-bold text-[var(--vida-text-dark)]">¡Quiz completado!</h3>
+                 <div class="mt-6">
+                     <p id="quiz-score-text" class="text-2xl text-slate-600 mb-4"></p>
+                     <div id="final-feedback" class="text-lg text-slate-700 mb-6"></div>
+                     <p class="text-lg text-slate-500">Cada duda resuelta es un paso más hacia una cultura de donación más consciente.</p>
+                 </div>
+                 <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+                     <button id="restart-quiz-btn" class="bg-[var(--vida-btn-feedback)] text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-400 transition-all transform hover:scale-105">
+                        Jugar de nuevo
+                    </button>
+                    <button id="return-home-btn" class="bg-gray-200 text-gray-800 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-300 transition-all transform hover:scale-105">
+                        Volver al inicio
+                    </button>
+                 </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const quizScreen = document.getElementById('quiz-screen');
+        const exitQuizBtn = document.getElementById('exit-quiz-btn');
+        const quizStartView = document.getElementById('quiz-start-view');
+        const quizActiveView = document.getElementById('quiz-active-view');
+        const quizPartialResultsView = document.getElementById('quiz-partial-results-view');
+        const quizResultsView = document.getElementById('quiz-results-view');
+        const beginQuizBtn = document.getElementById('begin-quiz-btn');
+        const quizProgress = document.getElementById('quiz-progress');
+        const quizRoundInfo = document.getElementById('quiz-round-info');
+        const quizQuestion = document.getElementById('quiz-question');
+        const quizAnswerButtons = document.getElementById('quiz-answer-buttons');
+        const quizFeedback = document.getElementById('quiz-feedback');
+        const quizFeedbackText = document.getElementById('quiz-feedback-text');
+        const quizNavigation = document.getElementById('quiz-navigation');
+        const quizScoreText = document.getElementById('quiz-score-text');
+        const roundScoreText = document.getElementById('round-score-text');
+        const totalProgressText = document.getElementById('total-progress-text');
+        const roundFeedback = document.getElementById('round-feedback');
+        const finalFeedback = document.getElementById('final-feedback');
+        const restartQuizBtn = document.getElementById('restart-quiz-btn');
+        const returnHomeBtn = document.getElementById('return-home-btn');
+        const continueQuizBtn = document.getElementById('continue-quiz-btn');
+
+        // --- State ---
+        let currentQuizQuestionIndex = 0;
+        let currentRound = 1;
+        let quizQuestions = [];
+        let quizScore = 0;
+        let roundScores = [];
+        const QUESTIONS_PER_ROUND = 5;
+        const TOTAL_QUESTIONS = 20;
+        const TOTAL_ROUNDS = 4;
+
+        // --- API Call Function ---
+        async function callOpenAI(messages) {
+            try {
+                const response = await fetch('/api/openai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ messages: messages })
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error("Error calling OpenAI backend:", error);
+                throw error;
+            }
+        }
+
+        // --- QUIZ FUNCTIONS ---
+        function resetQuiz() {
+            quizScore = 0;
+            currentQuizQuestionIndex = 0;
+            currentRound = 1;
+            quizQuestions = [];
+            roundScores = [];
+            quizStartView.classList.remove('hidden');
+            quizActiveView.classList.add('hidden');
+            quizPartialResultsView.classList.add('hidden');
+            quizResultsView.classList.add('hidden');
+            quizNavigation.innerHTML = '';
+            quizFeedback.classList.remove('visible');
+        }
+
+        beginQuizBtn.addEventListener('click', async () => {
+            quizStartView.classList.add('hidden');
+            quizActiveView.classList.remove('hidden');
+            quizQuestion.textContent = 'Generando preguntas...';
+            await generateQuizQuestions();
+        });
+
+        continueQuizBtn.addEventListener('click', () => {
+            quizPartialResultsView.classList.add('hidden');
+            quizActiveView.classList.remove('hidden');
+            displayQuizQuestion();
+        });
+
+        restartQuizBtn.addEventListener('click', resetQuiz);
+        exitQuizBtn.addEventListener('click', () => {
+             // Cerrar ventana si se abrió como popup, o redirigir si se abrió como página
+             if (window.opener) {
+                 window.close();
+             } else {
+                 window.location.href = 'index.html';
+             }
+        });
+         returnHomeBtn.addEventListener('click', () => {
+             // Cerrar ventana si se abrió como popup, o redirigir si se abrió como página
+             if (window.opener) {
+                 window.close();
+             } else {
+                 window.location.href = 'index.html';
+             }
+        });
+
+        async function generateQuizQuestions() {
+            const quizGenerationPrompt = `
+                Eres VIDA, un asistente de donación de órganos en México.
+                Tu tarea es generar 20 preguntas de VERDADERO o FALSO sobre mitos y realidades comunes acerca de la donación de órganos y tejidos después de que una persona ha fallecido en México.
+                Devuelve la respuesta como un array JSON de 20 objetos con las propiedades: "question" (string), "isTrue" (boolean), "explanation" (string).
+                Las explicaciones deben ser breves, claras y fundamentadas en información oficial (Ley General de Salud, CENATRA). No uses asteriscos.
+                Varía la dificultad de las preguntas para que sea educativo y desafiante.
+            `;
+            
+            const messages = [
+                { role: "system", content: "Responde únicamente con un array JSON válido de 20 objetos." },
+                { role: "user", content: quizGenerationPrompt }
+            ];
+
+            try {
+                const result = await callOpenAI(messages);
+                if (result.choices?.[0]?.message?.content) {
+                    quizQuestions = JSON.parse(result.choices[0].message.content);
+                    if (quizQuestions.length > 0) {
+                        displayQuizQuestion();
+                    } else {
+                        throw new Error("Generated question array is empty.");
+                    }
+                } else {
+                     throw new Error("Empty response from API for quiz questions.");
+                }
+            } catch (error) {
+                console.error("Error generating quiz questions:", error);
+                quizQuestion.textContent = 'Hubo un problema al generar el quiz. Por favor, intenta de nuevo más tarde.';
+            }
+        }
+
+        function displayQuizQuestion() {
+            if (currentQuizQuestionIndex >= quizQuestions.length) {
+                endQuiz();
+                return;
+            }
+
+            const questionData = quizQuestions[currentQuizQuestionIndex];
+            const questionInRound = (currentQuizQuestionIndex % QUESTIONS_PER_ROUND) + 1;
+            
+            quizProgress.textContent = `Pregunta ${questionInRound} de ${QUESTIONS_PER_ROUND}`;
+            quizRoundInfo.textContent = `Ronda ${currentRound} de ${TOTAL_ROUNDS}`;
+            quizQuestion.textContent = questionData.question;
+            
+            quizAnswerButtons.innerHTML = '';
+            quizFeedback.classList.remove('visible');
+            quizNavigation.innerHTML = '';
+
+            const trueBtn = document.createElement('button');
+            trueBtn.textContent = "✅ Verdadero";
+            trueBtn.className = 'quiz-answer-btn w-full text-lg font-bold p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100';
+            trueBtn.onclick = () => handleQuizAnswer(true, questionData, trueBtn, falseBtn);
+            
+            const falseBtn = document.createElement('button');
+            falseBtn.textContent = "❌ Falso";
+            falseBtn.className = 'quiz-answer-btn w-full text-lg font-bold p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100';
+            falseBtn.onclick = () => handleQuizAnswer(false, questionData, falseBtn, trueBtn);
+
+            quizAnswerButtons.appendChild(trueBtn);
+            quizAnswerButtons.appendChild(falseBtn);
+        }
+
+        function handleQuizAnswer(userAnswer, questionData, selectedBtn, otherBtn) {
+            selectedBtn.disabled = true;
+            otherBtn.disabled = true;
+
+            const isCorrect = (userAnswer === questionData.isTrue);
+            
+            if (isCorrect) {
+                quizScore++;
+                selectedBtn.classList.add('correct');
+            } else {
+                selectedBtn.classList.add('incorrect');
+                if (questionData.isTrue) {
+                    otherBtn.classList.add('correct');
+                } else {
+                    otherBtn.classList.add('correct');
+                }
+            }
+            
+            quizFeedbackText.textContent = questionData.explanation;
+            quizFeedback.classList.add('visible');
+
+            const nextButton = document.createElement('button');
+            const questionInRound = (currentQuizQuestionIndex % QUESTIONS_PER_ROUND) + 1;
+            
+            if (questionInRound === QUESTIONS_PER_ROUND && currentRound < TOTAL_ROUNDS) {
+                nextButton.textContent = 'Ver resultados de la ronda 📊';
+                nextButton.onclick = () => showPartialResults();
+            } else if (currentQuizQuestionIndex === quizQuestions.length - 1) {
+                nextButton.textContent = 'Ver Resultados Finales 🏆';
+                nextButton.onclick = () => endQuiz();
+            } else {
+                nextButton.textContent = 'Siguiente Pregunta ➡️';
+                nextButton.onclick = () => {
+                    currentQuizQuestionIndex++;
+                    displayQuizQuestion();
+                };
+            }
+            
+            nextButton.className = 'bg-[var(--vida-btn-green)] text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all';
+            quizNavigation.innerHTML = '';
+            quizNavigation.appendChild(nextButton);
+        }
+
+        function showPartialResults() {
+            const roundStartIndex = (currentRound - 1) * QUESTIONS_PER_ROUND;
+            const roundEndIndex = currentRound * QUESTIONS_PER_ROUND;
+            const roundQuestionsCount = QUESTIONS_PER_ROUND;
+            
+            // Calcular puntaje de la ronda actual
+            let roundScore = 0;
+            for (let i = roundStartIndex; i < roundEndIndex && i < quizQuestions.length; i++) {
+                const questionData = quizQuestions[i];
+                // Necesitamos una forma de saber si la respuesta fue correcta
+                // Por simplicidad, calculamos basado en el puntaje total acumulado
+            }
+            
+            // Aproximación del puntaje de la ronda
+            const previousRoundsTotalScore = roundScores.reduce((sum, score) => sum + score, 0);
+            roundScore = quizScore - previousRoundsTotalScore;
+            roundScores.push(roundScore);
+            
+            quizActiveView.classList.add('hidden');
+            quizPartialResultsView.classList.remove('hidden');
+            
+            roundScoreText.textContent = `Ronda ${currentRound}: ${roundScore} de ${roundQuestionsCount} correctas`;
+            totalProgressText.textContent = `Progreso total: ${quizScore} de ${currentQuizQuestionIndex + 1} preguntas`;
+            
+            // Feedback basado en el rendimiento de la ronda
+            let feedback = '';
+            const percentage = (roundScore / roundQuestionsCount) * 100;
+            if (percentage >= 80) {
+                feedback = '¡Excelente! Tienes un gran conocimiento sobre donación de órganos.';
+            } else if (percentage >= 60) {
+                feedback = '¡Bien hecho! Vas por buen camino, sigue así.';
+            } else if (percentage >= 40) {
+                feedback = 'Vas aprendiendo. Cada pregunta te acerca más a la verdad.';
+            } else {
+                feedback = 'No te preocupes, lo importante es aprender. ¡Continúa!';
+            }
+            roundFeedback.textContent = feedback;
+            
+            currentQuizQuestionIndex++;
+            currentRound++;
+        }
+
+        function endQuiz() {
+            quizActiveView.classList.add('hidden');
+            quizResultsView.classList.remove('hidden');
+            
+            const finalPercentage = (quizScore / TOTAL_QUESTIONS) * 100;
+            quizScoreText.textContent = `Obtuviste ${quizScore} de ${TOTAL_QUESTIONS} respuestas correctas (${finalPercentage.toFixed(1)}%)`;
+            
+            // Feedback final detallado
+            let finalFeedbackText = '';
+            if (finalPercentage >= 90) {
+                finalFeedbackText = '¡Eres un experto en donación de órganos! Tu conocimiento puede ayudar a salvar vidas.';
+            } else if (finalPercentage >= 75) {
+                finalFeedbackText = '¡Excelente! Tienes un sólido conocimiento sobre donación de órganos.';
+            } else if (finalPercentage >= 60) {
+                finalFeedbackText = '¡Bien hecho! Tienes buenas bases, sigue aprendiendo para convertirte en un embajador de la donación.';
+            } else if (finalPercentage >= 45) {
+                finalFeedbackText = 'Vas por buen camino. Cada respuesta te acerca más a comprender la importancia de la donación.';
+            } else {
+                finalFeedbackText = 'El conocimiento es poder. Sigue aprendiendo sobre donación de órganos para ayudar a desmitificar este tema tan importante.';
+            }
+            finalFeedback.textContent = finalFeedbackText;
+        }
+
+    </script>
+</body>
+</html>

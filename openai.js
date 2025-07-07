@@ -20,8 +20,40 @@ export default async function handler(req, res) {
   }
 
   // --- NUEVA LÓGICA DE ORQUESTADOR ---
-  // Espera: { historial: [...], mensaje: 'texto' }
-  const { historial, mensaje, model } = req.body;
+  // Espera: { historial: [...], mensaje: 'texto' } para chat
+  // O: { messages: [...] } para quiz directo
+  const { historial, mensaje, messages: directMessages, model } = req.body;
+
+  // Si viene con 'messages', es una llamada directa (como el quiz)
+  if (directMessages && Array.isArray(directMessages)) {
+    const openaiPayload = {
+      model: model || 'gpt-3.5-turbo',
+      messages: directMessages,
+      temperature: 0.7,
+      max_tokens: 1000
+    };
+
+    try {
+      const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify(openaiPayload)
+      });
+      const data = await openaiRes.json();
+      if (!openaiRes.ok) {
+        res.status(openaiRes.status).json({ error: data.error?.message || 'Error de OpenAI', openaiError: data });
+        return;
+      }
+      res.status(200).json(data);
+      return;
+    } catch (err) {
+      res.status(500).json({ error: 'Error al conectar con OpenAI.', details: err.message });
+      return;
+    }
+  }
 
   // Prompt del sistema para orquestador
   const systemPrompt = `

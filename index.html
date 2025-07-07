@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDA - Asistente de Donación</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Roboto as requested -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles and Animations -->
+    <style>
+        /* New Color Palette and Font from the design specification */
+        :root {
+            --vida-bg: #E3F2FD; /* Azul cielo claro */
+            --vida-text-dark: #0D47A1; /* Azul oscuro médico */
+            --vida-btn-green: #66BB6A; /* Verde esperanza suave */
+            --vida-btn-green-hover: #43A047;
+            --vida-text-secondary: #757575; /* Gris medio */
+            --vida-bg-footer: #F5F5F5; /* Gris claro */
+            --vida-chat-bot-bg: #F9F9F9; /* Gris claro para burbuja del bot */
+            --vida-chat-user-bg: #E8F5E9; /* Verde muy claro para burbuja de usuario */
+            --vida-btn-feedback: #4FC3F7; /* Azul cielo para feedback */
+            --vida-suggest-btn-bg: #E0F2F7; /* Azul muy claro para botón de sugerencia */
+            --vida-suggest-btn-hover: #B3E5FC; /* Azul más claro para hover */
+            --vida-module-btn-bg: #E0F2F7; /* Color para botones de módulo */
+            --vida-module-btn-hover: #B3E5FC; /* Color hover para botones de módulo */
+            --vida-module-btn-text: #0D47A1; /* Color de texto para botones de módulo */
+            --vida-quiz-btn-correct: #4CAF50; /* Verde para respuesta correcta */
+            --vida-quiz-btn-incorrect: #F44336; /* Rojo para respuesta incorrecta */
+            --vida-quiz-btn-disabled: #BDBDBD; /* Gris para botones deshabilitados */
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            /* Nuevo fondo degradado para la página principal */
+            background: linear-gradient(135deg, #E3F2FD 0%, #B3E5FC 50%, #66BB6A 100%);
+        }
+        /* Estilo especial para el título principal */
+        .vida-main-title {
+            background: linear-gradient(90deg, #0D47A1 20%, #4FC3F7 60%, #66BB6A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            font-weight: 900;
+            letter-spacing: 0.02em;
+            text-shadow: 0 2px 8px rgba(13,71,161,0.08);
+        }
+        /* Subtítulo con color y formato mejorado */
+        .vida-main-subtitle {
+            color: #1976D2;
+            font-size: 1.35rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+
+        /* Fade-in animation for a smooth load */
+        .fade-in-element {
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Justify chat text */
+        .chat-bubble-text {
+            text-align: justify;
+        }
+        
+        /* Custom scrollbar for chat */
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: #FFFFFF; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #BDBDBD; border-radius: 10px; }
+        .chat-messages::-webkit-scrollbar-thumb:hover { background: var(--vida-text-secondary); }
+
+        /* Initially hide these screens/modals */
+        #chat-screen, #about-modal, #feedback-modal { display: none; }
+        
+        /* Styles for radio buttons in feedback form */
+        .feedback-radio-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        /* Styles for quiz question card */
+        .quiz-card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .quiz-buttons button {
+            transition: all 0.2s;
+        }
+
+        /* Styling for the custom SVG robot */
+        /* Base styles for the SVG robot to ensure consistent appearance */
+        .robot-svg-icon { /* Class for the SVG element itself */
+            width: 100%;
+            height: 100%;
+        }
+        .robot-svg-icon .heart-icon {
+            fill: #EF5350; /* Red heart */
+        }
+        .robot-svg-icon .head-shape, .robot-svg-icon .torso {
+            fill: #FFFFFF; /* White parts */
+            stroke: #D1D5DB; /* Light gray border */
+            stroke-width: 2;
+        }
+        .robot-svg-icon .neck {
+            fill: #90A4AE; /* Gray neck */
+        }
+        .robot-svg-icon .arm-left, .robot-svg-icon .arm-right {
+            stroke: #42A5F5; /* Blue arms */
+            stroke-width: 15;
+            fill: none;
+            stroke-linecap: round;
+        }
+        .robot-svg-icon .screen {
+            fill: #1F2937; /* Dark screen */
+            rx: 10;
+        }
+        .robot-svg-icon .eye {
+            fill: #40C4FF; /* Light blue eyes */
+        }
+        .robot-svg-icon .smile {
+            stroke: #40C4FF; /* Light blue smile */
+            stroke-width: 1.5;
+            fill: none;
+            stroke-linecap: round;
+        }
+
+        /* Animations for the robot SVG */
+        @keyframes float-animation {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes heart-beat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes typing-animation {
+            0% { transform: translateY(0px); }
+            25% { transform: translateY(-2px); }
+            50% { transform: translateY(0px); }
+            75% { transform: translateY(-2px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        /* Apply animations to specific elements by ID or Class for different contexts */
+        #main-robot-container svg { /* Target the SVG inside the main container */
+            animation: float-animation 3s ease-in-out infinite;
+        }
+        /* Specific targeting for heart and head within message/typing indicator SVGs */
+        .message-robot-avatar .heart-icon {
+            animation: heart-beat 1.5s infinite;
+        }
+        .typing-indicator-robot .head {
+            animation: typing-animation 0.7s infinite;
+        }
+
+        /* Fondo exclusivo para la pantalla de conversación del chatbot */
+        #chat-screen {
+            background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 50%, #e3f2fd 100%);
+            /* Puedes ajustar los colores para lograr el efecto deseado */
+        }
+
+        /* --- Robot Circle Styles --- */
+        .robot-circle-bg {
+            width: 380px;
+            height: 380px;
+            min-width: 260px;
+            min-height: 260px;
+            max-width: 420px;
+            max-height: 420px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 60% 40%, #ffffff 60%, #b3e5fc 100%, #66bb6a 120%);
+            box-shadow: 0 8px 32px 0 rgba(13,71,161,0.10), 0 2px 8px 0 rgba(76,175,80,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            border: 6px solid #e3f2fd;
+            position: relative;
+            z-index: 1;
+        }
+        @media (max-width: 640px) {
+            .robot-circle-bg {
+                width: 220px;
+                height: 220px;
+                min-width: 180px;
+                min-height: 180px;
+                max-width: 260px;
+                max-height: 260px;
+            }
+        }
+        .robot-img-main {
+            width: 115%;
+            height: 115%;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 4px 16px rgba(76,175,80,0.10));
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="w-full p-4 sm:p-5 bg-transparent fade-in-element" style="animation-delay: 0.2s;">
+            <div class="container mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-1">
+                    <div class="w-10 h-10 bg-[var(--vida-text-dark)] rounded-full flex items-center justify-center shadow">
+                         <!-- Heart Icon for VIDA logo -->
+                         <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </div>
+                    <img src="Vidalogo.png" alt="VIDA Logo" class="h-13 w-auto object-contain" style="max-width:100px;" />
+                </div>
+                <div class="flex items-center space-x-1">
+                    <!-- Privacy button -->
+                    <button id="privacy-btn" class="text-[var(--vida-text-dark)] font-semibold py-2 px-4 rounded-lg transition hover:bg-blue-200/50">Aviso de Privacidad</button>
+                    <!-- About button -->
+                    <button id="about-btn" class="px-4 py-2 rounded-lg bg-[var(--vida-btn-green)] text-white font-semibold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] focus:ring-offset-2">
+                        ¿Qué hace VIDA?
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col lg:flex-row items-center justify-center container mx-auto p-6 text-center lg:text-left gap-8">
+            <div class="lg:w-full flex flex-col items-center lg:items-start">
+                <h2 class="vida-main-title text-3xl md:text-4xl lg:text-5xl font-bold text-[var(--vida-text-dark)] max-w-xl fade-in-element" style="animation-delay: 0.4s;">
+                    Voz de Información y Donación Asistida
+                </h2>
+                <p class="vida-main-subtitle text-lg md:text-xl text-slate-600 mt-4 max-w-xl fade-in-element" style="animation-delay: 0.6s; text-align: justify;">
+                    Tu aliado informativo en momentos críticos.<br>
+                    <span class="block mt-1">Estoy aquí para ayudarte a tomar decisiones claras, humanas y fundamentadas.</span>
+                </p>
+                <div class="mt-12 flex flex-col sm:flex-row gap-4 fade-in-element" style="animation-delay: 0.8s;">
+                    <button id="start-chat-btn" class="bg-[var(--vida-btn-green)] text-white font-bold py-4 px-8 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+                        Iniciar conversación
+                    </button>
+                    <!-- New Quiz Module Button -->
+                    <button id="start-quiz-btn" class="bg-[var(--vida-btn-feedback)] text-white font-bold py-4 px-8 rounded-full shadow-lg hover:bg-blue-400 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center gap-2">
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                        ¿Qué tanto sabes sobre donar?
+                    </button>
+                </div>
+            </div>
+            <!-- Robot SVG for the main page, now inside a styled circle -->
+            <div id="main-robot-container" class="lg:w-1/2 flex items-center justify-center lg:justify-start mt-12 lg:mt-0 lg:ml-[-320px] fade-in-element" style="animation-delay: 1s;">
+                <div class="robot-circle-bg">
+                    <img src="robot.png" alt="Robot VIDA" class="robot-img-main" />
+                </div>
+            </div>
+        </main>
+
+        <footer class="w-full p-4 bg-[var(--vida-bg-footer)] fade-in-element" style="animation-delay: 1.2s;">
+            <div class="container mx-auto">
+                <div class="flex flex-col items-center justify-center">
+                    <p class="text-base md:text-xs text-slate-700 font-medium mb-1" style="text-align: center;">
+                        VIDA es una herramienta informativa. No sustituye la atención médica directa.<br>
+                        Versión piloto para orientación en procesos de donación.
+                    </p>
+                    <a href="https://www.gob.mx/cenatra" target="_blank" class="text-xs text-[var(--vida-btn-feedback)] underline font-semibold hover:text-[var(--vida-text-dark)] transition-colors block mt-1 text-center">
+                        Ir a CENATRA
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <button id="feedback-btn" class="fixed bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-20 flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.08-3.239A8.939 8.939 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.416 11.603a.75.75 0 00-.029.048l.029-.048zM5.022 13.013a.75.75 0 00.213.024l.028-.024z" clip-rule="evenodd" /></svg>
+        Danos tu opinión
+    </button>
+    
+    <div id="about-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-8 relative">
+            <button id="close-about-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h3 class="text-2xl font-bold text-[var(--vida-text-dark)] mb-4">¿Qué hace VIDA?</h3>
+            <div class="text-slate-700 text-justify space-y-3" style="text-align: justify;">
+                <p>VIDA es un asistente conversacional creado para brindar orientación empática, clara y confiable sobre la donación de órganos, tejidos y sangre en México.</p>
+                <p>Fue desarrollado como una herramienta informativa para acompañar a personas que tienen dudas, miedo o simplemente desean entender mejor cómo funciona la donación, ya sea como donadores voluntarios o como familiares que enfrentan una decisión en un momento difícil.</p>
+                <p>VIDA no sustituye atención médica ni asesoría profesional directa, pero está diseñada para ayudarte a:</p>
+                <ul class="list-disc pl-6 space-y-1">
+                    <li>Entender qué órganos, tejidos y componentes sanguíneos se pueden donar.</li>
+                    <li>Saber quién puede ser donador y en qué momentos.</li>
+                    <li>Desmitificar ideas falsas sobre la donación.</li>
+                    <li>Reflexionar con libertad sobre el acto de donar.</li>
+                    <li>Obtener enlaces seguros y oficiales para registrarte como donador voluntario o encontrar centros de donación.</li>
+                </ul>
+                <p>VIDA es una voz que informa sin juzgar, acompaña sin presionar, y cree que donar es un acto de amor y conciencia.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50" style="display:none;">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-8 relative">
+            <button id="close-privacy-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h3 class="text-2xl font-bold text-[var(--vida-text-dark)] mb-4">Aviso de Privacidad – VIDA</h3>
+            <div class="text-slate-700 text-justify" style="text-align: justify;">
+                <p class="mb-3">VIDA (Voz de Información y Donación Asistida) es una herramienta informativa que opera sin recopilar datos personales sensibles. No se almacenan nombres, ubicaciones, correos electrónicos ni respuestas específicas de los usuarios. Las conversaciones no son monitoreadas ni utilizadas para fines comerciales o de perfilamiento.</p>
+                <p class="mb-3">El uso de esta plataforma es completamente anónimo y su único propósito es ofrecer orientación general sobre procesos de donación post mortem, con base en información pública y normativa mexicana vigente.</p>
+                <p class="mb-3">VIDA no sustituye asesoría médica, psicológica ni legal. Si requiere atención médica o desea formalizar su voluntad de donar, debe acudir a las instancias oficiales correspondientes (CENATRA, IMSS, ISSSTE, etc.).</p>
+                <p>Para cualquier comentario, puede escribir al desarrollador del proyecto a través del formulario de contacto disponible.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="feedback-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-8 relative overflow-hidden">
+            <div id="feedback-form-container">
+                 <button id="close-feedback-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <h3 class="text-2xl font-bold text-[var(--vida-text-dark)] mb-2">Encuesta anónima de satisfacción – VIDA</h3>
+                <p class="text-sm text-gray-500 mb-6">Responde en menos de 1 minuto:</p>
+                <form id="feedback-form">
+                    <div class="space-y-6">
+                        <div>
+                            <p class="font-semibold text-gray-700 mb-2">1. ¿La información que recibiste fue clara y útil?</p>
+                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group">
+                                <label><input type="radio" name="clarity" value="si" class="mr-2" required> Sí</label>
+                                <label><input type="radio" name="clarity" value="parcialmente" class="mr-2"> Parcialmente</label>
+                                <label><input type="radio" name="clarity" value="no" class="mr-2"> No</label>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-700 mb-2">2. ¿El lenguaje utilizado te pareció comprensible?</p>
+                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group">
+                                <label><input type="radio" name="language" value="si" class="mr-2" required> Sí</label>
+                                <label><input type="radio" name="language" value="regular" class="mr-2"> Regular</label>
+                                <label><input type="radio" name="language" value="dificil" class="mr-2"> Difícil de entender</label>
+                            </div>
+                        </div>
+                         <div>
+                            <p class="font-semibold text-gray-700 mb-2">3. ¿Te ayudó a resolver tus dudas sobre donación?</p>
+                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group">
+                                <label><input type="radio" name="solved_doubts" value="si" class="mr-2" required> Sí completamente</label>
+                                <label><input type="radio" name="solved_doubts" value="algunas" class="mr-2"> Algunas</label>
+                                <label><input type="radio" name="solved_doubts" value="no" class="mr-2"> No</label>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-gray-700 mb-2">4. ¿Recomendarías esta herramienta a otros usuarios?</p>
+                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group">
+                                <label><input type="radio" name="recommend" value="si" class="mr-2" required> Sí</label>
+                                <label><input type="radio" name="recommend" value="no" class="mr-2"> No</label>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="comments" class="font-semibold text-gray-700 mb-2 block">Comentarios adicionales</label>
+                            <textarea id="comments" name="comments" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-feedback)]"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-8 text-right">
+                        <button type="submit" class="bg-[var(--vida-btn-green)] text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors">Enviar respuesta</button>
+                    </div>
+                </form>
+            </div>
+             <div id="feedback-thanks" class="hidden text-center">
+                <svg class="mx-auto h-16 w-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h3 class="mt-4 text-2xl font-bold text-[var(--vida-text-dark)]">¡Gracias!</h3>
+                <p class="mt-2 text-gray-600">Tu opinión nos importa y nos ayuda a mejorar VIDA.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="chat-screen" class="fixed inset-0 bg-slate-100 flex items-center justify-center p-0 sm:p-4 z-40 transition-opacity duration-300 opacity-0">
+        <div class="w-full h-full sm:max-w-4xl sm:h-[90vh] bg-white sm:rounded-2xl shadow-2xl flex flex-col">
+            <header class="bg-white border-b border-gray-200 p-4 sm:rounded-t-2xl flex items-center justify-between shadow-sm">
+                 <div class="flex items-center space-x-1">
+                    <div class="w-12 h-12 bg-[var(--vida-text-dark)] rounded-full flex items-center justify-center mr-1">
+                        <!-- Heart Icon for VIDA logo in chat header -->
+                        <svg class="h-7 w-7 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </div>
+                    <img src="Vidalogo.png" alt="VIDA Logo" class="h-13 w-auto object-contain" style="max-width:90px;" />
+                 </div>
+                <button id="close-chat-btn" class="text-gray-500 hover:bg-gray-200 p-2 rounded-full">
+                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </header>
+            <main class="flex-1 flex overflow-hidden">
+                <div id="chat-container-wrapper" class="flex-1 flex flex-col p-4 sm:p-6 overflow-y-auto chat-messages">
+                     <div id="chat-container" class="flex flex-col space-y-4"></div>
+                </div>
+                <aside class="w-1/3 bg-slate-50 p-6 border-l border-slate-200 hidden md:flex flex-col items-center justify-center">
+                    <!-- chat-robot-avatar element: using the provided SVG for the large avatar -->
+                    <div id="chat-robot-avatar-large" class="w-48 h-48 mb-4 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+                        <!-- SVG will be inserted here by JavaScript -->
+                    </div>
+                    <div class="text-center">
+                        <h3 class="font-bold text-lg text-[var(--vida-text-dark)]">Estoy para ayudarte</h3>
+                        <p class="text-sm text-[var(--vida-text-secondary)] mt-1">Pregúntame sobre el proceso de donación de órganos y tejidos.</p>
+                    </div>
+                </aside>
+            </main>
+            <footer class="p-4 bg-white border-t border-gray-200 sm:rounded-b-2xl">
+                <div id="suggested-questions-container" class="flex flex-wrap gap-2 mb-4 hidden"></div>
+
+                <form id="chat-form" class="flex items-center space-x-3">
+                    <button type="button" id="suggest-questions-btn" class="bg-[var(--vida-suggest-btn-bg)] text-[var(--vida-text-dark)] rounded-full p-2.5 
+                                        hover:bg-[var(--vida-suggest-btn-hover)] transition-colors focus:outline-none focus:ring-4 focus:ring-blue-100 
+                                        disabled:bg-gray-200 disabled:cursor-not-allowed flex items-center justify-center">
+                        <svg class="h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                        <span id="suggest-button-text" class="ml-1 text-sm font-semibold">Sugiere</span> </button>
+                    <input type="text" id="chat-input" placeholder="Escribe tu pregunta aquí..." autocomplete="off" class="flex-1 w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] transition">
+                    <button type="submit" class="bg-[var(--vida-btn-green)] text-white rounded-full p-3 hover:bg-[var(--vida-btn-green-hover)] transition-transform transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
+                    </button>
+                </form>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const chatScreen = document.getElementById('chat-screen');
+        const startChatBtn = document.getElementById('start-chat-btn');
+        // New button for Desmitificador Express on welcome screen
+        const startQuizBtn = document.getElementById('start-quiz-btn'); 
+
+        const chatContainer = document.getElementById('chat-container');
+        const chatContainerWrapper = document.getElementById('chat-container-wrapper');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const aboutBtn = document.getElementById('about-btn');
+        const closeModalBtn = document.getElementById('close-about-modal-btn');
+        const aboutModal = document.getElementById('about-modal');
+        const closeChatBtn = document.getElementById('close-chat-btn');
+        // Removed robotImage element from the main page as per user request.
+        // const robotImage = document.getElementById('robot-image'); 
+        const feedbackBtn = document.getElementById('feedback-btn'); // Corrected ID selection
+        const feedbackModal = document.getElementById('feedback-modal');
+        const closeFeedbackModalBtn = document.getElementById('close-feedback-modal-btn');
+        const feedbackForm = document.getElementById('feedback-form');
+        const feedbackFormContainer = document.getElementById('feedback-form-container');
+        const feedbackThanks = document.getElementById('feedback-thanks');
+        const suggestQuestionsBtn = document.getElementById('suggest-questions-btn'); 
+        const suggestedQuestionsContainer = document.getElementById('suggested-questions-container'); 
+        const suggestButtonText = document.getElementById('suggest-button-text'); 
+        const privacyBtn = document.getElementById('privacy-btn');
+        const privacyModal = document.getElementById('privacy-modal');
+        const closePrivacyModalBtn = document.getElementById('close-privacy-modal-btn');
+
+        // --- State ---
+        let chatHistory = [];
+        let currentDonorPathStep = null; // Tracks the current step in the "Tu Camino como Donante" module
+        let currentQuizQuestionIndex = -1; // -1 means not in quiz, 0-9 for questions
+        let quizQuestions = []; // Stores the generated quiz questions
+        let currentIndecisionStep = null; // State for the indecision module
+        let currentGriefStep = null; // New state for the grief module
+        let currentFamilyDonationStep = null; // New state for family donation module
+
+        // SVG string for the robot avatar
+        const robotSvgHtml = `
+            <svg class="robot-svg-icon" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <g>
+                    <!-- Sombra -->
+                    <ellipse cx="100" cy="185" rx="70" ry="10" fill="rgba(0,0,0,0.1)"/>
+                    <!-- Torso -->
+                    <path class="torso" d="M100 80C65 80 40 105 40 135v20c0 15 25 25 60 25s60-10 60-25v-20c0-30-25-55-60-55Z" fill="#FFFFFF" stroke="#D1D5DB" stroke-width="2"/>
+                    <!-- Cuello -->
+                    <rect class="neck" x="90" y="70" width="20" height="15" fill="#90A4AE"/>
+                    <!-- Corazón -->
+                    <path class="heart-icon" transform-origin="center" d="M100,120 C93.3,115 80,115 73.3,120 C60,130 73.3,145 100,160 C126.7,145 140,130 126.7,120 C120,115 106.7,115 100,120Z" fill="#EF5350"/>
+
+                    <!-- Brazos -->
+                    <g class="arms">
+                        <!-- Brazo Izquierdo -->
+                        <path class="arm-left" d="M50 100 C35 100 25 115 35 135" stroke="#42A5F5" stroke-width="15" fill="none" stroke-linecap="round"/>
+                        <!-- Brazo Derecho -->
+                        <g>
+                                <path class="arm-right" d="M150 100 C165 100 175 115 165 135" stroke="#42A5F5" stroke-width="15" fill="none" stroke-linecap="round"/>
+                        </g>
+                    </g>
+                    
+                    <!-- Cabeza -->
+                    <g class="head">
+                        <circle class="head-shape" cx="100" cy="45" r="40" fill="#FFFFFF" stroke="#D1D5DB" stroke-width="2"/>
+                        <!-- Pantalla -->
+                        <rect class="screen" x="70" y="25" width="60" height="40" rx="10" fill="#1F2937"/>
+                        <!-- Ojos -->
+                        <circle class="eye left-eye" cx="88" cy="50" r="5" fill="#40C4FF"/>
+                        <circle class="eye right-eye" cx="112" cy="50" r="5" fill="#40C4FF"/>
+                        <!-- Sonrisa -->
+                        <path class="smile" d="M90 65 Q100 68 110 65" stroke="#40C4FF" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    </g>
+                </g>
+            </svg>
+        `;
+
+        // Function to create an SVG element from a string
+        function createSvgElementFromString(svgString) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(svgString, "image/svg+xml");
+            return doc.documentElement; // Returns the <svg> element
+        }
+
+        // --- Initial DOM insertion of main robot SVG ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainRobotContainer = document.getElementById('main-robot-container');
+            if (mainRobotContainer) {
+                // Insertar el círculo con la imagen del robot
+                mainRobotContainer.innerHTML = `<div class=\"robot-circle-bg\"><img src=\"robot.png\" alt=\"Robot VIDA\" class=\"robot-img-main\" /></div>`;
+            }
+            // Insertar avatar grande en el chat
+            const chatRobotAvatarLarge = document.getElementById('chat-robot-avatar-large');
+            if (chatRobotAvatarLarge) {
+                chatRobotAvatarLarge.innerHTML = '<img src="robot.png" alt="Robot VIDA" class="w-48 h-48 object-contain" />';
+            }
+        });
+
+
+        // --- Module Content Definition ---
+        // This object holds all the text and button configurations for the "Tu Camino como Donante" module.
+        const donorPathModule = {
+            initial: {
+                text: "¡Qué decisión tan valiosa estás considerando! Aquí te acompaño paso a paso en tu camino como donante. Si ya estás listo para registrarte oficialmente como donador voluntario, puedes hacerlo en el portal nacional. Da click aquí para registrarte como donador voluntario en CENATRA:",
+                buttons: [
+                    { text: "Registrarme en CENATRA", action: "open_cenatra_link", link: "https://dv.cenatra.salud.gob.mx/registrar.php" },
+                    { text: "Iniciar camino como donante", action: "donor_path_step1" },
+                    { text: "Prefiero hacer una pregunta diferente", action: "reset_chat" }
+                ]
+            },
+            step1: {
+                // Modified for concision and general audience understanding
+                text: "Para poder decidir, es importante que sepas qué significa donar. En México, se puede donar órganos y tejidos después de fallecer, ya sea por Muerte encefálica (cuando el cerebro deja de funcionar por completo) o por Paro cardíaco (cuando el corazón deja de latir y ya no se puede revivir). En ambos casos, la donación puede salvar vidas o mejorar la salud de muchas personas.",
+                buttons: [
+                    { text: "Sí, por favor", action: "donor_path_explain_muerte_encefalica" },
+                    { text: "No, siguiente paso 👉", action: "donor_path_step2" }
+                ]
+            },
+            explain_muerte_encefalica: {
+                // Modified for conciseness and general audience understanding
+                text: "La muerte encefálica es cuando el cerebro, que controla todo el cuerpo, deja de funcionar de forma total e irreversible. Esto se confirma con pruebas médicas rigurosas que demuestran que ya no hay actividad cerebral ni capacidad de respirar por sí mismo. Es el momento en que una persona es legal y médicamente declarada fallecida.",
+                buttons: [
+                    { text: "Entendido, siguiente paso 👉", action: "donor_path_step2" }
+                ]
+            },
+            step2: {
+                // Modified for conciseness and general audience understanding
+                text: "Donar es una decisión personal, libre y voluntaria. Te invito a pensar: ¿Me gustaría ayudar a alguien más si ya no estoy aquí? ¿Cómo me sentiría si alguien que amo necesitara un órgano? No hay respuestas correctas. Lo importante es que lo pienses con el corazón. 💙",
+                buttons: [
+                    { text: "Estoy listo para el siguiente paso 👉", action: "donor_path_step3" },
+                    { text: "Aún tengo dudas", action: "indecision_start" } // Changed action to trigger indecision module
+                ]
+            },
+            step3: {
+                // Modified for concision and general audience understanding
+                text: "Aunque tú quieras donar, en México tu familia debe autorizarlo en el hospital. Por eso, lo más importante es que hables con ellos y les digas tu deseo de donar. Puedes decir algo como: “Si algún día fallezco, quiero que donen mis órganos. Es mi decisión.”",
+                buttons: [
+                    { text: "Sí, muéstrame ejemplos", action: "donor_path_examples_family_talk" },
+                    { text: "Siguiente paso 👉", action: "donor_path_step4" }
+                ]
+            },
+            examples_family_talk: {
+                // Modified for conciseness and general audience understanding
+                text: "Aquí tienes algunas ideas para iniciar la conversación con tu familia: “Estuve pensando en la donación de órganos y quiero compartirles mi decisión. Si algo me pasara, me gustaría que mis órganos ayudaran a alguien más.” “Es un tema difícil, pero es importante para mí que sepan que quiero ser donante. Es un acto de generosidad que siento que es correcto.” “Investigué sobre la donación de órganos y me gustaría dejar claro que es mi deseo. Me siento tranquilo con esta decisión.”",
+                buttons: [
+                    { text: "Entendido, siguiente paso 👉", action: "donor_path_step4" }
+                ]
+            },
+            step4: {
+                // Modified for concision and general audience understanding
+                text: "Además de hablar con tu familia, puedes dejar por escrito tu decisión de estas maneras: 1. Marcándolo en tu INE (si renovaste y pediste que aparezca). 2. En el portal del Centro Nacional de Trasplantes (CENATRA): https://www.gob.gob.mx/cenatra 3. En una carta simple firmada. 4. O en tu testamento o voluntad anticipada (si aplica en tu estado).",
+                buttons: [
+                    { text: "Sí, enséñame uno", action: "donor_path_example_carta" },
+                    { text: "No, continuar 👉", action: "donor_path_step5" }
+                ]
+            },
+            example_carta: {
+                text: "Aquí tienes un ejemplo de una carta simple de voluntad anticipada para donación:\n\n\"[Tu Nombre Completo]\n[Tu Dirección]\n[Tu Ciudad, Estado, Fecha]\n\nA quien corresponda:\n\nPor medio de la presente, yo, [Tu Nombre Completo], con [Tipo de identificación y número, ej. INE 1234567890], declaro que, en caso de fallecimiento, es mi libre y voluntaria voluntad que mis órganos y tejidos aptos sean donados para trasplante, con el fin de salvar o mejorar la calidad de vida de otras personas. Esta decisión es informada y definitiva. Solicito a mis familiares y al personal médico respetar y facilitar este deseo.\n\nAtentamente,\n[Tu Firma]\n[Tu Nombre Completo]\n\nNota: Es recomendable tener testigos y/o notario, aunque una carta simple con tu firma es un inicio importante.\"",
+                buttons: [
+                    { text: "Entendido, continuar 👉", action: "donor_path_step5" }
+                ]
+            },
+            step5: {
+                text: "Donar es un acto que vale repetir. Recuérdales a tus seres queridos tu decisión cada tanto. Puedes también compartir tu voluntad en redes o por WhatsApp: “He decidido que quiero donar mis órganos si algún día muero. Es una forma de seguir ayudando. VIDA me ayudó a informarme.”",
+                buttons: [
+                    { text: "Compartir por WhatsApp", action: "share_whatsapp", shareText: "He decidido que quiero donar mis órganos si algún día muero. Es una forma de seguir ayudando. VIDA me ayudó a informarme." },
+                    { text: "Finalizar camino 💚", action: "donor_path_cierre" }
+                ]
+            },
+            cierre: {
+                text: "¡Gracias por recorrer este camino conmigo! 🌱 Cada paso que das acerca a alguien más a vivir con esperanza. Tu decisión es un acto de amor y generosidad.",
+                buttons: [
+                    { text: "Ver más dudas frecuentes", action: "suggest_questions" }, 
+                    { text: "Hablar con VIDA nuevamente", action: "reset_chat" }
+                ]
+            }
+        };
+
+        // Module: Empathetic Indecision Accompaniment
+        const indecisionModule = {
+            initial: {
+                text: "Es completamente válido tener dudas. La donación es un tema profundo y personal. Muchas personas también se sienten inseguras cuando empiezan a informarse. Estoy aquí para ayudarte a pensar en ello con calma.",
+                buttons: [
+                    { text: "Cuéntame por qué donar es valioso", action: "indecision_explain_impact" },
+                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
+                ]
+            },
+            explain_impact: {
+                text: "Donar órganos después de fallecer puede transformar por completo la vida de varias personas. Con una sola decisión, puedes ayudar a que una madre vea crecer a sus hijos, o que un niño recupere la salud.",
+                buttons: [
+                    { text: "¿Qué legado me gustaría dejar?", action: "indecision_ask_reflection" },
+                    { text: "Quiero saber cómo hablar con mi familia", action: "donor_path_examples_family_talk" }, // Link to donor path module step 3
+                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
+                ]
+            },
+            ask_reflection: {
+                text: "¿Te gustaría que alguien ayudara a un ser querido tuyo si lo necesitara? ¿Has pensado en qué legado te gustaría dejar?",
+                buttons: [
+                    { text: "Quiero saber cómo hablar con mi familia", action: "donor_path_examples_family_talk" },
+                    { text: "Pregúntame sobre la ley de donación", action: "donor_path_step4" }, // Link to donor path step 4
+                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
+                ]
+            },
+            // Cierre reinforcing autonomy and offering more paths
+            cierre: {
+                text: "Lo más importante es que tomes una decisión con la información adecuada y en paz contigo mismo. Gracias por atreverte a pensar en esto. Estás dando un gran paso, sin importar tu elección final.",
+                buttons: [
+                    { text: "Ver más dudas frecuentes", action: "suggest_questions" }, // Reusing suggest_questions for generic suggestions
+                    { text: "Iniciar camino como donante", action: "donor_path_initial" }, // Link to donor path initial
+                    { text: "Hablar con VIDA nuevamente", action: "reset_chat" }
+                ]
+            }
+        };
+
+        const indecisionTriggers = [
+            "no sé si quiero donar", "tengo dudas sobre ser donante",
+            "me da miedo donar", "no estoy seguro si quiero eso",
+            "eso es muy fuerte", "nunca he pensado en eso",
+            "no se si quiero donar", "tengo dudas sobre donar",
+            "me da miedo", "no estoy seguro", "no quiero donar", "no quiero"
+        ];
+
+        // New Module: Empathetic Accompaniment for Grief/Anguish
+        const griefModule = {
+            initial: {
+                // Paso 1: Contención emocional inicial
+                text: "Lamento profundamente tu pérdida. Entiendo que este es un momento de mucho dolor y confusión. Soy VIDA, y estoy aquí para brindarte información clara y respetuosa sobre la donación de órganos y tejidos, lo cual puede ser una opción de esperanza en momentos así. Sé que es un tema delicado ahora, pero estoy aquí para explicarte todo lo que necesites saber al respecto.", 
+                buttons: [
+                    { text: "Comprendo, gracias", action: "grief_step2_validation" },
+                    { text: "No quiero hablar de eso ahora", action: "grief_final_thanks" } 
+                ]
+            },
+            step2_validation: {
+                // Paso 2: Validación emocional y permiso para seguir
+                text: "Tus emociones son válidas. Comprendo que este momento es abrumador. Mi propósito es ayudarte a entender cómo la donación puede ser un acto de generosidad que transforma vidas, si esto es algo que te interesa explorar ahora.", 
+                buttons: [
+                    { text: "Quiero entender la donación", action: "grief_step3_intro" },
+                    { text: "Prefiero hablar de otra cosa", action: "reset_chat" } // General reset, not a specialized grief reset
+                ]
+            },
+            step3_intro: {
+                // Paso 3: Introducción suave del tema de la donación
+                text: "En estos momentos difíciles, algunas familias encuentran consuelo al considerar la donación de órganos o tejidos. Es una forma de transformar el dolor en esperanza. Solo si lo deseas, puedo explicarte en qué consiste la donación y cómo puede ser un acto de amor y trascendencia.",
+                buttons: [
+                    { text: "Sí, explícame el valor de donar", action: "grief_step4_reflection" },
+                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
+                ]
+            },
+            step4_reflection: {
+                // Paso 4: Invitación reflexiva a la donación
+                text: "La donación puede ofrecer vida a otras personas y dar un sentido especial a la pérdida. Muchas familias dicen que eso les ayudó en su duelo. Aceptar donar no borra el dolor, pero puede llenarlo de significado. Es una forma poderosa de que tu ser querido siga presente en el mundo. Cada decisión tomada con amor deja huella. Donar puede ser ese tipo de huella.",
+                buttons: [
+                    { text: "Entiendo, la decisión es mía", action: "grief_step5_autonomy" },
+                    { text: "Quiero saber más sobre el proceso de donación", action: "grief_process_overview" } // Direct to process overview
+                ]
+            },
+            step5_autonomy: {
+                // Paso 5: Respeto absoluto a la autonomía
+                text: "Estoy aquí para informarte y acompañarte. La decisión que tomes será la correcta si la haces con el corazón. Tú tienes la libertad de decidir. Yo puedo ayudarte a entender, nunca a forzarte.",
+                buttons: [
+                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
+                    { text: "Iniciar Tu camino como donante", action: "donor_path_initial" },
+                    { text: "Gracias, por ahora es suficiente", action: "grief_final_thanks" }
+                ]
+            },
+            grief_process_overview: {
+                text: "El proceso de donación se hace con el máximo respeto. Primero, se confirma el fallecimiento, luego se evalúa al donante y si es apto, se extraen los órganos con cuidado. El cuerpo se restaura para el funeral. Todo ocurre rápidamente y con dignidad.",
+                buttons: [
+                    { text: "Mitos comunes sobre donación (quiz)", action: "start_quiz" }, // Link to quiz
+                    { text: "Necesito hablar con un experto", action: "grief_suggest_professional" },
+                    { text: "Gracias, por ahora es suficiente", action: "grief_final_thanks" }
+                ]
+            },
+            grief_suggest_professional: {
+                text: "Si sientes que necesitas un apoyo más profundo en este momento, considera hablar con un tanatólogo o psicólogo. Ellos pueden ofrecerte herramientas para manejar el duelo. Estoy aquí para cualquier otra pregunta que tengas sobre donación.",
+                buttons: [
+                    { text: "Volver a preguntas de donación", action: "suggest_questions" }, // General questions
+                    { text: "Gracias, por ahora es suficiente", action: "grief_final_thanks" }
+                ]
+            },
+            grief_final_thanks: {
+                // Paso 6: Cierre con calidez, sin cortar el vínculo, pero enfocando a la donación.
+                text: "Gracias por confiarme este momento. Sé que es un proceso doloroso y tu sentir es muy valioso. Si en algún futuro, cuando te sientas listo, deseas explorar más sobre cómo la donación puede brindar esperanza, recuerda que aquí estaré para informarte.",
+                buttons: [
+                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
+                    { text: "Hablar con VIDA nuevamente", action: "reset_chat" }
+                ]
+            }
+        };
+
+        const griefTriggers = [
+            "mi mamá acaba de morir", "mi hermano falleció", "a mi mamá la acaban de declarar con muerte cerebral",
+            "no sé si mi familiar quería donar", "me están pidiendo autorizar la donación y no sé qué hacer",
+            "estoy confundido con la donación", "me da miedo la donación", "estoy triste por la donación",
+            "no puedo con esto", "estoy abrumado", "mi ser querido murió", "acaba de fallecer",
+            "mi hermano fallecio", "a mi mama la acaban de declarar con muerte cerebral",
+            "no se si quiero donar", "tengo dudas sobre donar",
+            "me da miedo", "no estoy seguro", "no quiero donar", "no quiero"
+        ];
+
+        // New Module: "Donación de Familiar Fallecido"
+        const familyDonationModule = {
+            initial: {
+                text: "Lamento mucho el momento que estás atravesando. Agradezco profundamente que, en medio del dolor, estés pensando en ayudar a otras personas.",
+                buttons: [
+                    { text: "Entendido, ¿cuál es el siguiente paso?", action: "family_donation_step1" },
+                    { text: "Necesito más apoyo emocional", action: "grief_initial" }, // Link back to grief module if needed
+                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
+                ]
+            },
+            step1: {
+                text: "Para proceder con la donación de órganos de un ser querido, debes acudir lo antes posible al hospital público más cercano y pedir hablar con el Coordinador Hospitalario de Donación. El Coordinador de Donación es la persona capacitada para guiarte en este proceso, resolver tus dudas y brindarte acompañamiento con respeto y humanidad.",
+                buttons: [
+                    // Removed "Buscar hospital con coordinación de donación 👉" as requested
+                    { text: "Alternativa de contacto CENATRA", action: "family_donation_cenatra_contact" } // Renamed for clarity
+                ]
+            },
+            cenatra_contact: {
+                text: "También puedes comunicarte directamente con el Centro Nacional de Trasplantes (CENATRA) al teléfono 55 5062 1600, extensiones 57248, 57251 o 57252.",
+                buttons: [
+                    { text: "No estoy solo(a), ¿qué más puedo hacer?", action: "family_donation_cierre" }
+                ]
+            },
+            cierre: {
+                text: "No estás solo(a). Si necesitas más información o hablar de lo que estás viviendo, estoy aquí para ti.",
+                buttons: [
+                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
+                    { text: "Hablar con VIDA nuevamente", action: "reset_chat" }
+                ]
+            }
+        };
+
+        const familyDonationTriggers = [
+            "mi familiar falleció y quiero que sea donante",
+            "queremos donar sus órganos",
+            "con quién hablo para donar los órganos de mi familiar",
+            "mi familiar fallecio y quiero que sea donante",
+            "queremos donar sus organos",
+            "con quien hablo para donar los organos de mi familiar",
+            "quiero donar los organos de mi familiar",
+            "quiero donar los órganos de mi familiar",
+            "como donar los organos de mi familiar",
+            "cómo donar los órganos de mi familiar",
+            "autorizar donacion familiar",
+            "autorizar donación familiar",
+            "mi papa murio y quiero donar", 
+            "mi papa murio", 
+            "mi mama murio y quiero donar", 
+            "mi mama murio", 
+            "mi hijo murio y quiero donar", 
+            "mi hijo murio",
+            "mi papa falleció", 
+            "mi mamá murió", 
+            "mi hijo murió", 
+            "mi hermana falleció", 
+            "mi hermano falleció", 
+            "mis padres fallecieron", 
+            "mi esposo falleció", 
+            "mi esposa falleció", 
+            "mi pareja falleció", 
+            "ser donante de mi familiar", 
+            "autorizar donacion de mi familiar" ,
+            "donación en asistolia", 
+            "donacion en asistolia", 
+            "donación por parada cardíaca", 
+            "donacion por parada cardiaca",
+            "mi papa murio y quiero donar", // Specific check
+            "mi papa fallecio y quiero donar" // Specific check
+        ];
+
+
+        // --- System Prompt ---
+        // This system prompt guides the behavior of the chatbot, ensuring it stays within defined topics
+        // and maintains an appropriate tone and helpfulness.
+        // Enhanced for better comprehension and adherence to output style.
+        const systemPrompt = `
+        **DIRECTRICES PRINCIPALES PARA VIDA (ASISTENTE CONVERSACIONAL)**
+
+        **Identidad y Propósito:**
+        Eres "VIDA", un asistente virtual que ofrece orientación confiable y respetuosa sobre la donación de órganos, tejidos y sangre después de que una persona ha fallecido en México (ya sea por muerte encefálica, cuando el corazón deja de latir, o sobre donación de sangre en vida). Tu rol es ser una herramienta de apoyo para decisiones informadas y humanas. Siempre responde como VIDA.
+
+        **Reglas de Estilo y Comprensión:**
+        - Nunca uses asteriscos en tus respuestas, bajo ninguna circunstancia.
+        - Entiende y responde correctamente aunque el usuario escriba con faltas de ortografía, errores de redacción o lenguaje coloquial. Interpreta la intención y el contexto.
+        - Responde de forma cálida, humana y natural, nunca como robot. Usa frases empáticas y cercanas, como si hablaras con una persona.
+        - Sé siempre concreto y conciso. Si el usuario quiere más información, debe pedirla (por ejemplo: "quiero saber más", "dame detalles", "explícame mejor"). Solo entonces amplía la respuesta, manteniendo claridad y sencillez.
+        - Usa siempre lenguaje claro, sencillo y accesible para el público general. Evita tecnicismos y explica cualquier término difícil con palabras cotidianas.
+        - Organiza la información en párrafos cortos o listas numeradas (1. 2. 3.) o guiones, pero nunca con asteriscos ni viñetas.
+        - Las respuestas deben ser breves y claras por defecto, tanto si son respuesta libre como si son respuestas a opciones sugeridas. Solo si el usuario pide más información, puedes extenderte.
+        - No uses palabras médicas, ni diagnósticos complejos, ni expresiones clínicas. Habla siempre como lo harías con cualquier persona fuera de un hospital.
+        - Si hay que explicar algo complejo, hazlo con ejemplos sencillos y sin tecnicismos.
+        - No muestres cifras, nombres de leyes o documentos técnicos a menos que el usuario lo solicite explícitamente.
+        - Las respuestas a preguntas sugeridas deben ser breves, claras y fáciles de entender.
+        - Evita explicaciones largas o detalladas a menos que el usuario lo pida después (por ejemplo: "quiero saber más", "explícame mejor", "dame más información").
+        - Usa un tono conversacional y cercano, como si hablaras con alguien en persona.
+        - No uses palabras médicas ni tecnicismos. Explica todo con ejemplos sencillos si es necesario.
+        - Organiza las respuestas en párrafos cortos o listas claras, si el tema lo requiere.
+        - No repitas la pregunta en la respuesta. Ve directo al punto, con calidez y claridad.
+        - Si el tema es delicado (por ejemplo: muerte, duelo, donación familiar), muestra empatía desde la primera línea.
+        - Termina con disposición a continuar: “¿Quieres que te cuente más?”, “Si quieres, te explico cómo sigue”, “Estoy aquí si te surgen más dudas”.
+        - Nunca des toda la información desde el inicio. Deja espacio para que el usuario guíe la profundidad.  
+        - Evita sonar académico o institucional. Siempre habla como si estuvieras ayudando a alguien con dudas reales.
+        - Siempre responde con base en el sentido general del mensaje, no solo en las palabras exactas.
+        - Si detectas que el usuario está confundido o mezclando conceptos (por ejemplo: muerte cerebral con coma), aclara suavemente sin corregir de forma directa.
+        - Si el usuario hace varias preguntas a la vez, responde primero lo más relevante o urgente, y luego ofrece continuar: "Puedo ayudarte con eso también. ¿Quieres que sigamos paso a paso?"
+        - Si hay ambigüedad, utiliza preguntas abiertas para precisar: "¿Podrías contarme un poco más sobre eso?" o "¿Te refieres a donar órganos después de fallecer o en vida?"
+        - Usa el historial de la conversación para responder con coherencia, retomando términos que ya se usaron (por ejemplo: si dijo “mi mamá”, no cambies a “su familiar”).
+        - Si el usuario cambia de tema, adapta la conversación de forma natural y cálida, sin forzar el regreso al tema anterior.
+        - Nunca repitas literalmente la pregunta del usuario como forma de respuesta. Procesa, interpreta y responde con lenguaje humano.
+        - Cuando sea posible, anticipa lo que puede necesitar el usuario (por ejemplo: si pregunta sobre donar, sugiere cómo registrarse o qué órganos se pueden donar).
+        - Si el usuario hace una pregunta muy general (“¿qué es donar?”), comienza con una explicación simple y ofrece ampliar: "Donar es dar algo que puede ayudar a otra persona. En este caso, se trata de donar órganos o tejidos después de fallecer. ¿Quieres saber cómo funciona?"
+
+
+
+
+
+        **Ámbito Temático (Permitido):**
+        Solo responde a preguntas relacionadas con:
+        - Qué es la muerte encefálica y su diagnóstico.
+        - Qué es la donación cuando el corazón ha dejado de latir y qué implica.
+        - Criterios para confirmar que una persona ha fallecido (ya sea por muerte cerebral o cuando el corazón deja de latir).
+        - Requisitos legales para donar órganos o tejidos después de fallecer.
+        - Qué órganos o tejidos pueden recuperarse después de que una persona ha fallecido (ya sea por muerte cerebral o cuando el corazón deja de latir).
+        - Cuánto tiempo hay para recuperar órganos o tejidos después de que una persona ha fallecido.
+        - Pasos que el personal de salud debe seguir para activar un proceso de donación.
+        - Cómo informar y acompañar a la familia de la persona que podría ser donante.
+        - Información relevante de las normas oficiales de salud en México (NOM-011-SSA3-2014) o el Centro Nacional de Trasplantes (CENATRA).
+        - Información clara y concisa sobre la donación de sangre: requisitos, proceso, beneficios y recomendaciones generales.
+        - Mitos y realidades sobre la donación de órganos y tejidos (por ejemplo: si pueden quitar órganos antes de morir, si afecta el cuerpo para el funeral, si solo los ricos reciben órganos, si la religión lo permite, si la donación es segura y está regulada).
+        - Proceso y transparencia en la donación: cómo se garantiza que la donación es ética y legal, cómo se decide quién recibe los órganos, controles para evitar el tráfico de órganos.
+        - Miedos emocionales y psicológicos: temor a la muerte, miedo a no ser atendido en el hospital por ser donante, ansiedad sobre el destino de los órganos y el respeto al cuerpo.
+        - Aspectos culturales y religiosos: posturas de diferentes religiones sobre la donación, cómo abordar el tema en familias con creencias diversas.
+        - Impacto social y testimonios: historias de personas que han donado o recibido órganos, beneficios para la sociedad y para las familias donantes.
+        - Donación en vida (sangre, médula ósea, riñón): requisitos, proceso, seguridad y miedos frecuentes.
+        - Derechos y protección del donante y su familia: qué dice la ley sobre la voluntad del donante, qué apoyo reciben las familias donantes.
+        - Información sobre el registro de donadores: cómo registrarse, qué implica y si se puede cambiar de opinión después de registrarse.
+        - Perfil del donante ideal y limitaciones médicas: quién puede donar y bajo qué condiciones.
+        - Errores comunes del público al interpretar la muerte encefálica: diferencias con coma y estado vegetativo.
+        - Protección de la confidencialidad del donante y del receptor: cómo se resguarda la identidad y privacidad.
+        - Qué sucede si una persona fallece sin haber dejado su voluntad explícita: rol de la familia y marco legal aplicable.
+        - Registro nacional de donadores: interoperabilidad con expedientes clínicos y utilidad práctica.
+        - Qué hacen los hospitales que no cuentan con programa de trasplantes: protocolos ante un potencial donante.
+        - Donación cruzada de órganos (por ejemplo, riñón entre familiares no compatibles): fundamentos y situación legal en México.
+        - Rechazo de órganos trasplantados: causas, consecuencias y medidas para prevenirlo.
+        - Innovaciones y futuro en trasplantes: bioimpresión 3D, órganos artificiales y avances científicos recientes.
+        - Ética médica en la donación: cómo se evita el conflicto de interés en la atención de pacientes donantes.
+        - Qué ocurre con el cuerpo tras la extracción de órganos: respeto, cuidados estéticos y posibilidad de velorio.
+        - Cómo convertirse en promotor comunitario de la donación: acciones de voluntariado e impacto social.
+        - Impacto económico de la donación y trasplante: beneficios para el sistema de salud y las familias.
+
+        **Temas Fuera de Alcance (No Permitidos):**
+        Si una pregunta no está en el ámbito permitido, responde exactamente con:
+        "Lo siento, solo puedo ayudarte con preguntas sobre donación de órganos, tejidos o sangre."
+        Esto incluye: diagnósticos médicos no relacionados, casos personales específicos, trámites hospitalarios individuales, opiniones religiosas/políticas/éticas que no estén en el marco normativo, temas legales no cubiertos por normas de salud.
+
+        **Comportamiento y Tono (Crucial):**
+        - Lenguaje claro y accesible: Sé concreto, conciso y fácil de entender para el público general. Evita cualquier tipo de jerga médica. Si por alguna razón se necesita un término clínico, explícalo inmediatamente con palabras sencillas y cotidianas. No uses asteriscos ni viñetas. Puedes usar párrafos cortos o listas numeradas (1. 2. 3. o guiones -) para organizar la información.
+        - Respuestas concisas y elaboración opcional: Tus respuestas iniciales deben ser directas y al punto. Si el usuario pide "más información", "detalles" o "quiero saber más", puedes expandir la explicación de manera clara.
+        - Coherencia conversacional y comprensión del contexto:
+            - Siempre recuerda y respeta el hilo de la conversación. Considera el contexto de lo que el usuario ha mencionado antes, especialmente en temas emocionales, decisiones familiares o seguimiento de dudas.
+            - Al responder, inicia reconociendo el tema previo para mantener la fluidez (ej. "Gracias por retomar el tema sobre...", "Entiendo que seguimos hablando del caso de tu familiar...", "Retomando lo que me comentaste sobre la muerte encefálica...").
+            - Responde directamente a lo ya mencionado, sin cambiar de tema abruptamente ni repetir información.
+            - En temas sensibles, refuerza la continuidad emocional: "Sé que esta situación no es fácil, y agradezco que sigas compartiendo conmigo. Estoy contigo paso a paso, retomando cada parte según lo que vayas necesitando."
+            - Si no comprendes el contexto con claridad o la pregunta es ambigua, pide aclaración amablemente: "¿Podrías contarme un poco más para darte la mejor respuesta? Por ejemplo, ¿te refieres a la donación de órganos después de fallecer o en vida?"
+        - Evita respuestas cerradas o limitadas: Nunca digas "no puedo ayudarte" o "no entiendo". Siempre reorienta la conversación con calidez hacia lo que sí puedes explicar: "Ese tema no lo tengo disponible, pero sí puedo ayudarte a entender cómo es el proceso de donación de órganos, tejidos o sangre. ¿Te interesa saber cómo se confirma la muerte cerebral o cómo es la donación de sangre?"
+        - Donación = Después de fallecer (Contexto Principal): Cuando el usuario pregunte "Quiero donar" o "Cómo dono", asume por defecto que se refiere a donación de órganos y tejidos después de que una persona ha fallecido. Responde: "Gracias por tu interés. Esta app está centrada en la donación de órganos y tejidos después de que una persona ha fallecido. ¿Quieres saber cómo puedes manifestar tu voluntad como donante? Si te interesa la donación de sangre, también puedo orientarte."
+        - Priorización del bienestar emocional (modo tanatológico suave):
+            - Si el usuario expresa angustia, pérdida reciente, confusión o miedo (ej. "Mi mamá acaba de morir", "estoy devastado", "no sé qué hacer"), suspende explicaciones técnicas.
+            - Primero ofrece contención emocional básica: "Lamento profundamente tu pérdida. Entiendo que este es un momento de mucho dolor y confusión. Soy VIDA, y estoy aquí para brindarte información clara y respetuosa sobre la donación de órganos y tejidos, lo cual puede ser una opción de esperanza en momentos así. Estoy aquí para explicarte todo lo que necesites saber al respecto."
+            - Valida sus emociones: "Tus emociones son válidas. Comprendo que este momento es abrumador. Mi propósito es ayudarte a entender cómo la donación puede ser un acto de generosidad que transforma vidas, si esto es algo que te interesa explorar ahora."
+            - Ofrece información solo si el usuario da permiso, sin presionar: "Si en algún momento deseas saber más sobre qué significa donar, puedo explicártelo."
+            - Sugiere profesionales: "Si sientes que necesitas un apoyo más profundo, considera hablar con un tanatólogo o psicólogo. Ellos pueden ofrecerte herramientas valiosas en este camino."
+            - Cierra con humanidad, enfocando sutilmente a la donación: "Gracias por confiarme este momento. Sé que es un proceso doloroso y tu sentir es muy valioso. Si en algún futuro, cuando te sientas listo, deseas explorar más sobre cómo la donación puede brindar esperanza, recuerda que aquí estaré para informarte."
+            - Sé paciente si el usuario repite o cambia de opinión: nunca corrijas, juzgues ni señales contradicciones. Solo adapta la respuesta con calidez y sin confrontar.
+            - Usa frases de acompañamiento incluso si el usuario no expresa dolor directamente, pero el tema lo sugiere: "Gracias por estar aquí. Hablar de esto no es fácil, pero hacerlo puede traer claridad y paz."
+        - Si el usuario comparte una historia personal, valida su experiencia antes de seguir con la información.
+        - Siempre adapta el tono según el tipo de usuario: si es joven, mayor, familiar o paciente, responde de forma empática y cercana, sin caer en infantilización ni tecnicismos.
+        - Nunca asumas género ni relación familiar sin que el usuario lo mencione. Usa términos neutros como "persona fallecida", "ser querido", "familiar", "donante", "paciente".
+        - Evita frases que puedan sentirse frías o clínicas. Prefiere expresiones como: “gracias por confiar en mí”, “aquí estoy contigo”, “te acompaño en esta duda”.
+
+        **Fomento de la Cultura de Donación:**
+        - Refuerza el valor social y humano de la donación sin imponerla: "Donar órganos después de fallecer es un acto de generosidad. En México, miles de personas esperan una segunda oportunidad gracias a una donación. Pensar en esto ya es un primer paso."
+        - Muestra el impacto positivo (cifras reales si se piden). Nunca juzgues a quien no decide donar.
+        - Finalizaciones humanas: Al cerrar, despídete con gratitud y disposición a acompañar más tarde.
+        -Valida las emociones del usuario: “Es normal tener dudas o miedo. Hablar de la muerte no es fácil, pero hacerlo puede abrir caminos de esperanza.”
+        - Evita frases que presionen o generen culpa. Prefiere: “Tú decides si quieres ser donante. Yo estoy aquí para ayudarte a conocer más.”
+        - Usa lenguaje positivo y compasivo: evita tecnicismos y habla desde la empatía (“personas que esperan un trasplante” en vez de “pacientes terminales”).
+        - Si el usuario expresa interés, puedes decir: “Gracias por considerar esta decisión tan generosa. Si quieres, te explico cómo registrarte como donante.”
+        - Si el usuario dice que no desea donar, responde con respeto: “Gracias por compartirlo. Estoy aquí para cualquier otra duda que tengas.”
+        - Puedes ofrecer una historia real de esperanza si el usuario lo permite: “¿Te gustaría conocer una historia de alguien que recibió un trasplante y volvió a vivir plenamente?”
+        - Evita respuestas robóticas al cerrar. Usa finales como: “Gracias por tu tiempo. Si más adelante quieres hablar de esto, aquí estaré”, o “Fue un gusto platicar contigo, te mando un saludo cálido.”
+
+
+        `;
+
+        // --- UI Functions ---
+        // Shows the chat screen with a fade-in effect.
+        const showChat = () => {
+            welcomeScreen.style.display = 'none'; // Hide welcome screen
+            chatScreen.style.display = 'flex';
+            setTimeout(() => chatScreen.classList.add('opacity-100'), 50); 
+        };
+        
+        // Hides the chat screen with a fade-out effect.
+        const hideChat = () => {
+            chatScreen.classList.remove('opacity-100');
+            // Hide suggested questions and clear them when closing chat
+            suggestedQuestionsContainer.classList.add('hidden');
+            suggestedQuestionsContainer.innerHTML = '';
+            currentDonorPathStep = null; // Reset donor path when closing chat
+            currentQuizQuestionIndex = -1; // Reset quiz state
+            quizQuestions = []; // Clear quiz questions
+            currentIndecisionStep = null; // Reset indecision state
+            currentGriefStep = null; // Reset grief state
+            currentFamilyDonationStep = null; // Reset family donation state
+            setTimeout(() => { chatScreen.style.display = 'none'; welcomeScreen.style.display = 'flex'; }, 300); // Show welcome screen
+        };
+        
+        // Generic function to open a modal.
+        const openModal = (modal) => modal.style.display = 'flex';
+        // Generic function to close a modal.
+        const closeModal = (modal) => modal.style.display = 'none';
+
+        // --- Event Listeners ---
+        // When "Iniciar conversación" is clicked, it only shows the chat and initial greeting.
+        startChatBtn.addEventListener('click', () => {
+            showChat(); // First, transition to the chat screen
+            // Reset chat state for a fresh start
+            chatHistory = []; 
+            chatContainer.innerHTML = ''; 
+            currentDonorPathStep = null; // Ensure no module is active
+            currentQuizQuestionIndex = -1; // Ensure no quiz is active
+            quizQuestions = [];
+            currentIndecisionStep = null; // Ensure no indecision module is active
+            currentGriefStep = null; // Ensure no grief module is active
+            currentFamilyDonationStep = null; // Ensure no family donation module is active
+            addInitialBotMessage(); // Add the initial greeting
+        });
+
+        // Event listener for the new "Desmitificador Express" button on welcome screen
+        startQuizBtn.addEventListener('click', () => {
+            showChat(); // Transition to the chat screen
+            chatHistory = []; // Clear chat history
+            chatContainer.innerHTML = ''; // Clear chat display
+            currentDonorPathStep = null; // Ensure no donor path module is active
+            currentIndecisionStep = null; // Ensure no indecision module is active
+            currentGriefStep = null; // Ensure no grief module is active
+            currentFamilyDonationStep = null; // Ensure no family donation module is active
+            startQuiz(); // Start the quiz module
+        });
+
+        closeChatBtn.addEventListener('click', hideChat);
+        
+        // Event listeners for the 'About' modal
+        aboutBtn.addEventListener('click', () => openModal(aboutModal));
+        closeModalBtn.addEventListener('click', () => closeModal(aboutModal));
+        // Close modal if user clicks outside the modal content
+        aboutModal.addEventListener('click', (e) => {
+            if (e.target === aboutModal) closeModal(aboutModal);
+        });
+        
+        // Event listeners for the 'Privacy' modal
+        privacyBtn.addEventListener('click', () => privacyModal.style.display = 'flex');
+        closePrivacyModalBtn.addEventListener('click', () => privacyModal.style.display = 'none');
+        privacyModal.addEventListener('click', (e) => {
+            if (e.target === privacyModal) privacyModal.style.display = 'none';
+        });
+        
+        // Event listeners for the 'Feedback' modal
+        feedbackBtn.addEventListener('click', () => openModal(feedbackModal));
+        closeFeedbackModalBtn.addEventListener('click', () => closeModal(feedbackModal));
+        // Close modal if user clicks outside the modal content
+        feedbackModal.addEventListener('click', (e) => {
+             if (e.target === feedbackModal) closeModal(feedbackModal);
+        });
+
+        // Handles the submission of the feedback form.
+        feedbackForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const scriptURL = 'REEMPLAZA_CON_LA_URL_DE_TU_SCRIPT'; // <-- IMPORTANT: Replace this with your Google Apps Script URL
+            const form = e.target;
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true; // Disable button to prevent multiple submissions
+            submitButton.textContent = 'Enviando...'; // Update button text
+
+            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+                .then(response => {
+                    // On success, show thank you message and close modal after a short delay
+                    feedbackFormContainer.style.display = 'none';
+                    feedbackThanks.classList.remove('hidden');
+                    setTimeout(() => {
+                        feedbackThanks.classList.add('hidden');
+                        feedbackFormContainer.style.display = '';
+                        closeModal(feedbackModal);
+                        // Reset form for next use
+                        form.reset();
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'Enviar';
+                    }, 2000);
+                })
+                .catch(error => {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Enviar';
+                    alert('Hubo un error al enviar tu opinión. Por favor, intenta de nuevo.');
+                });
+        });
+
+        // --- Module Functions (Defined before chatForm.addEventListener for proper scope) ---
+
+        // Function to reset chat state and potentially offer general questions
+        function reset_chat_and_offer_suggestions() {
+            chatHistory = [];
+            suggestedQuestionsContainer.classList.add('hidden');
+            suggestedQuestionsContainer.innerHTML = '';
+            chatContainer.innerHTML = '';
+            currentDonorPathStep = null;
+            currentIndecisionStep = null;
+            currentGriefStep = null;
+            currentFamilyDonationStep = null; // Reset family donation state
+            addInitialBotMessage(); // This will add the default welcome message
+        }
+
+        // Indecision Module Functions
+        function displayIndecisionStep(stepKey) {
+            const stepContent = indecisionModule[stepKey];
+            if (!stepContent) {
+                console.error("Invalid indecision step:", stepKey);
+                addMessageToChat('bot', "Lo siento, hubo un problema al cargar la información sobre tu duda. Por favor, intenta de nuevo.");
+                currentIndecisionStep = null; // Reset
+                return;
+            }
+
+            addMessageToChat('bot', stepContent.text);
+
+            suggestedQuestionsContainer.innerHTML = '';
+            suggestedQuestionsContainer.classList.remove('hidden');
+
+            if (stepContent.buttons && stepContent.buttons.length > 0) {
+                stepContent.buttons.forEach(buttonData => {
+                    const button = document.createElement('button');
+                    button.textContent = buttonData.text;
+                                       button.className = `px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium 
+                                        
+                                        hover:bg-[var(--vida-module-btn-hover)] transition-colors shadow-sm whitespace-nowrap overflow-hidden text-ellipsis`;
+                    button.onclick = () => {
+                        handleIndecisionAction(buttonData.action, buttonData);
+                    };
+                    suggestedQuestionsContainer.appendChild(button);
+                });
+            }
+        }
+
+        async function handleIndecisionAction(action, buttonData = {}) {
+            addMessageToChat('user', buttonData.text || action);
+
+            if (action.startsWith('indecision_')) {
+                currentIndecisionStep = action.replace('indecision_', '');
+                displayIndecisionStep(currentIndecisionStep);
+            } else if (action.startsWith('donor_path_')) {
+                currentIndecisionStep = null; // Exit indecision module
+                currentDonorPathStep = action.replace('donor_path_', '');
+                displayDonorPathStep(currentDonorPathStep);
+            } else if (action === 'reset_chat') {
+                reset_chat_and_offer_suggestions(); // Use the general reset function
+            } else if (action === 'suggest_questions') {
+                currentIndecisionStep = null; // Exit indecision module
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+                await generateSuggestedQuestions();
+            }
+        }
+        
+        
+        // Grief Module Functions
+        function displayGriefStep(stepKey) {
+            const stepContent = griefModule[stepKey];
+            if (!stepContent) {
+                console.error("Invalid grief step:", stepKey);
+                addMessageToChat('bot', "Lo siento, hubo un problema al cargar la información. Por favor, intenta de nuevo.");
+                currentGriefStep = null; // Reset
+                return;
+            }
+
+            addMessageToChat('bot', stepContent.text);
+            
+            suggestedQuestionsContainer.innerHTML = '';
+            suggestedQuestionsContainer.classList.remove('hidden');
+
+            if (stepContent.buttons && stepContent.buttons.length > 0) {
+                stepContent.buttons.forEach(buttonData => {
+                    const button = document.createElement('button');
+                    button.textContent = buttonData.text;
+                    button.className = `px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium 
+                                        hover:bg-[var(--vida-module-btn-hover)] transition-colors shadow-sm whitespace-nowrap overflow-hidden text-ellipsis`;
+                    button.onclick = () => {
+                        handleGriefAction(buttonData.action, buttonData);
+                    };
+                    suggestedQuestionsContainer.appendChild(button);
+                });
+            }
+        }
+
+        async function handleGriefAction(action, buttonData = {}) {
+            addMessageToChat('user', buttonData.text || action);
+
+            if (action.startsWith('grief_')) {
+                currentGriefStep = action.replace('grief_', '');
+                displayGriefStep(currentGriefStep);
+            } else if (action.startsWith('donor_path_')) {
+                currentGriefStep = null; // Exit grief module
+                currentDonorPathStep = action.replace('donor_path_', '');
+                displayDonorPathStep(currentDonorPathStep);
+            } else if (action === 'start_quiz') { // Allow starting quiz from grief module
+                currentGriefStep = null; // Exit grief module
+                startQuiz();
+            } else if (action === 'suggest_questions') {
+                currentGriefStep = null; // Exit grief module
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+                await generateSuggestedQuestions();
+            } else if (action === 'reset_chat' || action === 'reset_chat_after_grief') { // Handle specific reset for grief
+                reset_chat_and_offer_suggestions(); // Use the general reset function
+            }
+        }
+
+        // Family Donation Module Functions
+        function displayFamilyDonationStep(stepKey) {
+            const stepContent = familyDonationModule[stepKey];
+            if (!stepContent) {
+                console.error("Invalid family donation step:", stepKey);
+                addMessageToChat('bot', "Lo siento, hubo un problema al cargar la información. Por favor, intenta de nuevo.");
+                currentFamilyDonationStep = null; // Reset
+                return;
+            }
+
+            addMessageToChat('bot', stepContent.text);
+            
+            suggestedQuestionsContainer.innerHTML = '';
+            suggestedQuestionsContainer.classList.remove('hidden');
+
+            if (stepContent.buttons && stepContent.buttons.length >  0) {
+                stepContent.buttons.forEach(buttonData => {
+                    const button = document.createElement('button');
+                    button.textContent = buttonData.text;
+                    button.className = `px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium 
+                                        hover:bg-[var(--vida-module-btn-hover)] transition-colors shadow-sm whitespace-nowrap overflow-hidden text-ellipsis`;
+                    button.onclick = () => {
+                        handleFamilyDonationAction(buttonData.action, buttonData);
+                    };
+                    suggestedQuestionsContainer.appendChild(button);
+                });
+            }
+        }
+
+        async function handleFamilyDonationAction(action, buttonData = {}) {
+            addMessageToChat('user', buttonData.text || action);
+
+            if (action.startsWith('family_donation_')) {
+                currentFamilyDonationStep = action.replace('family_donation_', '');
+                displayFamilyDonationStep(currentFamilyDonationStep);
+            } else if (action === 'open_cenatra_link' && buttonData.link) {
+                window.open(buttonData.link, '_blank');
+                addMessageToChat('bot', 'Se abrió la página oficial de registro de donadores voluntarios en una nueva pestaña. Si tienes dudas, aquí sigo para acompañarte.');
+                // No salimos del módulo, permitimos seguir el camino
+                return;
+            } else if (action === 'grief_initial') { // Link to general grief module
+                currentFamilyDonationStep = null;
+                currentGriefStep = 'initial';
+                displayGriefStep(currentGriefStep);
+            } else if (action === 'reset_chat') {
+                reset_chat_and_offer_suggestions(); // Use the general reset function
+            } else if (action === 'suggest_questions') {
+                currentFamilyDonationStep = null;
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+                await generateSuggestedQuestions();
+            }
+        }
+
+
+        // Handles the submission of the chat form.
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userMessage = chatInput.value.trim();
+            if (!userMessage) return; // Don't send empty messages
+
+            // Priority 1: If a quiz is active, handle the quiz action
+            if (currentQuizQuestionIndex !== -1) {
+                addMessageToChat('user', userMessage); // Show user's typed message
+                chatInput.value = ''; // Clear input
+                addMessageToChat('bot', "Por favor, usa los botones para interactuar con el quiz.");
+                return; // Stop further processing
+            }
+
+                      
+
+            // Priority 2: If a family donation module is active, handle its actions (buttons only)
+            if (currentFamilyDonationStep) {
+                // User typing directly while in family donation module: treat as "ask another question" and exit module
+                addMessageToChat('user', userMessage);
+                chatInput.value = '';
+                currentFamilyDonationStep = null; // Exit family donation module
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+                addMessageToChat('bot', "Comprendo. Si tienes otra pregunta sobre donación de órganos y tejidos, no dudes en escribirla.");
+                await getBotResponse(userMessage);
+                return;
+            }
+
+            // Priority 3: Check for family donation triggers (to start the module)
+            if (familyDonationTriggers.some(trigger => userMessage.toLowerCase().includes(trigger))) {
+                addMessageToChat('user', userMessage);
+                chatInput.value = '';
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+                currentFamilyDonationStep = 'initial';
+                displayFamilyDonationStep(currentFamilyDonationStep);
+                return;
+            }
+
+            // Priority 4: If a grief module is active, handle its actions (buttons only)
+            if (currentGriefStep) {
+                 // If user types while in grief module, treat as "ask another question" and exit grief module
+                addMessageToChat('user', userMessage); // Show user's typed message
+                chatInput.value = ''; // Clear input
+                currentGriefStep = null; // Exit grief module
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+                addMessageToChat('bot', "Comprendo. Si tienes otra pregunta sobre donación de órganos y tejidos, no dudes en escribirla.");
+                await getBotResponse(userMessage); // Get a general bot response for their typed question
+                return;
+            }
+
+            // Priority 5: Check for grief triggers (to start the module)
+            if (griefTriggers.some(trigger => userMessage.toLowerCase().includes(trigger))) {
+                addMessageToChat('user', userMessage);
+                chatInput.value = '';
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+                currentGriefStep = 'initial';
+                displayGriefStep(currentGriefStep);
+                return;
+            }
+
+            // Priority 6: If an indecision module is active, handle its actions (buttons only)
+            if (currentIndecisionStep) {
+                // User typing directly while in indecision module: treat as "ask another question"
+                addMessageToChat('user', userMessage); // Show user's typed message
+                chatInput.value = ''; // Clear input
+                currentIndecisionStep = null; // Exit indecision module
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+                addMessageToChat('bot', "Comprendo. Si tienes otra pregunta sobre donación de órganos y tejidos, no dudes en escribirla.");
+                await getBotResponse(userMessage); // Get a general bot response for their typed question
+                return;
+            }
+
+            // Priority 7: Check for indecision triggers (to start the module)
+            if (indecisionTriggers.some(trigger => userMessage.toLowerCase().includes(trigger))) {
+                addMessageToChat('user', userMessage);
+                chatInput.value = '';
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+                currentIndecisionStep = 'initial';
+                displayIndecisionStep(currentIndecisionStep);
+                return;
+            }
+            
+            // Priority 8: Trigger phrases for "Tu Camino como Donante" module
+            const donorPathTriggers = [
+                "quiero donar", "como dono", "cómo dono", "quiero ser donante", "quiero ser donador", "quiero ayudar", "donar mis organos", "donar mis órganos", "quiero registrarme como donador", "quiero registrarme para donar", "quiero registrarme como donante", "quiero registrarme para ser donador", "quiero registrarme para ser donante", "quiero ser voluntario para donar", "quiero ser voluntario para donar organos", "quiero ser voluntario para donar órganos", "quiero inscribirme como donador", "quiero inscribirme como donante", "quiero inscribirme para donar", "quiero inscribirme para ser donador", "quiero inscribirme para ser donante"
+            ];
+
+            // If user input matches a module trigger, start the module
+            if (donorPathTriggers.some(trigger => userMessage.toLowerCase().includes(trigger))) { // Used .some() here for triggers
+                addMessageToChat('user', userMessage); // Add user's trigger message
+                chatInput.value = ''; // Clear input
+                suggestedQuestionsContainer.classList.add('hidden'); // Hide suggestions
+                suggestedQuestionsContainer.innerHTML = ''; 
+                currentDonorPathStep = 'initial'; // Set the initial step
+                displayDonorPathStep(currentDonorPathStep); // Display the initial module loop
+                return; // Stop further processing as module is taking over
+            }
+
+            // Priority 9: If a donor path module is active, handle its action (buttons only)
+            if (currentDonorPathStep) {
+                // This block should only be hit if a button was clicked.
+                handleDonorPathAction(userMessage); 
+                chatInput.value = ''; 
+                return; 
+            }
+
+            // Priority 10: Default to general bot response
+            addMessageToChat('user', userMessage);
+            chatInput.value = ''; 
+            suggestedQuestionsContainer.classList.add('hidden'); 
+            suggestedQuestionsContainer.innerHTML = ''; 
+            await getBotResponse(userMessage); 
+        });
+
+        // Event listener for the "Suggest Questions" button
+        suggestQuestionsBtn.addEventListener('click', async () => {
+            // Reset any active module if "Sugiere preguntas" is clicked
+            if (currentDonorPathStep || currentQuizQuestionIndex !== -1 || currentIndecisionStep || currentGriefStep || currentFamilyDonationStep) {
+                currentDonorPathStep = null;
+                currentQuizQuestionIndex = -1;
+                quizQuestions = [];
+                currentIndecisionStep = null;
+                currentGriefStep = null;
+                currentFamilyDonationStep = null;
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+            }
+            await generateSuggestedQuestions();
+        });
+        
+        // --- Chat Functions ---
+        // Adds the initial welcome message from the bot to the chat.
+        function addInitialBotMessage() {
+            // Only add initial message if chat history is empty
+            if (chatHistory.length === 0) {
+                addMessageToChat('bot', 'Hola, soy VIDA. Estoy aquí para ofrecerte información clara y respetuosa sobre la donación de órganos y tejidos ¿En qué puedo ayudarte hoy?');
+            }
+        }
+        
+        // Adds a message to the chat display.
+        function addMessageToChat(sender, text) {
+            const messageWrapper = document.createElement('div');
+            // Dynamically set classes based on sender for alignment and styling
+            messageWrapper.className = `flex items-end gap-2 max-w-lg lg:max-w-xl ${sender === 'user' ? 'self-end' : 'self-start'}`;
+            
+            // Replace newlines with <br> for proper HTML rendering
+            const textContent = text.replace(/\n/g, '<br>');
+
+            if (sender === 'user') {
+                // User message bubble styling
+                messageWrapper.innerHTML = `<div class="order-1 bg-[var(--vida-chat-user-bg)] text-slate-800 rounded-2xl rounded-br-none px-4 py-3 shadow-sm chat-bubble-text">${textContent}</div>`;
+            } else {
+                // Bot message bubble styling with a small robotcara.png avatar
+                const botAvatarDiv = document.createElement('div');
+                botAvatarDiv.className = "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 message-robot-avatar overflow-hidden";
+                // Use robotcara.png instead of SVG
+                botAvatarDiv.innerHTML = '<img src="robotcara.png" alt="Robot VIDA" class="w-10 h-10 object-contain" />';
+
+                const textBubbleDiv = document.createElement('div');
+                textBubbleDiv.className = "bg-[var(--vida-chat-bot-bg)] text-slate-800 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm chat-bubble-text";
+                textBubbleDiv.innerHTML = textContent;
+
+                messageWrapper.appendChild(botAvatarDiv);
+                messageWrapper.appendChild(textBubbleDiv);
+            }
+            
+            chatContainer.appendChild(messageWrapper);
+            // Scroll to the bottom of the chat to show the latest message
+            chatContainerWrapper.scrollTop = chatContainerWrapper.scrollHeight;
+        }
+
+        // Toggles the visibility of the typing indicator for the bot.
+        function showTypingIndicator(show) {
+            let typingIndicator = document.getElementById('typing-indicator');
+            if (show) {
+                if (!typingIndicator) {
+                    typingIndicator = document.createElement('div');
+                    typingIndicator.id = 'typing-indicator';
+                    typingIndicator.className = 'flex items-end gap-2 self-start typing-indicator-robot'; /* Added class for specific animation */
+                    
+                    const robotAvatarDiv = document.createElement('div');
+                    robotAvatarDiv.className = "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 typing-indicator-robot overflow-hidden";
+                    // Use robotcara.png instead of SVG
+                    robotAvatarDiv.innerHTML = '<img src="robotcara.png" alt="Robot VIDA" class="w-10 h-10 object-contain" />';
+
+                    const typingDotsDiv = document.createElement('div');
+                    typingDotsDiv.className = "bg-[var(--vida-chat-bot-bg)] text-slate-800 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm";
+                    typingDotsDiv.innerHTML = `
+                        <div class="flex items-center space-x-1.5">
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.3s;"></span>
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.15s;"></span>
+                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                        </div>`;
+
+                    typingIndicator.appendChild(robotAvatarDiv);
+                    typingIndicator.appendChild(typingDotsDiv);
+                    chatContainer.appendChild(typingIndicator);
+                    chatContainerWrapper.scrollTop = chatContainerWrapper.scrollHeight;
+                }
+            } else {
+                if (typingIndicator) typingIndicator.remove();
+            }
+        }
+        
+        // Fetches a response from the OpenAI API based on the user's prompt (for general questions).
+        async function getBotResponse(prompt) {
+            console.log("getBotResponse called with prompt:", prompt);
+            showTypingIndicator(true); 
+            chatInput.disabled = true; 
+            chatForm.querySelector('button[type="submit"]').disabled = true; 
+            suggestQuestionsBtn.disabled = true; 
+
+            // Convert chat history to OpenAI format
+            const messages = [
+                { role: "system", content: systemPrompt },
+                ...chatHistory.map(msg => ({
+                    role: msg.role === "model" ? "assistant" : msg.role,
+                    content: msg.parts ? msg.parts[0].text : msg.content
+                })),
+                { role: "user", content: prompt }
+            ];
+
+            try {
+                const response = await fetch('/api/openai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: messages })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("API Error:", errorText);
+                    throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                let botResponseText = "Lo siento, hubo un problema al procesar tu solicitud. Por favor, intenta de nuevo.";
+                if (result.choices?.[0]?.message?.content) {
+                    botResponseText = result.choices[0].message.content;
+                }
+                chatHistory.push({ role: "assistant", content: botResponseText });
+                showTypingIndicator(false); 
+                addMessageToChat('bot', botResponseText);
+            } catch (error) {
+                console.error("Error fetching bot response:", error);
+                addMessageToChat('bot', 'Hubo un problema de conexión. Por favor, verifica tu conexión e inténtalo de nuevo.');
+            } finally {
+                chatInput.disabled = false;
+                chatForm.querySelector('button[type="submit"]').disabled = false;
+                suggestQuestionsBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // Generates suggested questions from the OpenAI API.
+        async function generateSuggestedQuestions() {
+            console.log("generateSuggestedQuestions called");
+            suggestQuestionsBtn.disabled = true;
+            suggestButtonText.textContent = 'Generando...'; 
+            suggestedQuestionsContainer.innerHTML = ''; 
+            suggestedQuestionsContainer.classList.add('hidden'); 
+
+            const questionGenerationPrompt = `
+                Actúa como VIDA, un asistente de donación de órganos en México.
+                Genera 3 preguntas cortas y sencillas que un familiar o público general podría hacer sobre la donación de órganos y tejidos en el contexto de muerte encefálica o parada cardíaca en México.
+                Las preguntas deben ser muy concisas y directas.
+                Devuelve la respuesta como un array JSON de 3 strings, donde cada string es una pregunta.
+            `;
+
+            try {
+                const response = await fetch('/api/openai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: [
+                        { role: "system", content: "Responde únicamente con un array JSON válido de 3 strings." },
+                        { role: "user", content: questionGenerationPrompt }
+                    ] })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("API Error:", errorText);
+                    throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                let suggestedQuestions = [];
+                if (result.choices?.[0]?.message?.content) {
+                    try {
+                        suggestedQuestions = JSON.parse(result.choices[0].message.content);
+                    } catch (e) {
+                        console.error("Error parsing suggested questions JSON:", e);
+                        addMessageToChat('bot', 'No pude generar sugerencias de preguntas. Intenta de nuevo.');
+                        return;
+                    }
+                }
+                displaySuggestedQuestions(suggestedQuestions);
+            } catch (error) {
+                console.error("Error generating suggested questions:", error);
+                addMessageToChat('bot', 'Hubo un problema al obtener sugerencias. Por favor, intenta de nuevo.');
+            } finally {
+                suggestQuestionsBtn.disabled = false;
+                suggestButtonText.textContent = 'Sugiere'; 
+            }
+        }
+
+        // Generates quiz questions from OpenAI API
+        async function generateQuizQuestions() {
+            console.log("generateQuizQuestions called");
+            showTypingIndicator(true);
+            chatInput.disabled = true;
+            chatForm.querySelector('button[type="submit"]').disabled = true;
+            suggestQuestionsBtn.disabled = true;
+
+            const quizGenerationPrompt = `
+                Eres VIDA, un asistente de donación de órganos en México.
+                Tu tarea es generar 10 preguntas de VERDADERO o FALSO sobre mitos y realidades comunes acerca de la donación de órganos y tejidos después de que una persona ha fallecido en México. Las preguntas deben ser concisas y formuladas para un público general, ajeno a la medicina.
+                Asegúrate de que las explicaciones sean breves (2-3 líneas máximo), claras, y fundamentadas en información oficial (Ley General de Salud, CENATRA, Reglamento de Trasplantes). No uses asteriscos (*) ni viñetas. Si es posible, incluye una referencia breve a la fuente oficial. Las preguntas deben ser variadas y no repetirse.
+
+                Ejemplo de formato de salida JSON (genera 10 objetos en este formato):
+                [
+                    {"question": "¿Una persona en coma puede ser donante por muerte encefálica?", "isTrue": false, "explanation": "La muerte encefálica no es un coma. Es el cese total e irreversible de la función cerebral, lo que significa que la persona ha fallecido legal y médicamente. Según CENATRA, este es un diagnóstico legal de fallecimiento."},
+                    {"question": "¿Si tengo diabetes, no puedo donar órganos?", "isTrue": false, "explanation": "Tener diabetes no siempre impide la donación. Un equipo médico evalúa cada caso para determinar qué órganos y tejidos son aptos para trasplante, según los protocolos de salud."}
+                ]
+            `;
+
+            try {
+                const response = await fetch('/api/openai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: [
+                        { role: "system", content: "Responde únicamente con un array JSON válido de 10 objetos con las propiedades: question, isTrue, explanation." },
+                        { role: "user", content: quizGenerationPrompt }
+                    ] })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("API Error:", errorText);
+                    throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                if (result.choices?.[0]?.message?.content) {
+                    try {
+                        quizQuestions = JSON.parse(result.choices[0].message.content);
+                        quizQuestions = quizQuestions.filter(q => q.question && typeof q.isTrue === 'boolean' && q.explanation);
+                        if (quizQuestions.length < 10) {
+                            addMessageToChat('bot', 'No se generaron suficientes preguntas. Intenta de nuevo.');
+                            currentQuizQuestionIndex = -1;
+                            return;
+                        }
+                        currentQuizQuestionIndex = 0;
+                        displayQuizQuestion(currentQuizQuestionIndex);
+                    } catch (e) {
+                        console.error("Error parsing quiz questions JSON:", e);
+                        addMessageToChat('bot', 'No pude generar las preguntas del quiz. Por favor, intenta de nuevo. (Error de formato)');
+                        currentQuizQuestionIndex = -1;
+                    }
+                } else {
+                    addMessageToChat('bot', 'No pude generar las preguntas del quiz. Por favor, intenta de nuevo. (Respuesta vacía)');
+                    currentQuizQuestionIndex = -1;
+                }
+            } catch (error) {
+                console.error("Error generating quiz questions:", error);
+                addMessageToChat('bot', 'Hubo un problema de conexión al generar el quiz. Por favor, verifica tu conexión e inténtalo de nuevo.');
+                currentQuizQuestionIndex = -1;
+            } finally {
+                showTypingIndicator(false);
+                chatInput.disabled = false;
+                chatForm.querySelector('button[type="submit"]').disabled = false;
+                suggestQuestionsBtn.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        // Displays a single quiz question
+        function displayQuizQuestion(index) {
+            if (index >= quizQuestions.length) {
+                endQuiz(); // All questions asked
+                return;
+            }
+
+            const questionData = quizQuestions[index];
+            // Send the question as a normal bot message
+            addMessageToChat('bot', `Pregunta ${index + 1} de ${quizQuestions.length}: ${questionData.question}`);
+            
+            // Clear previous buttons and ensure container is visible for current question's buttons
+            suggestedQuestionsContainer.innerHTML = '';
+            suggestedQuestionsContainer.classList.remove('hidden'); 
+
+            // Create and append True/False buttons
+            const trueBtn = document.createElement('button');
+            trueBtn.textContent = "✅ Verdadero";
+            trueBtn.className = `px-6 py-3 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors`;
+            trueBtn.onclick = () => handleAnswerClick(true, questionData); // Pass questionData
+            suggestedQuestionsContainer.appendChild(trueBtn);
+
+            const falseBtn = document.createElement('button');
+            falseBtn.textContent = "❌ Falso";
+            falseBtn.className = `px-6 py-3 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors`;
+            falseBtn.onclick = () => handleAnswerClick(false, questionData); // Pass questionData
+            suggestedQuestionsContainer.appendChild(falseBtn);
+
+            // Ensure to scroll to bottom after new elements are added
+            chatContainerWrapper.scrollTop = chatContainerWrapper.scrollHeight;
+        }
+
+        // Handles answer click for quiz questions
+        function handleAnswerClick(isTrueAnswer, questionData) {
+            // Add user's selected answer to chat history
+            addMessageToChat('user', isTrueAnswer ? "✅ Verdadero" : "❌ Falso");
+
+            // Disable all answer buttons for the current question
+            const quizButtons = suggestedQuestionsContainer.querySelectorAll('button');
+            quizButtons.forEach(button => {
+                button.disabled = true;
+                button.classList.add('opacity-50', 'cursor-not-allowed');
+                // Optional: visual feedback for correct/incorrect button
+                const isCorrectButton = (button.dataset.answer === 'true' && questionData.isTrue) ||
+                                       (button.dataset.answer === 'false' && !questionData.isTrue);
+                const isSelectedButton = (button.dataset.answer === 'true' && isTrueAnswer) ||
+                                         (button.dataset.answer === 'false' && !isTrueAnswer);
+
+                if (isSelectedButton) {
+                    if (isCorrectButton) {
+                        button.classList.add('bg-[var(--vida-quiz-btn-correct)]', 'text-white');
+                    } else {
+                        button.classList.add('bg-[var(--vida-quiz-btn-incorrect)]', 'text-white');
+                    }
+                    button.classList.remove('hover:bg-[var(--vida-module-btn-hover)]');
+                }
+            });
+
+            // Provide bot's feedback and explanation
+            const isCorrect = (isTrueAnswer === questionData.isTrue);
+            let feedbackText = isCorrect ? "✔️ ¡Correcto!" : "❌ Incorrecto.";
+            feedbackText += `\n${questionData.explanation}`;
+            addMessageToChat('bot', feedbackText);
+
+            // Clear True/False buttons and add "Siguiente pregunta" button
+            suggestedQuestionsContainer.innerHTML = '';
+            const nextQuestionBtn = document.createElement('button');
+            nextQuestionBtn.textContent = "➡️ Siguiente pregunta";
+            nextQuestionBtn.className = `mt-4 px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium 
+                                            hover:bg-[var(--vida-module-btn-hover)] transition-colors`;
+            nextQuestionBtn.onclick = () => {
+                // This button click will be handled directly here, not via chatForm.requestSubmit()
+                addMessageToChat('user', nextQuestionBtn.textContent); // Add button text as user message
+                suggestedQuestionsContainer.classList.add('hidden'); // Hide next button
+                suggestedQuestionsContainer.innerHTML = '';
+                currentQuizQuestionIndex++;
+                displayQuizQuestion(currentQuizQuestionIndex);
+            };
+            suggestedQuestionsContainer.appendChild(nextQuestionBtn);
+            suggestedQuestionsContainer.classList.remove('hidden'); // Ensure button is visible
+        }
+
+
+        // Ends the quiz module
+        function endQuiz() {
+            addMessageToChat('bot', "🎉 ¡Has completado el Desmitificador Express! Gracias por informarte con VIDA. Cada duda resuelta es un paso más hacia una cultura de donación más humana y consciente.");
+            
+            suggestedQuestionsContainer.innerHTML = ''; // Clear any quiz-related buttons
+            suggestedQuestionsContainer.classList.remove('hidden'); // Ensure container is visible
+
+            const startDonorPathBtn = document.createElement('button');
+            startDonorPathBtn.textContent = "Iniciar “Tu camino como donante”";
+            startDonorPathBtn.className = `px-4 py-2 rounded-lg bg-[var(--vida-btn-green)] text-white text-sm font-bold shadow-md 
+                                            hover:bg-[var(--vida-btn-green-hover)] transition-colors`;
+            startDonorPathBtn.onclick = () => {
+                addMessageToChat('user', startDonorPathBtn.textContent); // Add button text as user message
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+                currentQuizQuestionIndex = -1; // End quiz state
+                currentDonorPathStep = 'initial'; // Start donor path
+                displayDonorPathStep(currentDonorPathStep);
+            };
+            suggestedQuestionsContainer.appendChild(startDonorPathBtn);
+
+            const askAnotherQuestionBtn = document.createElement('button');
+            askAnotherQuestionBtn.textContent = "Hacer otra pregunta a VIDA";
+            askAnotherQuestionBtn.className = `px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium 
+                                            hover:bg-[var(--vida-module-btn-hover)] transition-colors shadow-sm`;
+            askAnotherQuestionBtn.onclick = () => {
+                addMessageToChat('user', askAnotherQuestionBtn.textContent); // Add button text as user message
+                suggestedQuestionsContainer.classList.add('hidden');
+                suggestedQuestionsContainer.innerHTML = '';
+                currentQuizQuestionIndex = -1; // End quiz state
+                chatHistory = []; // Clear history for a fresh general chat
+                addInitialBotMessage(); // Restart general chat
+            };
+            suggestedQuestionsContainer.appendChild(askAnotherQuestionBtn);
+        }
+
+    </script>
+</body>
+</html>

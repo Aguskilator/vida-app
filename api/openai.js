@@ -25,7 +25,7 @@ export default async function handler(req, res) {
   try {
     payload = JSON.parse(rawBody);
   } catch (e) {
-    res.status(400).json({ error: 'JSON inválido en el body.' });
+    res.status(400).json({ error: 'JSON inválido en el body.', rawBody, parseError: e.message });
     return;
   }
 
@@ -49,7 +49,7 @@ export default async function handler(req, res) {
       max_tokens: 700
     };
   } else {
-    res.status(400).json({ error: 'Formato de prompt no soportado.' });
+    res.status(400).json({ error: 'Formato de prompt no soportado.', payload });
     return;
   }
 

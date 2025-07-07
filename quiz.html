@@ -86,8 +86,8 @@
             <!-- Vista Inicial del Quiz -->
             <div id="quiz-start-view" class="text-center p-8 bg-white rounded-2xl shadow-lg">
                 <h3 class="text-3xl font-bold text-[var(--vida-text-dark)]">Pon a prueba tus conocimientos</h3>
-                <p class="mt-4 text-lg text-slate-600">Te haré 20 preguntas de verdadero o falso para desmentir los mitos más comunes sobre la donación.</p>
-                <p class="mt-2 text-md text-slate-500">El quiz se divide en 4 rondas de 5 preguntas cada una.</p>
+                <p class="mt-4 text-lg text-slate-600">Te haré 10 preguntas de verdadero o falso para desmentir los mitos más comunes sobre la donación.</p>
+                <p class="mt-2 text-md text-slate-500">El quiz se divide en 2 rondas de 5 preguntas cada una.</p>
                 <button id="begin-quiz-btn" class="mt-8 bg-[var(--vida-btn-green)] text-white font-bold py-4 px-10 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105">
                     ¡Estoy listo!
                 </button>
@@ -176,17 +176,17 @@
         let quizScore = 0;
         let roundScores = [];
         const QUESTIONS_PER_ROUND = 5;
-        const TOTAL_QUESTIONS = 20;
-        const TOTAL_ROUNDS = 4;
+        const TOTAL_QUESTIONS = 10; // Cambiado a 10 preguntas
+        const TOTAL_ROUNDS = 2;     // Cambiado a 2 rondas
 
         // --- API Call Function ---
         async function callOpenAI(messages) {
             try {
                 console.log('Calling OpenAI API with messages:', messages);
                 
+                // Use the same format as the working chat in index.html
                 const payload = {
-                    messages: messages,
-                    model: 'gpt-3.5-turbo'
+                    prompt: messages
                 };
                 
                 console.log('Sending payload:', payload);
@@ -215,6 +215,111 @@
         }
 
         // --- QUIZ FUNCTIONS ---
+        
+        // Preguntas de respaldo en caso de fallo de la API
+        const fallbackQuestions = [
+            {
+                question: "Si soy donante, recibiré peor atención médica en los hospitales",
+                isTrue: false,
+                explanation: "Falso. Los médicos tienen la obligación de brindar la mejor atención médica posible sin importar si eres donante o no. El personal que atiende emergencias es diferente al que coordina donaciones."
+            },
+            {
+                question: "La donación de órganos desfigura el cuerpo y no permite un funeral con ataúd abierto",
+                isTrue: false,
+                explanation: "Falso. Los procedimientos de extracción se realizan con técnicas quirúrgicas que respetan la apariencia física. El cuerpo puede ser preparado normalmente para el funeral."
+            },
+            {
+                question: "Solo las personas jóvenes pueden ser donantes de órganos",
+                isTrue: false,
+                explanation: "Falso. No hay límite de edad para ser donante. La viabilidad de los órganos se evalúa caso por caso, y personas mayores han sido donantes exitosos."
+            },
+            {
+                question: "Las religiones prohíben la donación de órganos",
+                isTrue: false,
+                explanation: "Falso. La mayoría de las religiones apoyan la donación como un acto de generosidad y amor al prójimo. El Vaticano, el Islam y el Judaísmo la consideran permitida y altruista."
+            },
+            {
+                question: "La muerte cerebral es lo mismo que estar en coma",
+                isTrue: false,
+                explanation: "Falso. La muerte cerebral es la pérdida irreversible de todas las funciones cerebrales, mientras que el coma es un estado de inconsciencia del cual se puede recuperar."
+            },
+            {
+                question: "Los ricos tienen prioridad para recibir órganos trasplantados",
+                isTrue: false,
+                explanation: "Falso. La asignación de órganos se basa en criterios médicos como compatibilidad, urgencia y tiempo en lista de espera, no en estatus económico."
+            },
+            {
+                question: "Puedo cambiar de opinión sobre ser donante en cualquier momento",
+                isTrue: true,
+                explanation: "Verdadero. Puedes modificar tu decisión de ser donante en cualquier momento, ya sea registrándote o eliminando tu registro de donante."
+            },
+            {
+                question: "La familia debe pagar los costos de la donación de órganos",
+                isTrue: false,
+                explanation: "Falso. Todos los gastos relacionados con la donación de órganos son cubiertos por el sistema de salud, no por la familia del donante."
+            },
+            {
+                question: "Se pueden vender órganos legalmente en México",
+                isTrue: false,
+                explanation: "Falso. La venta de órganos está estrictamente prohibida en México. La donación debe ser altruista y sin fines de lucro."
+            },
+            {
+                question: "Un donante puede salvar hasta 8 vidas",
+                isTrue: true,
+                explanation: "Verdadero. Un solo donante puede donar corazón, hígado, riñones, pulmones, páncreas, intestinos y tejidos como córneas, beneficiando hasta 8 personas o más."
+            },
+            {
+                question: "Los órganos donados tienen fecha de caducidad muy corta",
+                isTrue: true,
+                explanation: "Verdadero. Los órganos deben trasplantarse rápidamente: el corazón en 4-6 horas, el hígado en 12-24 horas, los riñones hasta 72 horas."
+            },
+            {
+                question: "México tiene uno de los índices más bajos de donación en América Latina",
+                isTrue: true,
+                explanation: "Verdadero. México tiene aproximadamente 3-4 donantes por millón de habitantes, muy por debajo del promedio regional y mundial."
+            },
+            {
+                question: "Solo se pueden donar órganos después de muerte cerebral",
+                isTrue: false,
+                explanation: "Falso. También se puede donar después de paro cardíaco en condiciones controladas, aunque las opciones de órganos viables son más limitadas."
+            },
+            {
+                question: "Los testigos de Jehová no pueden ser donantes por sus creencias",
+                isTrue: false,
+                explanation: "Falso. Aunque tienen restricciones sobre transfusiones de sangre, muchos testigos de Jehová pueden ser donantes de órganos sólidos."
+            },
+            {
+                question: "La donación de córneas puede realizarse varias horas después del fallecimiento",
+                isTrue: true,
+                explanation: "Verdadero. Las córneas pueden extraerse hasta 12 horas después del fallecimiento, a diferencia de otros órganos que requieren extracción inmediata."
+            },
+            {
+                question: "Un alcohólico no puede donar su hígado",
+                isTrue: false,
+                explanation: "Falso. Cada caso se evalúa individualmente. Algunos órganos de personas con historial de alcoholismo pueden ser viables para trasplante."
+            },
+            {
+                question: "El CENATRA es el organismo que coordina las donaciones en México",
+                isTrue: true,
+                explanation: "Verdadero. El Centro Nacional de Trasplantes (CENATRA) es la institución responsable de coordinar el sistema nacional de donación y trasplantes."
+            },
+            {
+                question: "Se necesita autorización familiar para donar, aunque esté registrado como donante",
+                isTrue: true,
+                explanation: "Verdadero. En México, aunque estés registrado como donante, se requiere el consentimiento familiar para proceder con la donación."
+            },
+            {
+                question: "Los órganos donados pueden rechazarse por el cuerpo receptor",
+                isTrue: true,
+                explanation: "Verdadero. El rechazo es un riesgo real que requiere medicamentos inmunosupresores de por vida para prevenirlo."
+            },
+            {
+                question: "Una persona diabética no puede ser donante de ningún órgano",
+                isTrue: false,
+                explanation: "Falso. Dependiendo del tipo y control de la diabetes, algunos órganos como riñones o córneas pueden ser viables para donación."
+            }
+        ];
+
         function resetQuiz() {
             quizScore = 0;
             currentQuizQuestionIndex = 0;
@@ -232,14 +337,15 @@
         beginQuizBtn.addEventListener('click', async () => {
             quizStartView.classList.add('hidden');
             quizActiveView.classList.remove('hidden');
-            quizQuestion.textContent = 'Generando preguntas...';
+            quizQuestion.textContent = 'Generando preguntas para la ronda 1...';
             await generateQuizQuestions();
         });
 
-        continueQuizBtn.addEventListener('click', () => {
+        continueQuizBtn.addEventListener('click', async () => {
             quizPartialResultsView.classList.add('hidden');
             quizActiveView.classList.remove('hidden');
-            displayQuizQuestion();
+            quizQuestion.textContent = `Generando preguntas para la ronda ${currentRound}...`;
+            await generateQuizQuestions();
         });
 
         restartQuizBtn.addEventListener('click', resetQuiz);
@@ -263,19 +369,20 @@
         async function generateQuizQuestions() {
             const quizGenerationPrompt = `
                 Eres VIDA, un asistente de donación de órganos en México.
-                Tu tarea es generar 20 preguntas de VERDADERO o FALSO sobre mitos y realidades comunes acerca de la donación de órganos y tejidos después de que una persona ha fallecido en México.
-                Devuelve la respuesta como un array JSON de 20 objetos con las propiedades: "question" (string), "isTrue" (boolean), "explanation" (string).
+                Tu tarea es generar 5 preguntas únicas de VERDADERO o FALSO sobre mitos y realidades comunes acerca de la donación de órganos y tejidos después de que una persona ha fallecido en México.
+                Devuelve la respuesta como un array JSON de 5 objetos con las propiedades: "question" (string), "isTrue" (boolean), "explanation" (string).
                 Las explicaciones deben ser breves, claras y fundamentadas en información oficial (Ley General de Salud, CENATRA). No uses asteriscos.
-                Varía la dificultad de las preguntas para que sea educativo y desafiante.
+                Varía la dificultad de las preguntas para que sea educativo y desafiante. 
+                Asegúrate de que las preguntas sean diferentes cada vez y cubran diversos aspectos de la donación.
             `;
             
             const messages = [
-                { role: "system", content: "Responde únicamente con un array JSON válido de 20 objetos." },
+                { role: "system", content: "Responde únicamente con un array JSON válido de 5 objetos." },
                 { role: "user", content: quizGenerationPrompt }
             ];
 
             try {
-                console.log('Generating quiz questions...');
+                console.log(`Generating quiz questions for round ${currentRound}...`);
                 const result = await callOpenAI(messages);
                 
                 if (result.choices?.[0]?.message?.content) {
@@ -283,10 +390,12 @@
                     
                     // Intentar parsear el JSON
                     try {
-                        quizQuestions = JSON.parse(result.choices[0].message.content);
-                        console.log('Parsed questions:', quizQuestions);
+                        const newQuestions = JSON.parse(result.choices[0].message.content);
+                        console.log('Parsed questions:', newQuestions);
                         
-                        if (quizQuestions.length > 0) {
+                        if (newQuestions.length > 0) {
+                            // Agregar las nuevas preguntas al array existente
+                            quizQuestions = quizQuestions.concat(newQuestions);
                             displayQuizQuestion();
                         } else {
                             throw new Error("Generated question array is empty.");
@@ -294,7 +403,7 @@
                     } catch (parseError) {
                         console.error("JSON Parse Error:", parseError);
                         console.log("Content that failed to parse:", result.choices[0].message.content);
-                        quizQuestion.textContent = 'Error al procesar las preguntas. El formato de respuesta no es válido.';
+                        throw new Error("Invalid JSON format from API");
                     }
                 } else {
                      console.error("Empty or invalid response structure:", result);
@@ -302,37 +411,44 @@
                 }
             } catch (error) {
                 console.error("Error generating quiz questions:", error);
+                console.log("Using fallback questions...");
                 
-                // Mensaje de error más específico
-                if (error.message.includes('500')) {
-                    quizQuestion.innerHTML = `
-                        <div class="text-center">
-                            <p class="text-red-600 mb-4">Error de servidor (500)</p>
-                            <p class="text-slate-600 mb-4">Parece que hay un problema con la configuración del servidor o la API key de OpenAI.</p>
-                            <button onclick="location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                                Intentar de nuevo
-                            </button>
-                        </div>
-                    `;
-                } else if (error.message.includes('API key')) {
-                    quizQuestion.innerHTML = `
-                        <div class="text-center">
-                            <p class="text-red-600 mb-4">Error de API Key</p>
-                            <p class="text-slate-600">La clave de API de OpenAI no está configurada correctamente.</p>
-                        </div>
-                    `;
-                } else {
-                    quizQuestion.innerHTML = `
-                        <div class="text-center">
-                            <p class="text-red-600 mb-4">Error de conexión</p>
-                            <p class="text-slate-600 mb-4">Hubo un problema al generar el quiz. Por favor, verifica tu conexión a internet.</p>
-                            <button onclick="location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                                Intentar de nuevo
-                            </button>
-                        </div>
-                    `;
-                }
+                // Usar preguntas de respaldo si falla la IA
+                useFallbackQuestions();
             }
+        }
+        
+        function useFallbackQuestions() {
+            console.log("Using fallback questions for round", currentRound);
+            
+            // Calcular qué preguntas usar para esta ronda
+            const startIndex = (currentRound - 1) * QUESTIONS_PER_ROUND;
+            const endIndex = startIndex + QUESTIONS_PER_ROUND;
+            
+            // Mezclar las preguntas de respaldo y tomar las que corresponden a esta ronda
+            const shuffledFallback = [...fallbackQuestions].sort(() => Math.random() - 0.5);
+            const roundQuestions = shuffledFallback.slice(startIndex, endIndex);
+            
+            // Si no hay suficientes preguntas en fallback, repetir algunas
+            while (roundQuestions.length < QUESTIONS_PER_ROUND && shuffledFallback.length > 0) {
+                const additionalQuestions = shuffledFallback.slice(0, QUESTIONS_PER_ROUND - roundQuestions.length);
+                roundQuestions.push(...additionalQuestions);
+            }
+            
+            // Agregar las preguntas de respaldo al array principal
+            quizQuestions = quizQuestions.concat(roundQuestions);
+            
+            quizQuestion.innerHTML = `
+                <div class="text-center">
+                    <p class="text-yellow-600 mb-4">⚠️ Conexión limitada</p>
+                    <p class="text-slate-600 mb-4">Usando preguntas predefinidas para continuar el quiz.</p>
+                </div>
+            `;
+            
+            // Mostrar la primera pregunta después de un breve delay
+            setTimeout(() => {
+                displayQuizQuestion();
+            }, 2000);
         }
 
         function displayQuizQuestion() {

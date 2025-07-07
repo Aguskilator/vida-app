@@ -1269,7 +1269,8 @@
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+                    addMessageToChat('bot', `Error API: ${errorText}`);
+                    throw new Error('API request for quiz failed');
                 }
 
                 const result = await response.json();
@@ -1404,7 +1405,11 @@
                     ] })
                 });
 
-                if (!response.ok) throw new Error('API request for quiz failed');
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    addMessageToChat('bot', `Error API: ${errorText}`);
+                    throw new Error('API request for quiz failed');
+                }
 
                 const result = await response.json();
                 if (result.choices?.[0]?.message?.content) {
@@ -1416,16 +1421,17 @@
                         }
                         displayQuizQuestion(currentQuizQuestionIndex);
                     } catch (e) {
-                        console.error("Error parsing quiz questions JSON:", e);
-                        addMessageToChat('bot', 'No pude generar las preguntas del quiz. Por favor, intenta de nuevo.');
+                        console.error("Error parsing quiz questions JSON:", e, result.choices[0].message.content);
+                        addMessageToChat('bot', 'Error al interpretar las preguntas del quiz. Respuesta recibida: ' + result.choices[0].message.content);
                         currentQuizQuestionIndex = -1;
                     }
                 } else {
-                     throw new Error("Empty response from API for quiz questions.");
+                    addMessageToChat('bot', 'Respuesta vacía de la API para las preguntas del quiz.');
+                    throw new Error("Empty response from API for quiz questions.");
                 }
             } catch (error) {
                 console.error("Error generating quiz questions:", error);
-                addMessageToChat('bot', 'Hubo un problema de conexión al generar el quiz. Por favor, inténtalo de nuevo.');
+                addMessageToChat('bot', 'Hubo un problema de conexión al generar el quiz. Detalle: ' + error.message);
                 currentQuizQuestionIndex = -1;
             } finally {
                 showTypingIndicator(false);

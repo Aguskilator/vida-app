@@ -551,44 +551,51 @@
 
         const indecisionModule = {
             initial: {
-                text: "Es completamente válido tener dudas. La donación es un tema profundo y personal. Muchas personas también se sienten inseguras cuando empiezan a informarse. Estoy aquí para ayudarte a pensar en ello con calma.",
+                text: "Es totalmente normal tener dudas sobre la donación. Es una decisión importante y personal. ¿Qué es lo que más te hace dudar? Conocer tus inquietudes me ayudará a darte la información que necesitas.",
                 buttons: [
-                    { text: "Cuéntame por qué donar es valioso", action: "indecision_explain_impact" },
-                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
+                    { text: "Me da miedo el proceso", action: "indecision_fear" },
+                    { text: "No sé si mi religión lo permite", action: "indecision_religion" },
+                    { text: "No quiero que mi cuerpo sea modificado", action: "indecision_body" },
+                    { text: "No estoy seguro de querer", action: "indecision_cierre" }
                 ]
             },
-            explain_impact: {
-                text: "Donar órganos después de fallecer puede transformar por completo la vida de varias personas. Con una sola decisión, puedes ayudar a que una madre vea crecer a sus hijos, o que un niño recupere la salud.",
+            fear: {
+                text: "Entiendo tu miedo. El proceso de donación se realiza con el máximo respeto y cuidado. El equipo médico trata a cada donante con la misma dignidad que a cualquier paciente. ¿Quieres que te explique cómo se asegura el respeto al cuerpo?",
                 buttons: [
-                    { text: "¿Qué legado me gustaría dejar?", action: "indecision_ask_reflection" },
-                    { text: "Quiero saber cómo hablar con mi familia", action: "donor_path_examples_family_talk" },
-                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
+                    { text: "Sí, explícame más", action: "donor_path_body_respect" },
+                    { text: "Tengo otras dudas", action: "indecision_initial" },
+                    { text: "Gracias, ya no quiero hablar de esto", action: "indecision_cierre" }
                 ]
             },
-            ask_reflection: {
-                text: "¿Te gustaría que alguien ayudara a un ser querido tuyo si lo necesitara? ¿Has pensado en qué legado te gustaría dejar?",
+            religion: {
+                text: "Es una pregunta muy válida. La mayoría de las religiones ven la donación como un acto de generosidad y amor al prójimo. Si quieres, podemos hablar sobre la postura de alguna religión en particular.",
                 buttons: [
-                    { text: "Quiero saber cómo hablar con mi familia", action: "donor_path_examples_family_talk" },
-                    { text: "Pregúntame sobre la ley de donación", action: "donor_path_step4" },
-                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
+                    { text: "Catolicismo", action: "faq_religion_catolica" },
+                    { text: "Cristianismo", action: "faq_religion_cristiana" },
+                    { text: "Otra", action: "faq_religion_otra" },
+                    { text: "Volver a las dudas", action: "indecision_initial" }
+                ]
+            },
+            body: {
+                text: "Comprendo tu preocupación. Después de la donación, el cuerpo es tratado con el mayor respeto y se reconstruye cuidadosamente para que pueda ser velado por la familia sin ningún problema. La donación no impide un funeral de cuerpo presente.",
+                buttons: [
+                    { text: "Quiero saber más sobre el proceso", action: "donor_path_process" },
+                    { text: "Tengo otras dudas", action: "indecision_initial" },
+                    { text: "Gracias, ya no quiero hablar de esto", action: "indecision_cierre" }
                 ]
             },
             cierre: {
-                text: "Lo más importante es que tomes una decisión con la información adecuada y en paz contigo mismo. Gracias por atreverte a pensar en esto. Estás dando un gran paso, sin importar tu elección final.",
+                text: "Gracias por compartir tus pensamientos conmigo. Respeto tu sentir. Si en algún otro momento quieres volver a hablar de esto o tienes cualquier otra pregunta, aquí estaré para ayudarte.",
                 buttons: [
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Iniciar camino como donante", action: "donor_path_initial" },
-                    { text: "Hablar con VIDA nuevamente", action: "reset_chat" }
+                    { text: "Ver otras preguntas", action: "suggest_questions" },
+                    { text: "Finalizar chat", action: "reset_chat" }
                 ]
             }
         };
 
         const indecisionTriggers = [
-            "no sé si quiero donar", "tengo dudas sobre ser donante",
-            "me da miedo donar", "no estoy seguro si quiero eso",
-            "eso es muy fuerte", "nunca he pensado en eso",
-            "no se si quiero donar", "tengo dudas sobre donar",
-            "me da miedo", "no estoy seguro", "no quiero donar", "no quiero"
+            "no sé si quiero donar", "tengo dudas sobre ser donante", "no estoy seguro si quiero eso",
+            "me da miedo donar", "nunca he pensado en eso", "no estoy seguro", "no quiero donar", "no quiero"
         ];
 
         const griefModule = {
@@ -655,11 +662,9 @@
         const griefTriggers = [
             "mi mamá acaba de morir", "mi hermano falleció", "a mi mamá la acaban de declarar con muerte cerebral",
             "no sé si mi familiar quería donar", "me están pidiendo autorizar la donación y no sé qué hacer",
-            "estoy confundido con la donación", "me da miedo la donación", "estoy triste por la donación",
+            "estoy confundido con la donación", "estoy triste por la donación",
             "no puedo con esto", "estoy abrumado", "mi ser querido murió", "acaba de fallecer",
-            "mi hermano fallecio", "a mi mama la acaban de declarar con muerte cerebral",
-            "no se si quiero donar", "tengo dudas sobre donar",
-            "me da miedo", "no estoy seguro", "no quiero donar", "no quiero"
+            "mi hermano fallecio", "a mi mama la acaban de declarar con muerte cerebral"
         ];
 
         const familyDonationModule = {
@@ -733,6 +738,10 @@
         // --- New Quiz Triggers ---
         const quizTriggers = [
             "quiz", "juego", "desmitificador", "mitos", "realidades", "qué tanto sé", "examen", "prueba"
+        ];
+
+        const donorPathTriggers = [
+            "quiero ser donante", "quiero donar", "cómo me registro", "registrarme como donante", "ser donador"
         ];
 
         const systemPrompt = `
@@ -847,6 +856,12 @@
         - Si el usuario dice que no desea donar, responde con respeto: “Gracias por compartirlo. Estoy aquí para cualquier otra duda que tengas.”
         - Puedes ofrecer una historia real de esperanza si el usuario lo permite: “¿Te gustaría conocer una historia de alguien que recibió un trasplante y volvió a vivir plenamente?”
         - Evita respuestas robóticas al cerrar. Usa finales como: “Gracias por tu tiempo. Si más adelante quieres hablar de esto, aquí estaré”, o “Fue un gusto platicar contigo, te mando un saludo cálido.”
+        
+        **GESTIÓN DE MÓDULOS Y CONTEXTO**
+        - Cuando un módulo específico (Duelo, Dudas, Registro de Donante, etc.) está activo, mantén la conversación dentro de ese contexto. No ofrezcas respuestas genéricas ni cambies de tema a menos que el usuario lo indique claramente.
+        - Si el usuario dice "quiero donar", activa el módulo de registro de donante y guía al usuario a través de los pasos, en lugar de dar una respuesta genérica y repetitiva.
+        - Si el usuario expresa dudas con frases como "no estoy seguro", activa el módulo de indecisión y explora sus preocupaciones de forma empática. No lo mezcles con el módulo de duelo a menos que mencione una pérdida.
+        - El módulo de duelo es prioritario. Si detectas palabras de pérdida ("murió", "falleció"), activa este módulo inmediatamente y ofrece contención emocional antes que cualquier otra cosa.
         `;
 
         // --- Utilidad para extraer JSON robusto de texto ---
@@ -899,7 +914,7 @@
             chatHistory = []; 
             chatContainer.innerHTML = ''; 
             currentDonorPathStep = null;
-            currentQuizQuestionIndex = -1;
+ currentQuizQuestionIndex = -1;
             quizQuestions = [];
             currentIndecisionStep = null;
             currentGriefStep = null;
@@ -1173,9 +1188,6 @@
             }
 
             // 5. Donor Path Triggers
-            const donorPathTriggers = [
-                "quiero donar", "como dono", "cómo dono", "quiero ser donante", "quiero ser donador", "quiero ayudar", "donar mis organos", "donar mis órganos", "quiero registrarme como donador", "quiero registrarme para donar", "quiero registrarme como donante", "quiero registrarme para ser donador", "quiero registrarme para ser donante", "quiero ser voluntario para donar", "quiero ser voluntario para donar organos", "quiero ser voluntario para donar órganos", "quiero inscribirme como donador", "quiero inscribirme como donante", "quiero inscribirme para donar", "quiero inscribirme para ser donador", "quiero inscribirme para ser donante"
-            ];
             if (donorPathTriggers.some(trigger => userMessage.toLowerCase().includes(trigger))) {
                 // New empathetic response flow
                 await handleDonorInterest(userMessage);
@@ -1213,7 +1225,7 @@
             }
         }
         
-        function addMessageToChat(sender, text) {
+        function addMessageToChat(sender, text, isTyping = false) {
             chatHistory.push({ role: sender === 'bot' ? 'assistant' : 'user', content: text });
             
             const messageWrapper = document.createElement('div');
@@ -1271,23 +1283,64 @@
             }
         }
         
-        async function getBotResponse(prompt, specificSystemPrompt = null) {
-            showTypingIndicator(true); 
-            chatInput.disabled = true; 
-            chatForm.querySelector('button[type="submit"]').disabled = true; 
-            suggestQuestionsBtn.disabled = true; 
+        async function getBotResponse(userMessage) {
+            addMessageToChat('user', userMessage);
+            chatInput.value = '';
+            chatInput.disabled = true;
+            suggestedQuestionsContainer.classList.add('hidden');
+            suggestedQuestionsContainer.innerHTML = '';
 
-            const messages = [
-                { role: "system", content: specificSystemPrompt || systemPrompt },
-                ...chatHistory.slice(0, -1),
-                { role: "user", content: prompt }
-            ];
+            const lowerCaseMessage = userMessage.toLowerCase();
+
+            // --- Module Trigger Logic ---
+            // Check for module triggers before sending to the API for a generic response.
+            // Priority: Grief > Family Donation > Donor Path > Indecision > Quiz
+
+            if (currentGriefStep === null && currentFamilyDonationStep === null && currentDonorPathStep === null && currentIndecisionStep === null) {
+                if (griefTriggers.some(trigger => lowerCaseMessage.includes(trigger))) {
+                    currentGriefStep = 'initial';
+                    displayGriefStep(currentGriefStep);
+                    chatInput.disabled = false;
+                    return;
+                }
+                if (familyDonationTriggers.some(trigger => lowerCaseMessage.includes(trigger))) {
+                    currentFamilyDonationStep = 'initial';
+                    displayFamilyDonationStep(currentFamilyDonationStep);
+                    chatInput.disabled = false;
+                    return;
+                }
+                if (donorPathTriggers.some(trigger => lowerCaseMessage.includes(trigger))) {
+                    currentDonorPathStep = 'initial';
+                    displayDonorPathStep(currentDonorPathStep);
+                    chatInput.disabled = false;
+                    return;
+                }
+                if (indecisionTriggers.some(trigger => lowerCaseMessage.includes(trigger))) {
+                    currentIndecisionStep = 'initial';
+                    displayIndecisionStep(currentIndecisionStep);
+                    chatInput.disabled = false;
+                    return;
+                }
+                if (quizTriggers.some(trigger => lowerCaseMessage.includes(trigger))) {
+                    startQuiz();
+                    chatInput.disabled = false;
+                    return;
+                }
+            }
+
+
+            // If no module is active or triggered, proceed with the generic API call
+            addMessageToChat('bot', '...', true); // Show thinking indicator
 
             try {
                 const response = await fetch('/api/openai', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: messages })
+                    body: JSON.stringify({ prompt: [
+                        { role: "system", content: systemPrompt },
+                        ...chatHistory.slice(0, -1),
+                        { role: "user", content: userMessage }
+                    ] })
                 });
 
                 if (!response.ok) {

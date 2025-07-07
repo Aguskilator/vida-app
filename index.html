@@ -83,7 +83,7 @@
         .chat-messages::-webkit-scrollbar-thumb:hover { background: var(--vida-text-secondary); }
 
         /* Initially hide these screens/modals */
-        #chat-screen, #about-modal, #feedback-modal { display: none; }
+        #chat-screen, #about-modal, #feedback-modal, #privacy-modal { display: none; }
         
         /* Styles for radio buttons in feedback form */
         .feedback-radio-group label {
@@ -294,7 +294,7 @@
         Danos tu opinión
     </button>
     
-    <div id="about-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50" style="display:none;">
+    <div id="about-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-8 relative">
             <button id="close-about-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -316,7 +316,7 @@
         </div>
     </div>
     
-    <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50" style="display:none;">
+    <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-8 relative">
             <button id="close-privacy-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -770,10 +770,6 @@
         - Cuando sea posible, anticipa lo que puede necesitar el usuario (por ejemplo: si pregunta sobre donar, sugiere cómo registrarse o qué órganos se pueden donar).
         - Si el usuario hace una pregunta muy general (“¿qué es donar?”), comienza con una explicación simple y ofrece ampliar: "Donar es dar algo que puede ayudar a otra persona. En este caso, se trata de donar órganos o tejidos después de fallecer. ¿Quieres saber cómo funciona?"
 
-
-
-
-
         **Ámbito Temático (Permitido):**
         Solo responde a preguntas relacionadas con:
         - Qué es la muerte encefálica y su diagnóstico.
@@ -849,8 +845,6 @@
         - Si el usuario dice que no desea donar, responde con respeto: “Gracias por compartirlo. Estoy aquí para cualquier otra duda que tengas.”
         - Puedes ofrecer una historia real de esperanza si el usuario lo permite: “¿Te gustaría conocer una historia de alguien que recibió un trasplante y volvió a vivir plenamente?”
         - Evita respuestas robóticas al cerrar. Usa finales como: “Gracias por tu tiempo. Si más adelante quieres hablar de esto, aquí estaré”, o “Fue un gusto platicar contigo, te mando un saludo cálido.”
-
-
         `;
 
         // --- UI Functions ---
@@ -923,30 +917,26 @@
 
         feedbackForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const scriptURL = 'REEMPLAZA_CON_LA_URL_DE_TU_SCRIPT';
+            // This part requires a backend service (like Google Apps Script) to process the form.
+            // I'm leaving the visual feedback part.
             const form = e.target;
             const submitButton = form.querySelector('button[type="submit"]');
             submitButton.disabled = true;
             submitButton.textContent = 'Enviando...';
 
-            fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-                .then(response => {
-                    feedbackFormContainer.style.display = 'none';
-                    feedbackThanks.classList.remove('hidden');
-                    setTimeout(() => {
-                        feedbackThanks.classList.add('hidden');
-                        feedbackFormContainer.style.display = '';
-                        closeModal(feedbackModal);
-                        form.reset();
-                        submitButton.disabled = false;
-                        submitButton.textContent = 'Enviar';
-                    }, 2000);
-                })
-                .catch(error => {
+            // Simulate form submission
+            setTimeout(() => {
+                feedbackFormContainer.style.display = 'none';
+                feedbackThanks.classList.remove('hidden');
+                setTimeout(() => {
+                    feedbackThanks.classList.add('hidden');
+                    feedbackFormContainer.style.display = '';
+                    closeModal(feedbackModal);
+                    form.reset();
                     submitButton.disabled = false;
-                    submitButton.textContent = 'Enviar';
-                    addMessageToChat('bot', 'Hubo un error al enviar tu opinión. Por favor, intenta de nuevo.');
-                });
+                    submitButton.textContent = 'Enviar respuesta';
+                }, 2500);
+            }, 500);
         });
 
         // --- Module Functions ---
@@ -1202,6 +1192,7 @@
         
         function addMessageToChat(sender, text) {
             chatHistory.push({ role: sender === 'bot' ? 'assistant' : 'user', content: text });
+            
             const messageWrapper = document.createElement('div');
             messageWrapper.className = `flex items-end gap-2 max-w-lg lg:max-w-xl ${sender === 'user' ? 'self-end' : 'self-start'}`;
             
@@ -1311,7 +1302,7 @@
                 Las preguntas deben ser muy concisas y directas.
                 Devuelve la respuesta como un array JSON de 3 strings, donde cada string es una pregunta.
             `;
-
+            
             try {
                 const response = await fetch('/api/openai', {
                     method: 'POST',
@@ -1353,7 +1344,7 @@
                                  hover:bg-[var(--vida-suggest-btn-hover)] transition-colors shadow-sm`;
                 button.onclick = () => {
                     chatInput.value = q;
-                    chatForm.requestSubmit();
+                    chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
                 };
                 suggestedQuestionsContainer.appendChild(button);
             });

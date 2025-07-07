@@ -1355,7 +1355,7 @@
                 const button = document.createElement('button');
                 button.textContent = q;
                 button.className = `px-3 py-2 rounded-lg bg-[var(--vida-suggest-btn-bg)] text-[var(--vida-text-dark)] text-sm font-medium 
-                                 hover:bg-[var(--vida-suggest-btn-hover)] transition-colors shadow-sm`;
+                                 hover:bg-[var(--vida-suggest-btn-hover)] transition-colores`;
                 button.onclick = () => {
                     chatInput.value = q;
                     chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
@@ -1366,49 +1366,28 @@
         }
 
         // --- Quiz Module Functions ---
+        let quizTotalAnswered = 0; // Nuevo: cuenta total de preguntas respondidas
+        let quizMaxQuestions = 20; // Máximo de preguntas por sesión
+        let quizBlockSize = 5; // Tamaño del bloque
+
         async function startQuiz() {
-            addMessageToChat('bot', "¡Excelente! Vamos a poner a prueba tus conocimientos sobre la donación con el Desmitificador Express. Te haré 10 preguntas de verdadero o falso. ¿Estás listo?");
-            
+            quizTotalAnswered = 0;
+            currentQuizQuestionIndex = 0;
+            quizQuestions = [];
+            addMessageToChat('bot', `¡Excelente! Vamos a poner a prueba tus conocimientos sobre la donación con el Desmitificador Express. Te haré bloques de 5 preguntas de verdadero o falso. ¿Estás listo?`);
             suggestedQuestionsContainer.innerHTML = '';
             suggestedQuestionsContainer.classList.remove('hidden');
-
             const startButton = document.createElement('button');
             startButton.textContent = "🚀 Iniciar Quiz";
-            startButton.className = `px-6 py-3 rounded-lg bg-[var(--vida-btn-green)] text-white font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors`;
-            
+            startButton.className = `px-6 py-3 rounded-lg bg-[var(--vida-btn-green)] text-white font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colores`;
             startButton.onclick = async () => {
                 addMessageToChat('user', 'Iniciar Quiz');
                 suggestedQuestionsContainer.innerHTML = '';
                 suggestedQuestionsContainer.classList.add('hidden');
-                
-                currentQuizQuestionIndex = 0;
-                quizQuestions = [];
                 await generateQuizQuestions();
             };
-
             suggestedQuestionsContainer.appendChild(startButton);
             chatContainerWrapper.scrollTop = chatContainerWrapper.scrollHeight;
-        }
-
-        // --- Utilidad para extraer JSON robusto de texto ---
-        function extractFirstJSONArray(text) {
-            // Busca el primer bloque que parece un array JSON
-            const arrayRegex = /\[\s*{[\s\S]*?}\s*\]/g;
-            const match = text.match(arrayRegex);
-            if (match) {
-                try {
-                    return JSON.parse(match[0]);
-                } catch (e) {
-                    // Si falla, intenta limpiar comas finales o errores comunes
-                    let cleaned = match[0].replace(/,\s*]/g, "]");
-                    try {
-                        return JSON.parse(cleaned);
-                    } catch (e2) {
-                        return null;
-                    }
-                }
-            }
-            return null;
         }
 
         async function generateQuizQuestions() {
@@ -1416,19 +1395,12 @@
             chatInput.disabled = true;
             chatForm.querySelector('button[type="submit"]').disabled = true;
             suggestQuestionsBtn.disabled = true;
-
             const quizGenerationPrompt = `
                 Eres VIDA, un asistente de donación de órganos en México.
-                Tu tarea es generar 10 preguntas de VERDADERO o FALSO sobre mitos y realidades comunes acerca de la donación de órganos y tejidos después de que una persona ha fallecido en México. Las preguntas deben ser concisas y formuladas para un público general, ajeno a la medicina.
+                Tu tarea es generar ${quizBlockSize} preguntas de VERDADERO o FALSO sobre mitos y realidades comunes acerca de la donación de órganos y tejidos después de que una persona ha fallecido en México. Las preguntas deben ser concisas y formuladas para un público general, ajeno a la medicina.
                 Asegúrate de que las explicaciones sean breves (2-3 líneas máximo), claras, y fundamentadas en información oficial (Ley General de Salud, CENATRA, Reglamento de Trasplantes). No uses asteriscos (*) ni viñetas. Si es posible, incluye una referencia breve a la fuente oficial. Las preguntas deben ser variadas y no repetirse.
-
-                Ejemplo de formato de salida JSON (genera 10 objetos en este formato):
-                [
-                    {"question": "¿Una persona en coma puede ser donante por muerte encefálica?", "isTrue": false, "explanation": "La muerte encefálica no es un coma. Es el cese total e irreversible de la función cerebral, lo que significa que la persona ha fallecido legal y médicamente. Según CENATRA, este es un diagnóstico legal de fallecimiento."},
-                    {"question": "¿Si tengo diabetes, no puedo donar órganos?", "isTrue": false, "explanation": "Tener diabetes no siempre impide la donación. Un equipo médico evalúa cada caso para determinar qué órganos y tejidos son aptos para trasplante, según los protocolos de salud."}
-                ]
+                Devuelve únicamente un array JSON válido de ${quizBlockSize} objetos, cada uno con 'question', 'isTrue' y 'explanation'.
             `;
-
             try {
                 const response = await fetch('/api/openai', {
                     method: 'POST',
@@ -1437,18 +1409,17 @@
                         { role: "user", content: quizGenerationPrompt }
                     ] })
                 });
-
                 if (!response.ok) throw new Error('API request for quiz failed');
-
                 const result = await response.json();
                 let quizRaw = result.choices?.[0]?.message?.content || '';
                 let quizArr = extractFirstJSONArray(quizRaw);
-                if (!quizArr || !Array.isArray(quizArr) || quizArr.length < 5) {
+                if (!quizArr || !Array.isArray(quizArr) || quizArr.length < 2) {
                     addMessageToChat('bot', 'No se pudo generar el quiz correctamente. El formato recibido fue inesperado. Intenta de nuevo más tarde.\n\nRespuesta recibida:\n' + quizRaw);
                     currentQuizQuestionIndex = -1;
                     return;
                 }
                 quizQuestions = quizArr;
+                currentQuizQuestionIndex = 0;
                 displayQuizQuestion(currentQuizQuestionIndex);
             } catch (error) {
                 console.error("Error generating quiz questions:", error);
@@ -1465,50 +1436,66 @@
 
         function displayQuizQuestion(index) {
             if (index >= quizQuestions.length) {
-                endQuiz();
+                quizTotalAnswered += quizQuestions.length;
+                if (quizTotalAnswered >= quizMaxQuestions) {
+                    endQuiz();
+                    return;
+                }
+                // Mostrar opción de seguir o terminar
+                suggestedQuestionsContainer.innerHTML = '';
+                suggestedQuestionsContainer.classList.remove('hidden');
+                const moreBtn = document.createElement('button');
+                moreBtn.textContent = `Quiero más preguntas (${quizTotalAnswered}/${quizMaxQuestions})`;
+                moreBtn.className = `px-4 py-2 rounded-lg bg-[var(--vida-btn-green)] text-white text-sm font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colores`;
+                moreBtn.onclick = async () => {
+                    addMessageToChat('user', moreBtn.textContent);
+                    suggestedQuestionsContainer.innerHTML = '';
+                    suggestedQuestionsContainer.classList.add('hidden');
+                    await generateQuizQuestions();
+                };
+                suggestedQuestionsContainer.appendChild(moreBtn);
+                const finishBtn = document.createElement('button');
+                finishBtn.textContent = "Terminar Quiz";
+                finishBtn.className = `ml-2 px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium hover:bg-[var(--vida-module-btn-hover)] transition-colores shadow-sm`;
+                finishBtn.onclick = () => {
+                    addMessageToChat('user', finishBtn.textContent);
+                    endQuiz();
+                };
+                suggestedQuestionsContainer.appendChild(finishBtn);
                 return;
             }
-
             const questionData = quizQuestions[index];
-            addMessageToChat('bot', `Pregunta ${index + 1} de ${quizQuestions.length}: ${questionData.question}`);
-            
+            addMessageToChat('bot', `Pregunta ${quizTotalAnswered + index + 1} de ${quizMaxQuestions}: ${questionData.question}`);
             suggestedQuestionsContainer.innerHTML = '';
-            suggestedQuestionsContainer.classList.remove('hidden'); 
-
+            suggestedQuestionsContainer.classList.remove('hidden');
             const trueBtn = document.createElement('button');
             trueBtn.textContent = "✅ Verdadero";
-            trueBtn.className = `px-6 py-3 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors`;
+            trueBtn.className = `px-6 py-3 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colores`;
             trueBtn.onclick = () => handleAnswerClick(true, questionData);
             suggestedQuestionsContainer.appendChild(trueBtn);
-
             const falseBtn = document.createElement('button');
             falseBtn.textContent = "❌ Falso";
-            falseBtn.className = `px-6 py-3 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors`;
+            falseBtn.className = `px-6 py-3 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colores`;
             falseBtn.onclick = () => handleAnswerClick(false, questionData);
             suggestedQuestionsContainer.appendChild(falseBtn);
-
             chatContainerWrapper.scrollTop = chatContainerWrapper.scrollHeight;
         }
 
         function handleAnswerClick(isTrueAnswer, questionData) {
             addMessageToChat('user', isTrueAnswer ? "✅ Verdadero" : "❌ Falso");
-
             const quizButtons = suggestedQuestionsContainer.querySelectorAll('button');
             quizButtons.forEach(button => {
                 button.disabled = true;
                 button.classList.add('opacity-50', 'cursor-not-allowed');
             });
-
             const isCorrect = (isTrueAnswer === questionData.isTrue);
             let feedbackText = isCorrect ? "✔️ ¡Correcto!" : "❌ Incorrecto.";
             feedbackText += `\n${questionData.explanation}`;
             addMessageToChat('bot', feedbackText);
-
             suggestedQuestionsContainer.innerHTML = '';
             const nextQuestionBtn = document.createElement('button');
             nextQuestionBtn.textContent = "➡️ Siguiente pregunta";
-            nextQuestionBtn.className = `mt-4 px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium 
-                                         hover:bg-[var(--vida-module-btn-hover)] transition-colors`;
+            nextQuestionBtn.className = `mt-4 px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium hover:bg-[var(--vida-module-btn-hover)] transition-colores`;
             nextQuestionBtn.onclick = () => {
                 addMessageToChat('user', nextQuestionBtn.textContent);
                 suggestedQuestionsContainer.classList.add('hidden');
@@ -1521,29 +1508,23 @@
         }
 
         function endQuiz() {
-            addMessageToChat('bot', "🎉 ¡Has completado el Desmitificador Express! Gracias por informarte con VIDA. Cada duda resuelta es un paso más hacia una cultura de donación más humana y consciente.");
-            
+            addMessageToChat('bot', `🎉 ¡Has completado el Desmitificador Express! Respondiste ${quizTotalAnswered} preguntas. Gracias por informarte con VIDA. Cada duda resuelta es un paso más hacia una cultura de donación más humana y consciente.`);
             suggestedQuestionsContainer.innerHTML = '';
             suggestedQuestionsContainer.classList.remove('hidden');
-
             const startDonorPathBtn = document.createElement('button');
             startDonorPathBtn.textContent = "Iniciar “Tu camino como donante”";
-            startDonorPathBtn.className = `px-4 py-2 rounded-lg bg-[var(--vida-btn-green)] text-white text-sm font-bold shadow-md 
-                                         hover:bg-[var(--vida-btn-green-hover)] transition-colors`;
+            startDonorPathBtn.className = `px-4 py-2 rounded-lg bg-[var(--vida-btn-green)] text-white text-sm font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colores`;
             startDonorPathBtn.onclick = () => {
                 addMessageToChat('user', startDonorPathBtn.textContent);
                 suggestedQuestionsContainer.classList.add('hidden');
                 suggestedQuestionsContainer.innerHTML = '';
                 currentQuizQuestionIndex = -1;
-                // Start the improved donor path flow
                 handleDonorInterest("Quiero iniciar el camino como donante");
             };
             suggestedQuestionsContainer.appendChild(startDonorPathBtn);
-
             const askAnotherQuestionBtn = document.createElement('button');
             askAnotherQuestionBtn.textContent = "Hacer otra pregunta a VIDA";
-            askAnotherQuestionBtn.className = `px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium 
-                                             hover:bg-[var(--vida-module-btn-hover)] transition-colors shadow-sm`;
+            askAnotherQuestionBtn.className = `px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium hover:bg-[var(--vida-module-btn-hover)] transition-colores shadow-sm`;
             askAnotherQuestionBtn.onclick = () => {
                 addMessageToChat('user', askAnotherQuestionBtn.textContent);
                 reset_chat_and_offer_suggestions();

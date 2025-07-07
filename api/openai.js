@@ -13,9 +13,17 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Leer el body de la request de forma compatible con Vercel serverless
+  let rawBody = '';
+  await new Promise((resolve, reject) => {
+    req.on('data', chunk => { rawBody += chunk; });
+    req.on('end', resolve);
+    req.on('error', reject);
+  });
+
   let payload;
   try {
-    payload = await req.json();
+    payload = JSON.parse(rawBody);
   } catch (e) {
     res.status(400).json({ error: 'JSON inválido en el body.' });
     return;

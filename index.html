@@ -439,21 +439,24 @@
     </div>
 
     <script>
-        // --- Quiz Integration ---
-        startQuizBtn.addEventListener('click', () => {
-            // Opción 1: Abrir quiz en nueva ventana
-            // window.open('quiz.html', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
-            
-            // Opción 2: Redirigir a la página del quiz
-            window.location.href = 'quiz.html';
-        });
-
         // --- DOM Elements ---
         const welcomeScreen = document.getElementById('welcome-screen');
         const chatScreen = document.getElementById('chat-screen');
         const startChatBtn = document.getElementById('start-chat-btn');
         const startQuizBtn = document.getElementById('start-quiz-btn'); 
 
+        // --- Quiz Integration ---
+        if (startQuizBtn) {
+            startQuizBtn.addEventListener('click', () => {
+                // Opción 1: Abrir quiz en nueva ventana
+                // window.open('quiz.html', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+                
+                // Opción 2: Redirigir a la página del quiz
+                window.location.href = 'quiz.html';
+            });
+        }
+
+        // --- More DOM Elements ---
         const chatContainer = document.getElementById('chat-container');
         const chatContainerWrapper = document.getElementById('chat-container-wrapper');
         const chatForm = document.getElementById('chat-form');
@@ -825,11 +828,6 @@
             }
         }
 
-        // --- Quiz Integration ---
-        startQuizBtn.addEventListener('click', () => {
-            window.open('quiz.html', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
-        });
-
         // --- Nuevo: Instrucción para la IA en el prompt del sistema ---
         const systemPrompt = `
         **DIRECTRICES PRINCIPALES PARA VIDA (ASISTENTE CONVERSACIONAL)**
@@ -1015,17 +1013,6 @@
             currentGriefStep = null;
             currentFamilyDonationStep = null;
             addInitialBotMessage();
-        });
-
-        startQuizBtn.addEventListener('click', () => {
-            showChat();
-            chatHistory = [];
-            chatContainer.innerHTML = '';
-            currentDonorPathStep = null;
-            currentIndecisionStep = null;
-            currentGriefStep = null;
-            currentFamilyDonationStep = null;
-            startQuiz();
         });
 
         closeChatBtn.addEventListener('click', hideChat);

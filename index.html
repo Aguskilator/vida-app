@@ -425,7 +425,7 @@
 
                 <form id="chat-form" class="flex items-center space-x-3">
                     <button type="button" id="suggest-questions-btn" class="bg-[var(--vida-suggest-btn-bg)] text-[var(--vida-text-dark)] rounded-full p-2.5 
-                                     hover:bg-[var(--vida-suggest-btn-hover)] transition-colors focus:outline-none focus:ring-4 focus:ring-blue-100 
+                                     hover:bg-[var(--vida-suggest-btn-hover)] transition-colores focus:outline-none focus:ring-4 focus:ring-blue-100 
                                      disabled:bg-gray-200 disabled:cursor-not-allowed flex items-center justify-center">
                         <svg class="h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
                         <span id="suggest-button-text" class="ml-1 text-sm font-semibold">Sugiere</span> </button>
@@ -853,6 +853,7 @@
         - Nunca repitas literalmente la pregunta del usuario como forma de respuesta. Procesa, interpreta y responde con lenguaje humano.
         - Cuando sea posible, anticipa lo que puede necesitar el usuario (por ejemplo: si pregunta sobre donar, sugiere cómo registrarse o qué órganos se pueden donar).
         - Si el usuario hace una pregunta muy general (“¿qué es donar?”), comienza con una explicación simple y ofrece ampliar: "Donar es dar algo que puede ayudar a otra persona. En este caso, se trata de donar órganos o tejidos después de fallecer. ¿Quieres saber cómo funciona?"
+        - No siempre utilizar estoy aqui para ayudar, ya que puede sonar repetitivo. Usa frases como "Estoy aquí para informarte" o "Puedo guiarte en esto", pero que varien y solo se ocupen cuando sea necesario en la conversacion, usa la IA para hacer respuestas acorde y naturales.
 
         **Ámbito Temático (Permitido):**
         Solo responde a preguntas relacionadas con:
@@ -1217,6 +1218,7 @@
 
             // 4. Busca si la IA devolvió una instrucción de módulo
             const moduloObj = extractFirstJSON(botResponseText);
+            console.log('DEBUG: moduloObj extraído:', moduloObj); // <-- Log para depuración
             if (moduloObj && moduloObj.activarModulo) {
                 switch (moduloObj.activarModulo) {
                     case 'donorPath':
@@ -1227,7 +1229,13 @@
                         currentQuizQuestionIndex = -1;
                         quizQuestions = [];
                         currentDonorPathStep = 'introduction';
-                        displayDonorPathStep(currentDonorPathStep);
+                        // Log para depuración
+                        console.log('DEBUG: Activando donorPath, paso:', currentDonorPathStep, donorPathModule[currentDonorPathStep]);
+                        if (donorPathModule[currentDonorPathStep] && donorPathModule[currentDonorPathStep].text) {
+                            displayDonorPathStep(currentDonorPathStep);
+                        } else {
+                            addMessageToChat('bot', 'No se encontró el contenido del módulo "mi camino como donante". Por favor, revisa la configuración.');
+                        }
                         break;
                     case 'indecision':
                         currentDonorPathStep = null;

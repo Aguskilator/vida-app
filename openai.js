@@ -19,31 +19,41 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Usa req.body directamente (Next.js ya lo parsea)
-  const payload = req.body;
+  // --- NUEVA LÓGICA DE ORQUESTADOR ---
+  // Espera: { historial: [...], mensaje: 'texto' }
+  const { historial, mensaje, model } = req.body;
 
-  let openaiPayload;
-  if (Array.isArray(payload.prompt)) {
-    openaiPayload = {
-      model: 'gpt-3.5-turbo',
-      messages: payload.prompt,
-      temperature: 0.7,
-      max_tokens: 700
-    };
-  } else if (typeof payload.prompt === 'string') {
-    openaiPayload = {
-      model: 'gpt-3.5-turbo',
-      messages: [
-        { role: 'system', content: '' },
-        { role: 'user', content: payload.prompt }
-      ],
-      temperature: 0.7,
-      max_tokens: 700
-    };
-  } else {
-    res.status(400).json({ error: 'Formato de prompt no soportado.', payload });
-    return;
+  // Prompt del sistema para orquestador
+  const systemPrompt = `
+Eres VIDA, un asistente virtual experto en donación de órganos, tejidos y sangre en México. Analiza el historial de la conversación y el mensaje del usuario. Detecta la intención principal (por ejemplo: deseo de donar, indecisión, duelo, dudas familiares, etc.).
+
+1. Responde SIEMPRE de forma empática, cálida y natural, siguiendo las reglas de estilo y alcance temático del sistema.
+2. Si detectas que corresponde activar un módulo especial (camino del donante, indecisión, duelo, dudas familiares, quiz, etc.), TERMINA SIEMPRE tu mensaje con un objeto JSON en una línea nueva, exactamente así: {"activarModulo": "donorPath"} (o el módulo que corresponda: donorPath, indecision, grief, familyDonation, quiz). El JSON debe ir solo, en una línea nueva, al final de tu respuesta.
+3. Si no corresponde activar ningún módulo, NO incluyas ningún JSON ni texto extra.
+4. Nunca repitas la pregunta del usuario. No uses asteriscos ni viñetas. Usa listas numeradas o guiones si es necesario.
+5. Si la pregunta está fuera de alcance, responde exactamente: "Lo siento, solo puedo ayudarte con preguntas sobre donación de órganos, tejidos o sangre."
+6. Si el usuario pide más información, amplía la respuesta de forma clara y sencilla.
+
+IMPORTANTE: El JSON de activación debe ir SIEMPRE al final, en una línea nueva, y solo si corresponde activar un módulo. Si no, no incluyas nada extra.
+`;
+
+  // Construir el array de mensajes para OpenAI
+  let messages = [
+    { role: 'system', content: systemPrompt }
+  ];
+  if (Array.isArray(historial)) {
+    messages = messages.concat(historial);
   }
+  if (mensaje) {
+    messages.push({ role: 'user', content: mensaje });
+  }
+
+  const openaiPayload = {
+    model: model || 'gpt-4', // Usa GPT-4 si está disponible
+    messages,
+    temperature: 0.7,
+    max_tokens: 700
+  };
 
   try {
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {

@@ -477,10 +477,11 @@
 
         // --- Module Content Definition ---
         const donorPathModule = {
-            initial: {
-                text: "¡Qué decisión tan valiosa estás considerando! Aquí te acompaño paso a paso en tu camino como donante. Si ya estás listo para registrarte oficialmente como donador voluntario, puedes hacerlo en el portal nacional. Da click aquí para registrarte como donador voluntario en CENATRA:",
+            // The 'initial' step is now just a trigger. The conversation starts with 'introduction'.
+            initial: {}, 
+            introduction: {
+                text: "¡Qué decisión tan valiosa estás considerando! Aquí te acompaño paso a paso en tu camino como donante.",
                 buttons: [
-                    { text: "Registrarme en CENATRA", action: "open_cenatra_link", link: "https://dv.cenatra.salud.gob.mx/registrar.php" },
                     { text: "Iniciar camino como donante", action: "donor_path_step1" },
                     { text: "Prefiero hacer una pregunta diferente", action: "reset_chat" }
                 ]
@@ -519,9 +520,10 @@
                 ]
             },
             step4: {
-                text: "Además de hablar con tu familia, puedes dejar por escrito tu decisión de estas maneras: 1. Marcándolo en tu INE (si renovaste y pediste que aparezca). 2. En el portal del Centro Nacional de Trasplantes (CENATRA): https://www.gob.gob.mx/cenatra 3. En una carta simple firmada. 4. O en tu testamento o voluntad anticipada (si aplica en tu estado).",
+                text: "Además de hablar con tu familia, puedes dejar por escrito tu decisión de estas maneras: 1. Marcándolo en tu INE (si renovaste y pediste que aparezca). 2. En el portal del Centro Nacional de Trasplantes (CENATRA). 3. En una carta simple firmada. 4. O en tu testamento o voluntad anticipada (si aplica en tu estado).",
                 buttons: [
-                    { text: "Sí, enséñame uno", action: "donor_path_example_carta" },
+                    { text: "Registrarme en CENATRA", action: "open_cenatra_link", link: "https://dv.cenatra.salud.gob.mx/registrar.php" },
+                    { text: "Sí, enséñame un ejemplo de carta", action: "donor_path_example_carta" },
                     { text: "No, continuar 👉", action: "donor_path_step5" }
                 ]
             },
@@ -1013,7 +1015,7 @@
                 currentIndecisionStep = null;
                 const nextStep = action.replace('donor_path_', '');
                 if(nextStep === 'initial'){
-                    currentDonorPathStep = 'initial';
+                    currentDonorPathStep = 'introduction'; // Start with introduction now
                     displayDonorPathStep(currentDonorPathStep);
                 } else {
                     displayDonorPathStep(nextStep);
@@ -1154,8 +1156,8 @@
                 "quiero donar", "como dono", "cómo dono", "quiero ser donante", "quiero ser donador", "quiero ayudar", "donar mis organos", "donar mis órganos", "quiero registrarme como donador", "quiero registrarme para donar", "quiero registrarme como donante", "quiero registrarme para ser donador", "quiero registrarme para ser donante", "quiero ser voluntario para donar", "quiero ser voluntario para donar organos", "quiero ser voluntario para donar órganos", "quiero inscribirme como donador", "quiero inscribirme como donante", "quiero inscribirme para donar", "quiero inscribirme para ser donador", "quiero inscribirme para ser donante"
             ];
             if (donorPathTriggers.some(trigger => userMessage.toLowerCase().includes(trigger))) {
-                currentDonorPathStep = 'initial';
-                displayDonorPathStep(currentDonorPathStep);
+                // New empathetic response flow
+                await handleDonorInterest(userMessage);
                 return;
             }
 
@@ -1248,14 +1250,14 @@
             }
         }
         
-        async function getBotResponse(prompt) {
+        async function getBotResponse(prompt, specificSystemPrompt = null) {
             showTypingIndicator(true); 
             chatInput.disabled = true; 
             chatForm.querySelector('button[type="submit"]').disabled = true; 
             suggestQuestionsBtn.disabled = true; 
 
             const messages = [
-                { role: "system", content: systemPrompt },
+                { role: "system", content: specificSystemPrompt || systemPrompt },
                 ...chatHistory.slice(0, -1),
                 { role: "user", content: prompt }
             ];
@@ -1269,8 +1271,7 @@
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    addMessageToChat('bot', `Error API: ${errorText}`);
-                    throw new Error('API request for quiz failed');
+                    throw new Error(`API request failed with status ${response.status}: ${errorText}`);
                 }
 
                 const result = await response.json();
@@ -1279,9 +1280,12 @@
                     botResponseText = result.choices[0].message.content;
                 }
                 addMessageToChat('bot', botResponseText);
+                return botResponseText; // Return the response for chaining
             } catch (error) {
                 console.error("Error fetching bot response:", error);
-                addMessageToChat('bot', 'Hubo un problema de conexión. Por favor, verifica tu conexión e inténtalo de nuevo.');
+                const errorMessage = 'Hubo un problema de conexión. Por favor, verifica tu conexión e inténtalo de nuevo.';
+                addMessageToChat('bot', errorMessage);
+                return errorMessage;
             } finally {
                 chatInput.disabled = false;
                 chatForm.querySelector('button[type="submit"]').disabled = false;
@@ -1289,6 +1293,15 @@
                 chatInput.focus();
                 showTypingIndicator(false); 
             }
+        }
+
+        async function handleDonorInterest(userMessage) {
+            const empatheticPrompt = `El usuario ha expresado su deseo de donar con la frase: "${userMessage}". Genera una respuesta breve (1-2 frases) que sea cálida, validadora y alentadora. Agradece su consideración y reconoce la importancia de su gesto, sin dar pasos a seguir.`;
+            await getBotResponse(empatheticPrompt, "Eres VIDA, un asistente empático. Tu única tarea es generar una respuesta cálida y validadora a la intención del usuario de querer donar.");
+            
+            // After the empathetic response, start the guided path
+            currentDonorPathStep = 'introduction';
+            displayDonorPathStep(currentDonorPathStep);
         }
 
         async function generateSuggestedQuestions() {
@@ -1405,11 +1418,7 @@
                     ] })
                 });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    addMessageToChat('bot', `Error API: ${errorText}`);
-                    throw new Error('API request for quiz failed');
-                }
+                if (!response.ok) throw new Error('API request for quiz failed');
 
                 const result = await response.json();
                 if (result.choices?.[0]?.message?.content) {
@@ -1421,17 +1430,16 @@
                         }
                         displayQuizQuestion(currentQuizQuestionIndex);
                     } catch (e) {
-                        console.error("Error parsing quiz questions JSON:", e, result.choices[0].message.content);
-                        addMessageToChat('bot', 'Error al interpretar las preguntas del quiz. Respuesta recibida: ' + result.choices[0].message.content);
+                        console.error("Error parsing quiz questions JSON:", e);
+                        addMessageToChat('bot', 'No pude generar las preguntas del quiz. Por favor, intenta de nuevo.');
                         currentQuizQuestionIndex = -1;
                     }
                 } else {
-                    addMessageToChat('bot', 'Respuesta vacía de la API para las preguntas del quiz.');
-                    throw new Error("Empty response from API for quiz questions.");
+                     throw new Error("Empty response from API for quiz questions.");
                 }
             } catch (error) {
                 console.error("Error generating quiz questions:", error);
-                addMessageToChat('bot', 'Hubo un problema de conexión al generar el quiz. Detalle: ' + error.message);
+                addMessageToChat('bot', 'Hubo un problema de conexión al generar el quiz. Por favor, inténtalo de nuevo.');
                 currentQuizQuestionIndex = -1;
             } finally {
                 showTypingIndicator(false);
@@ -1514,8 +1522,8 @@
                 suggestedQuestionsContainer.classList.add('hidden');
                 suggestedQuestionsContainer.innerHTML = '';
                 currentQuizQuestionIndex = -1;
-                currentDonorPathStep = 'initial';
-                displayDonorPathStep(currentDonorPathStep);
+                // Start the improved donor path flow
+                handleDonorInterest("Quiero iniciar el camino como donante");
             };
             suggestedQuestionsContainer.appendChild(startDonorPathBtn);
 

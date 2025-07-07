@@ -326,17 +326,30 @@
             currentRound = 1;
             quizQuestions = [];
             roundScores = [];
+            clearQuizInterface();
             quizStartView.classList.remove('hidden');
             quizActiveView.classList.add('hidden');
             quizPartialResultsView.classList.add('hidden');
             quizResultsView.classList.add('hidden');
+        }
+
+        function clearQuizInterface() {
+            // Limpiar completamente la interfaz del quiz
+            quizAnswerButtons.innerHTML = '';
             quizNavigation.innerHTML = '';
             quizFeedback.classList.remove('visible');
+            quizFeedbackText.textContent = '';
+            quizProgress.textContent = '';
+            quizRoundInfo.textContent = '';
         }
 
         beginQuizBtn.addEventListener('click', async () => {
             quizStartView.classList.add('hidden');
             quizActiveView.classList.remove('hidden');
+            
+            // Limpiar interfaz al comenzar
+            clearQuizInterface();
+            
             quizQuestion.textContent = 'Generando preguntas para la ronda 1...';
             await generateQuizQuestions();
         });
@@ -344,6 +357,10 @@
         continueQuizBtn.addEventListener('click', async () => {
             quizPartialResultsView.classList.add('hidden');
             quizActiveView.classList.remove('hidden');
+            
+            // Limpiar completamente la interfaz antes de generar nuevas preguntas
+            clearQuizInterface();
+            
             quizQuestion.textContent = `Generando preguntas para la ronda ${currentRound}...`;
             await generateQuizQuestions();
         });
@@ -396,6 +413,10 @@
                         if (newQuestions.length > 0) {
                             // Agregar las nuevas preguntas al array existente
                             quizQuestions = quizQuestions.concat(newQuestions);
+                            
+                            // Limpiar interfaz antes de mostrar la primera pregunta
+                            clearQuizInterface();
+                            
                             displayQuizQuestion();
                         } else {
                             throw new Error("Generated question array is empty.");
@@ -437,6 +458,9 @@
             
             // Agregar las preguntas de respaldo al array principal
             quizQuestions = quizQuestions.concat(roundQuestions);
+            
+            // Limpiar interfaz antes de mostrar mensaje de fallback
+            clearQuizInterface();
             
             quizQuestion.innerHTML = `
                 <div class="text-center">

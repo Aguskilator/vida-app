@@ -182,16 +182,32 @@
         // --- API Call Function ---
         async function callOpenAI(messages) {
             try {
+                console.log('Calling OpenAI API with messages:', messages);
+                
+                const payload = {
+                    messages: messages,
+                    model: 'gpt-3.5-turbo'
+                };
+                
+                console.log('Sending payload:', payload);
+                
                 const response = await fetch('/api/openai', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ messages: messages })
+                    body: JSON.stringify(payload)
                 });
+                
+                console.log('Response status:', response.status);
+                
                 if (!response.ok) {
                     const errorText = await response.text();
+                    console.error('API Error:', errorText);
                     throw new Error(`API request failed with status ${response.status}: ${errorText}`);
                 }
-                return await response.json();
+                
+                const result = await response.json();
+                console.log('API Response:', result);
+                return result;
             } catch (error) {
                 console.error("Error calling OpenAI backend:", error);
                 throw error;
@@ -259,20 +275,63 @@
             ];
 
             try {
+                console.log('Generating quiz questions...');
                 const result = await callOpenAI(messages);
+                
                 if (result.choices?.[0]?.message?.content) {
-                    quizQuestions = JSON.parse(result.choices[0].message.content);
-                    if (quizQuestions.length > 0) {
-                        displayQuizQuestion();
-                    } else {
-                        throw new Error("Generated question array is empty.");
+                    console.log('Raw API response:', result.choices[0].message.content);
+                    
+                    // Intentar parsear el JSON
+                    try {
+                        quizQuestions = JSON.parse(result.choices[0].message.content);
+                        console.log('Parsed questions:', quizQuestions);
+                        
+                        if (quizQuestions.length > 0) {
+                            displayQuizQuestion();
+                        } else {
+                            throw new Error("Generated question array is empty.");
+                        }
+                    } catch (parseError) {
+                        console.error("JSON Parse Error:", parseError);
+                        console.log("Content that failed to parse:", result.choices[0].message.content);
+                        quizQuestion.textContent = 'Error al procesar las preguntas. El formato de respuesta no es válido.';
                     }
                 } else {
+                     console.error("Empty or invalid response structure:", result);
                      throw new Error("Empty response from API for quiz questions.");
                 }
             } catch (error) {
                 console.error("Error generating quiz questions:", error);
-                quizQuestion.textContent = 'Hubo un problema al generar el quiz. Por favor, intenta de nuevo más tarde.';
+                
+                // Mensaje de error más específico
+                if (error.message.includes('500')) {
+                    quizQuestion.innerHTML = `
+                        <div class="text-center">
+                            <p class="text-red-600 mb-4">Error de servidor (500)</p>
+                            <p class="text-slate-600 mb-4">Parece que hay un problema con la configuración del servidor o la API key de OpenAI.</p>
+                            <button onclick="location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                Intentar de nuevo
+                            </button>
+                        </div>
+                    `;
+                } else if (error.message.includes('API key')) {
+                    quizQuestion.innerHTML = `
+                        <div class="text-center">
+                            <p class="text-red-600 mb-4">Error de API Key</p>
+                            <p class="text-slate-600">La clave de API de OpenAI no está configurada correctamente.</p>
+                        </div>
+                    `;
+                } else {
+                    quizQuestion.innerHTML = `
+                        <div class="text-center">
+                            <p class="text-red-600 mb-4">Error de conexión</p>
+                            <p class="text-slate-600 mb-4">Hubo un problema al generar el quiz. Por favor, verifica tu conexión a internet.</p>
+                            <button onclick="location.reload()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                Intentar de nuevo
+                            </button>
+                        </div>
+                    `;
+                }
             }
         }
 

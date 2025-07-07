@@ -24,14 +24,25 @@ export default async function handler(req, res) {
   // O: { messages: [...] } para quiz directo
   const { historial, mensaje, messages: directMessages, model } = req.body;
 
+  console.log('API Request received:', { 
+    method: req.method, 
+    hasMessages: !!directMessages,
+    hasHistorial: !!historial,
+    hasApiKey: !!apiKey,
+    bodyKeys: Object.keys(req.body)
+  });
+
   // Si viene con 'messages', es una llamada directa (como el quiz)
   if (directMessages && Array.isArray(directMessages)) {
+    console.log('Processing direct messages for quiz...');
     const openaiPayload = {
       model: model || 'gpt-3.5-turbo',
       messages: directMessages,
       temperature: 0.7,
       max_tokens: 1000
     };
+
+    console.log('Sending to OpenAI:', JSON.stringify(openaiPayload, null, 2));
 
     try {
       const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -42,17 +53,36 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify(openaiPayload)
       });
+      
+      console.log('OpenAI response status:', openaiRes.status);
+      
       const data = await openaiRes.json();
+      
       if (!openaiRes.ok) {
+        console.error('OpenAI API Error:', data);
         res.status(openaiRes.status).json({ error: data.error?.message || 'Error de OpenAI', openaiError: data });
         return;
       }
+      
+      console.log('OpenAI success response received');
       res.status(200).json(data);
       return;
     } catch (err) {
+      console.error('Network error:', err);
       res.status(500).json({ error: 'Error al conectar con OpenAI.', details: err.message });
       return;
     }
+  }
+
+  // Si no tiene messages directos, verifica si es el formato del chat
+  if (!historial && !mensaje) {
+    console.error('Invalid request format. Missing messages, historial, or mensaje.');
+    res.status(400).json({ 
+      error: 'Formato de prompt no soportado.',
+      payload: req.body,
+      expected: 'Either { messages: [...] } or { historial: [...], mensaje: "..." }'
+    });
+    return;
   }
 
   // Prompt del sistema para orquestador

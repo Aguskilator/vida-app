@@ -1390,6 +1390,27 @@
             chatContainerWrapper.scrollTop = chatContainerWrapper.scrollHeight;
         }
 
+        // --- Utilidad para extraer JSON robusto de texto ---
+        function extractFirstJSONArray(text) {
+            // Busca el primer bloque que parece un array JSON
+            const arrayRegex = /\[\s*{[\s\S]*?}\s*\]/g;
+            const match = text.match(arrayRegex);
+            if (match) {
+                try {
+                    return JSON.parse(match[0]);
+                } catch (e) {
+                    // Si falla, intenta limpiar comas finales o errores comunes
+                    let cleaned = match[0].replace(/,\s*]/g, "]");
+                    try {
+                        return JSON.parse(cleaned);
+                    } catch (e2) {
+                        return null;
+                    }
+                }
+            }
+            return null;
+        }
+
         async function generateQuizQuestions() {
             showTypingIndicator(true);
             chatInput.disabled = true;
@@ -1413,7 +1434,6 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ prompt: [
-                        { role: "system", content: "Responde únicamente con un array JSON válido de 10 objetos con las propiedades: question, isTrue, explanation." },
                         { role: "user", content: quizGenerationPrompt }
                     ] })
                 });
@@ -1421,22 +1441,15 @@
                 if (!response.ok) throw new Error('API request for quiz failed');
 
                 const result = await response.json();
-                if (result.choices?.[0]?.message?.content) {
-                    try {
-                        quizQuestions = JSON.parse(result.choices[0].message.content);
-                        quizQuestions = quizQuestions.filter(q => q.question && typeof q.isTrue === 'boolean' && q.explanation);
-                        if (quizQuestions.length < 10) {
-                            throw new Error("Not enough valid questions generated.");
-                        }
-                        displayQuizQuestion(currentQuizQuestionIndex);
-                    } catch (e) {
-                        console.error("Error parsing quiz questions JSON:", e);
-                        addMessageToChat('bot', 'No pude generar las preguntas del quiz. Por favor, intenta de nuevo.');
-                        currentQuizQuestionIndex = -1;
-                    }
-                } else {
-                     throw new Error("Empty response from API for quiz questions.");
+                let quizRaw = result.choices?.[0]?.message?.content || '';
+                let quizArr = extractFirstJSONArray(quizRaw);
+                if (!quizArr || !Array.isArray(quizArr) || quizArr.length < 5) {
+                    addMessageToChat('bot', 'No se pudo generar el quiz correctamente. El formato recibido fue inesperado. Intenta de nuevo más tarde.\n\nRespuesta recibida:\n' + quizRaw);
+                    currentQuizQuestionIndex = -1;
+                    return;
                 }
+                quizQuestions = quizArr;
+                displayQuizQuestion(currentQuizQuestionIndex);
             } catch (error) {
                 console.error("Error generating quiz questions:", error);
                 addMessageToChat('bot', 'Hubo un problema de conexión al generar el quiz. Por favor, inténtalo de nuevo.');

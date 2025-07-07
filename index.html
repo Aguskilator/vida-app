@@ -47,7 +47,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-fill-color: transparent;
+            color: transparent;
             font-weight: 900;
             letter-spacing: 0.02em;
             text-shadow: 0 2px 8px rgba(13,71,161,0.08);
@@ -83,7 +83,7 @@
         .chat-messages::-webkit-scrollbar-thumb:hover { background: var(--vida-text-secondary); }
 
         /* Initially hide these screens/modals */
-        #chat-screen, #about-modal, #feedback-modal, #privacy-modal { display: none; }
+        #chat-screen, #about-modal, #feedback-modal, #privacy-modal, #quiz-screen { display: none; }
         
         /* Styles for radio buttons in feedback form */
         .feedback-radio-group label {
@@ -95,15 +95,115 @@
         /* Styles for quiz question card */
         .quiz-card {
             background-color: white;
-            border-radius: 1rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             padding: 1.5rem;
             margin-top: 1rem;
             text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .quiz-card:hover {
+            transform: translateY(-5px);
         }
 
         .quiz-buttons button {
-            transition: all 0.2s;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .quiz-answer-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .quiz-answer-btn:hover {
+            transform: scale(1.03);
+        }
+        
+        .quiz-answer-btn.correct {
+            background-color: var(--vida-quiz-btn-correct) !important;
+            color: white;
+            border-color: var(--vida-quiz-btn-correct) !important;
+        }
+        
+        .quiz-answer-btn.incorrect {
+            background-color: var(--vida-quiz-btn-incorrect) !important;
+            color: white;
+            border-color: var(--vida-quiz-btn-incorrect) !important;
+        }
+        
+        .quiz-answer-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        #quiz-feedback {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, opacity 0.5s ease-out, margin-top 0.5s ease-out;
+        }
+        
+        #quiz-feedback.visible {
+            max-height: 200px;
+            opacity: 1;
+            margin-top: 1rem;
+        }
+        
+        /* Quiz screen styles */
+        .quiz-screen {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2f1 100%);
+            min-height: 100vh;
+        }
+        
+        .quiz-progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .quiz-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--vida-btn-feedback), var(--vida-btn-green));
+            transition: width 0.3s ease;
+        }
+        
+        /* Quiz animations */
+        .quiz-card {
+            animation: quizSlideIn 0.5s ease-out;
+        }
+        
+        @keyframes quizSlideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+        
+        .quiz-answer-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quiz-answer-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .quiz-answer-btn:hover::before {
+            left: 100%;
         }
 
         /* Styling for the custom SVG robot */
@@ -390,6 +490,87 @@
         </div>
     </div>
 
+    <!-- Quiz Screen -->
+    <div id="quiz-screen" class="fixed inset-0 quiz-screen flex items-center justify-center p-4 z-40 transition-opacity duration-300 opacity-0">
+        <div class="w-full max-w-4xl">
+            <header class="w-full flex justify-between items-center mb-8">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-[var(--vida-text-dark)] rounded-full flex items-center justify-center shadow">
+                        <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-[var(--vida-text-dark)]">Desmitificador Express</h2>
+                </div>
+                <button id="exit-quiz-btn" class="text-gray-500 hover:bg-gray-200 p-2 rounded-full" title="Salir del Quiz">
+                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </header>
+
+            <main id="quiz-main-content" class="w-full">
+                <!-- Vista Inicial del Quiz -->
+                <div id="quiz-start-view" class="text-center p-8 bg-white rounded-2xl shadow-lg">
+                    <h3 class="text-3xl font-bold text-[var(--vida-text-dark)]">¿Qué tanto sabes sobre donar?</h3>
+                    <p class="mt-4 text-lg text-slate-600">Te haré preguntas de verdadero o falso para desmentir los mitos más comunes sobre la donación.</p>
+                    <p class="mt-2 text-sm text-slate-500">Puedes detener el quiz en cualquier momento después de 10 preguntas.</p>
+                    <button id="begin-quiz-btn" class="mt-8 bg-[var(--vida-btn-green)] text-white font-bold py-4 px-10 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105">
+                        ¡Estoy listo!
+                    </button>
+                </div>
+
+                <!-- Vista del Quiz Activo -->
+                <div id="quiz-active-view" class="hidden">
+                    <div class="quiz-card w-full">
+                        <div class="flex justify-between items-center mb-4">
+                            <div id="quiz-progress-text" class="text-sm font-semibold text-[var(--vida-text-secondary)]"></div>
+                            <div id="quiz-score-display" class="text-sm font-semibold text-[var(--vida-btn-green)]"></div>
+                        </div>
+                        <div class="quiz-progress-bar">
+                            <div id="quiz-progress-fill" class="quiz-progress-fill" style="width: 0%"></div>
+                        </div>
+                        <p id="quiz-question" class="text-2xl md:text-3xl font-medium text-slate-800 min-h-[100px] flex items-center justify-center text-center mb-8"></p>
+                        <div id="quiz-answer-buttons" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                        <div id="quiz-feedback" class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p id="quiz-feedback-text" class="text-center text-slate-700"></p>
+                        </div>
+                    </div>
+                    <div id="quiz-navigation" class="mt-6 text-center"></div>
+                </div>
+                
+                <!-- Vista de Resultados Intermedios -->
+                <div id="quiz-intermediate-view" class="hidden text-center p-8 bg-white rounded-2xl shadow-lg">
+                    <h3 class="text-3xl font-bold text-[var(--vida-text-dark)]">¡Buen trabajo!</h3>
+                    <p id="quiz-intermediate-score" class="mt-4 text-xl text-slate-600"></p>
+                    <p class="mt-2 text-lg text-slate-500">¿Quieres continuar con más preguntas?</p>
+                    <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+                        <button id="continue-quiz-btn" class="bg-[var(--vida-btn-green)] text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105">
+                            Continuar (5 preguntas más)
+                        </button>
+                        <button id="finish-quiz-early-btn" class="bg-gray-200 text-gray-800 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-300 transition-all transform hover:scale-105">
+                            Terminar aquí
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Vista de Resultados Finales -->
+                <div id="quiz-results-view" class="hidden text-center p-8 bg-white rounded-2xl shadow-lg">
+                    <h3 class="text-3xl font-bold text-[var(--vida-text-dark)]">¡Quiz completado!</h3>
+                    <p id="quiz-final-score" class="mt-4 text-2xl text-slate-600"></p>
+                    <div id="quiz-feedback-message" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p id="quiz-feedback-text-final" class="text-lg text-slate-700"></p>
+                    </div>
+                    <p class="mt-4 text-lg text-slate-500">Cada duda resuelta es un paso más hacia una cultura de donación más consciente.</p>
+                    <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+                        <button id="restart-quiz-btn" class="bg-[var(--vida-btn-feedback)] text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-400 transition-all transform hover:scale-105">
+                            Jugar de nuevo
+                        </button>
+                        <button id="return-home-btn" class="bg-gray-200 text-gray-800 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-300 transition-all transform hover:scale-105">
+                            Volver al inicio
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
 
     <div id="chat-screen" class="fixed inset-0 bg-slate-100 flex items-center justify-center p-0 sm:p-4 z-40 transition-opacity duration-300 opacity-0">
         <div class="w-full h-full sm:max-w-4xl sm:h-[90vh] bg-white sm:rounded-2xl shadow-2xl flex flex-col">
@@ -425,7 +606,7 @@
 
                 <form id="chat-form" class="flex items-center space-x-3">
                     <button type="button" id="suggest-questions-btn" class="bg-[var(--vida-suggest-btn-bg)] text-[var(--vida-text-dark)] rounded-full p-2.5 
-                                     hover:bg-[var(--vida-suggest-btn-hover)] transition-colores focus:outline-none focus:ring-4 focus:ring-blue-100 
+                                     hover:bg-[var(--vida-suggest-btn-hover)] transition-colors focus:outline-none focus:ring-4 focus:ring-blue-100 
                                      disabled:bg-gray-200 disabled:cursor-not-allowed flex items-center justify-center">
                         <svg class="h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
                         <span id="suggest-button-text" class="ml-1 text-sm font-semibold">Sugiere</span> </button>
@@ -442,8 +623,32 @@
         // --- DOM Elements ---
         const welcomeScreen = document.getElementById('welcome-screen');
         const chatScreen = document.getElementById('chat-screen');
+        const quizScreen = document.getElementById('quiz-screen');
         const startChatBtn = document.getElementById('start-chat-btn');
-        const startQuizBtn = document.getElementById('start-quiz-btn'); 
+        const startQuizBtn = document.getElementById('start-quiz-btn');
+
+        // Quiz elements
+        const exitQuizBtn = document.getElementById('exit-quiz-btn');
+        const quizStartView = document.getElementById('quiz-start-view');
+        const quizActiveView = document.getElementById('quiz-active-view');
+        const quizIntermediateView = document.getElementById('quiz-intermediate-view');
+        const quizResultsView = document.getElementById('quiz-results-view');
+        const beginQuizBtn = document.getElementById('begin-quiz-btn');
+        const continueQuizBtn = document.getElementById('continue-quiz-btn');
+        const finishQuizEarlyBtn = document.getElementById('finish-quiz-early-btn');
+        const restartQuizBtn = document.getElementById('restart-quiz-btn');
+        const returnHomeBtn = document.getElementById('return-home-btn');
+        const quizProgressText = document.getElementById('quiz-progress-text');
+        const quizProgressFill = document.getElementById('quiz-progress-fill');
+        const quizScoreDisplay = document.getElementById('quiz-score-display');
+        const quizQuestion = document.getElementById('quiz-question');
+        const quizAnswerButtons = document.getElementById('quiz-answer-buttons');
+        const quizFeedback = document.getElementById('quiz-feedback');
+        const quizFeedbackText = document.getElementById('quiz-feedback-text');
+        const quizNavigation = document.getElementById('quiz-navigation');
+        const quizIntermediateScore = document.getElementById('quiz-intermediate-score');
+        const quizFinalScore = document.getElementById('quiz-final-score');
+        const quizFeedbackTextFinal = document.getElementById('quiz-feedback-text-final'); 
 
         const chatContainer = document.getElementById('chat-container');
         const chatContainerWrapper = document.getElementById('chat-container-wrapper');
@@ -469,8 +674,12 @@
         // --- State ---
         let chatHistory = [];
         let currentDonorPathStep = null;
-        let currentQuizQuestionIndex = -1;
+        let currentQuizQuestionIndex = 0;
         let quizQuestions = [];
+        let quizScore = 0;
+        let quizTotalAnswered = 0;
+        let quizMaxQuestions = 20;
+        let quizBlockSize = 5;
         let currentIndecisionStep = null;
         let currentGriefStep = null;
         let currentFamilyDonationStep = null;
@@ -643,11 +852,6 @@
                 ]
             }
         };
-
-        // --- New Quiz Module ---
-        let quizTotalAnswered = 0; // Nuevo: cuenta total de preguntas respondidas
-        let quizMaxQuestions = 20; // Máximo de preguntas por sesión
-        let quizBlockSize = 5; // Tamaño del bloque
 
         // --- Función para mostrar botones de módulo y asociar eventos ---
         function displayModuleButtons(buttons, handler) {
@@ -855,6 +1059,7 @@
         - Si el usuario hace una pregunta muy general (“¿qué es donar?”), comienza con una explicación simple y ofrece ampliar: "Donar es dar algo que puede ayudar a otra persona. En este caso, se trata de donar órganos o tejidos después de fallecer. ¿Quieres saber cómo funciona?"
         - No siempre utilizar estoy aqui para ayudar, ya que puede sonar repetitivo. Usa frases como "Estoy aquí para informarte" o "Puedo guiarte en esto", pero que varien y solo se ocupen cuando sea necesario en la conversacion, usa la IA para hacer respuestas acorde y naturales.
 
+
         **Ámbito Temático (Permitido):**
         Solo responde a preguntas relacionadas con:
         - Qué es la muerte encefálica y su diagnóstico.
@@ -1003,14 +1208,36 @@
         });
 
         startQuizBtn.addEventListener('click', () => {
-            showChat();
-            chatHistory = [];
-            chatContainer.innerHTML = '';
-            currentDonorPathStep = null;
-            currentIndecisionStep = null;
-            currentGriefStep = null;
-            currentFamilyDonationStep = null;
-            startQuiz();
+            showQuiz();
+        });
+
+        exitQuizBtn.addEventListener('click', () => {
+            hideQuiz();
+        });
+
+        beginQuizBtn.addEventListener('click', async () => {
+            await startQuizStandalone();
+        });
+
+        continueQuizBtn.addEventListener('click', () => {
+            showQuizActiveView();
+            if (currentQuizQuestionIndex < quizQuestions.length) {
+                displayQuizQuestion();
+            } else {
+                generateMoreQuestions();
+            }
+        });
+
+        finishQuizEarlyBtn.addEventListener('click', () => {
+            endQuiz();
+        });
+
+        restartQuizBtn.addEventListener('click', () => {
+            resetQuiz();
+        });
+
+        returnHomeBtn.addEventListener('click', () => {
+            hideQuiz();
         });
 
         closeChatBtn.addEventListener('click', hideChat);
@@ -1193,424 +1420,224 @@
             }
         }
 
-        // --- Main Chat Form Handler (corregido) ---
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const userMessage = chatInput.value.trim();
-            if (!userMessage) return;
-
-            // 1. Si está activo el quiz, solo permite botones
-            if (currentQuizQuestionIndex !== -1) {
-                addMessageToChat('user', userMessage);
-                chatInput.value = '';
-                addMessageToChat('bot', "Por favor, usa los botones para interactuar con el quiz.");
-                return;
-            }
-
-            // 2. Agrega el mensaje del usuario al chat
-            addMessageToChat('user', userMessage);
-            chatInput.value = '';
-            suggestedQuestionsContainer.classList.add('hidden');
-            suggestedQuestionsContainer.innerHTML = '';
-
-            // 3. Pide respuesta a la IA
-            const botResponseText = await getBotResponse(userMessage);
-
-            // 4. Busca si la IA devolvió una instrucción de módulo
-            const moduloObj = extractFirstJSON(botResponseText);
-            console.log('DEBUG: moduloObj extraído:', moduloObj); // <-- Log para depuración
-            if (moduloObj && moduloObj.activarModulo) {
-                switch (moduloObj.activarModulo) {
-                    case 'donorPath':
-                        // Limpia el estado de todos los módulos antes de activar donorPath
-                        currentIndecisionStep = null;
-                        currentGriefStep = null;
-                        currentFamilyDonationStep = null;
-                        currentQuizQuestionIndex = -1;
-                        quizQuestions = [];
-                        currentDonorPathStep = 'introduction';
-                        // Log para depuración
-                        console.log('DEBUG: Activando donorPath, paso:', currentDonorPathStep, donorPathModule[currentDonorPathStep]);
-                        if (donorPathModule[currentDonorPathStep] && donorPathModule[currentDonorPathStep].text) {
-                            displayDonorPathStep(currentDonorPathStep);
-                        } else {
-                            addMessageToChat('bot', 'No se encontró el contenido del módulo "mi camino como donante". Por favor, revisa la configuración.');
-                        }
-                        break;
-                    case 'indecision':
-                        currentDonorPathStep = null;
-                        currentGriefStep = null;
-                        currentFamilyDonationStep = null;
-                        currentQuizQuestionIndex = -1;
-                        quizQuestions = [];
-                        currentIndecisionStep = 'initial';
-                        displayIndecisionStep(currentIndecisionStep);
-                        break;
-                    case 'grief':
-                        currentDonorPathStep = null;
-                        currentIndecisionStep = null;
-                        currentFamilyDonationStep = null;
-                        currentQuizQuestionIndex = -1;
-                        quizQuestions = [];
-                        currentGriefStep = 'initial';
-                        displayGriefStep(currentGriefStep);
-                        break;
-                    case 'familyDonation':
-                        currentDonorPathStep = null;
-                        currentIndecisionStep = null;
-                        currentGriefStep = null;
-                        currentQuizQuestionIndex = -1;
-                        quizQuestions = [];
-                        currentFamilyDonationStep = 'initial';
-                        displayFamilyDonationStep(currentFamilyDonationStep);
-                        break;
-                    case 'quiz':
-                        currentDonorPathStep = null;
-                        currentIndecisionStep = null;
-                        currentGriefStep = null;
-                        currentFamilyDonationStep = null;
-                        quizQuestions = [];
-                        startQuiz();
-                        break;
-                    default:
-                        addMessageToChat('bot', 'Lo siento, no pude activar el módulo solicitado.');
-                }
-            }
-        });
-
-        // --- Chat Functions ---
-        function addInitialBotMessage() {
-            if (chatHistory.length === 0) {
-                addMessageToChat('bot', 'Hola, soy VIDA. Estoy aquí para ofrecerte información clara y respetuosa sobre la donación de órganos y tejidos ¿En qué puedo ayudarte hoy?');
-            }
-        }
-        
-        function addMessageToChat(sender, text) {
-            chatHistory.push({ role: sender === 'bot' ? 'assistant' : 'user', content: text });
-            
-            const messageWrapper = document.createElement('div');
-            messageWrapper.className = `flex items-end gap-2 max-w-lg lg:max-w-xl ${sender === 'user' ? 'self-end' : 'self-start'}`;
-            
-            const textContent = text.replace(/\n/g, '<br>');
-
-            if (sender === 'user') {
-                messageWrapper.innerHTML = `<div class="order-1 bg-[var(--vida-chat-user-bg)] text-slate-800 rounded-2xl rounded-br-none px-4 py-3 shadow-sm chat-bubble-text">${textContent}</div>`;
-            } else {
-                const botAvatarDiv = document.createElement('div');
-                botAvatarDiv.className = "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 message-robot-avatar overflow-hidden";
-                botAvatarDiv.innerHTML = '<img src="robotcara.png" alt="Robot VIDA" class="w-10 h-10 object-contain" onerror="this.onerror=null;this.src=\'https://placehold.co/40x40/0D47A1/FFFFFF?text=V\';" />';
-
-                const textBubbleDiv = document.createElement('div');
-                textBubbleDiv.className = "bg-[var(--vida-chat-bot-bg)] text-slate-800 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm chat-bubble-text";
-                textBubbleDiv.innerHTML = textContent;
-
-                messageWrapper.appendChild(botAvatarDiv);
-                messageWrapper.appendChild(textBubbleDiv);
-            }
-            
-            chatContainer.appendChild(messageWrapper);
-            chatContainerWrapper.scrollTop = chatContainerWrapper.scrollHeight;
+        // --- Standalone Quiz Module Functions ---
+        async function startQuizStandalone() {
+            showQuizActiveView();
+            quizQuestion.textContent = 'Generando preguntas...';
+            await generateQuizQuestionsStandalone();
         }
 
-        function showTypingIndicator(show) {
-            let typingIndicator = document.getElementById('typing-indicator');
-            if (show) {
-                if (!typingIndicator) {
-                    typingIndicator = document.createElement('div');
-                    typingIndicator.id = 'typing-indicator';
-                    typingIndicator.className = 'flex items-end gap-2 self-start typing-indicator-robot';
-                    
-                    const robotAvatarDiv = document.createElement('div');
-                    robotAvatarDiv.className = "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 typing-indicator-robot overflow-hidden";
-                    robotAvatarDiv.innerHTML = '<img src="robotcara.png" alt="Robot VIDA" class="w-10 h-10 object-contain" onerror="this.onerror=null;this.src=\'https://placehold.co/40x40/0D47A1/FFFFFF?text=V\';" />';
-
-                    const typingDotsDiv = document.createElement('div');
-                    typingDotsDiv.className = "bg-[var(--vida-chat-bot-bg)] text-slate-800 rounded-2xl rounded-bl-none px-4 py-3 shadow-sm";
-                    typingDotsDiv.innerHTML = `
-                        <div class="flex items-center space-x-1.5">
-                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.3s;"></span>
-                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: -0.15s;"></span>
-                            <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
-                        </div>`;
-
-                    typingIndicator.appendChild(robotAvatarDiv);
-                    typingIndicator.appendChild(typingDotsDiv);
-                    chatContainer.appendChild(typingIndicator);
-                    chatContainerWrapper.scrollTop = chatContainerWrapper.scrollHeight;
-                }
-            } else {
-                if (typingIndicator) typingIndicator.remove();
-            }
-        }
-        
-        async function getBotResponse(prompt, specificSystemPrompt = null) {
-            showTypingIndicator(true); 
-            chatInput.disabled = true; 
-            chatForm.querySelector('button[type="submit"]').disabled = true; 
-            suggestQuestionsBtn.disabled = true; 
-
-            const messages = [
-                { role: "system", content: specificSystemPrompt || systemPrompt },
-                ...chatHistory.slice(0, -1),
-                { role: "user", content: prompt }
-            ];
-
-            try {
-                const response = await fetch('/api/openai', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: messages })
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`API request failed with status ${response.status}: ${errorText}`);
-                }
-
-                const result = await response.json();
-                let botResponseText = "Lo siento, hubo un problema al procesar tu solicitud. Por favor, intenta de nuevo.";
-                if (result.choices?.[0]?.message?.content) {
-                    botResponseText = result.choices[0].message.content;
-                }
-                addMessageToChat('bot', botResponseText);
-                return botResponseText; // Return the response for chaining
-            } catch (error) {
-                console.error("Error fetching bot response:", error);
-                const errorMessage = 'Hubo un problema de conexión. Por favor, verifica tu conexión e inténtalo de nuevo.';
-                addMessageToChat('bot', errorMessage);
-                return errorMessage;
-            } finally {
-                chatInput.disabled = false;
-                chatForm.querySelector('button[type="submit"]').disabled = false;
-                suggestQuestionsBtn.disabled = false;
-                chatInput.focus();
-                showTypingIndicator(false); 
-            }
-        }
-
-        async function generateSuggestedQuestions() {
-            suggestQuestionsBtn.disabled = true;
-            suggestButtonText.textContent = 'Generando...'; 
-            suggestedQuestionsContainer.innerHTML = ''; 
-            suggestedQuestionsContainer.classList.add('hidden'); 
-
-            const questionGenerationPrompt = `
-                Actúa como VIDA, un asistente de donación de órganos en México.
-                Genera 3 preguntas cortas y sencillas que un familiar o público general podría hacer sobre la donación de órganos y tejidos en el contexto de muerte encefálica o parada cardíaca en México.
-                Las preguntas deben ser muy concisas y directas.
-                Devuelve la respuesta como un array JSON de 3 strings, donde cada string es una pregunta.
-            `;
-            
-            try {
-                const response = await fetch('/api/openai', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: [
-                        { role: "system", content: "Responde únicamente con un array JSON válido de 3 strings." },
-                        { role: "user", content: questionGenerationPrompt }
-                    ] })
-                });
-
-                if (!response.ok) throw new Error('API request failed');
-
-                const result = await response.json();
-                let suggestedQuestions = [];
-                if (result.choices?.[0]?.message?.content) {
-                    try {
-                        suggestedQuestions = JSON.parse(result.choices[0].message.content);
-                        displaySuggestedQuestions(suggestedQuestions);
-                    } catch (e) {
-                        console.error("Error parsing suggested questions JSON:", e);
-                        addMessageToChat('bot', 'No pude generar sugerencias. Intenta de nuevo.');
-                    }
-                }
-            } catch (error) {
-                console.error("Error generating suggested questions:", error);
-                addMessageToChat('bot', 'Hubo un problema al obtener sugerencias.');
-            } finally {
-                suggestQuestionsBtn.disabled = false;
-                suggestButtonText.textContent = 'Sugiere'; 
-            }
-        }
-        
-        function displaySuggestedQuestions(questions) {
-            suggestedQuestionsContainer.innerHTML = '';
-            questions.forEach(q => {
-                const button = document.createElement('button');
-                button.textContent = q;
-                button.className = `px-3 py-2 rounded-lg bg-[var(--vida-suggest-btn-bg)] text-[var(--vida-text-dark)] text-sm font-medium 
-                                 hover:bg-[var(--vida-suggest-btn-hover)] transition-colores`;
-                button.onclick = () => {
-                    chatInput.value = q;
-                    chatForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-                };
-                suggestedQuestionsContainer.appendChild(button);
-            });
-            suggestedQuestionsContainer.classList.remove('hidden');
-        }
-
-        // --- Quiz Module Functions ---
-        async function startQuiz() {
-            quizTotalAnswered = 0;
-            currentQuizQuestionIndex = 0;
-            quizQuestions = [];
-            addMessageToChat('bot', `¡Excelente! Vamos a poner a prueba tus conocimientos sobre la donación con el Desmitificador Express. Te haré bloques de 5 preguntas de verdadero o falso. ¿Estás listo?`);
-            suggestedQuestionsContainer.innerHTML = '';
-            suggestedQuestionsContainer.classList.remove('hidden');
-            const startButton = document.createElement('button');
-            startButton.textContent = "🚀 Iniciar Quiz";
-            startButton.className = `px-6 py-3 rounded-lg bg-[var(--vida-btn-green)] text-white font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colores`;
-            startButton.onclick = async () => {
-                addMessageToChat('user', 'Iniciar Quiz');
-                suggestedQuestionsContainer.innerHTML = '';
-                suggestedQuestionsContainer.classList.add('hidden');
-                await generateQuizQuestions();
-            };
-            suggestedQuestionsContainer.appendChild(startButton);
-            chatContainerWrapper.scrollTop = chatContainerWrapper.scrollHeight;
-        }
-
-        async function generateQuizQuestions() {
-            showTypingIndicator(true);
-            chatInput.disabled = true;
-            chatForm.querySelector('button[type="submit"]').disabled = true;
-            suggestQuestionsBtn.disabled = true;
+        async function generateQuizQuestionsStandalone() {
             const quizGenerationPrompt = `
                 Eres VIDA, un asistente de donación de órganos en México.
-                Tu tarea es generar ${quizBlockSize} preguntas de VERDADERO o FALSO sobre mitos y realidades comunes acerca de la donación de órganos y tejidos después de que una persona ha fallecido en México. Las preguntas deben ser concisas y formuladas para un público general, ajeno a la medicina.
-                Asegúrate de que las explicaciones sean breves (2-3 líneas máximo), claras, y fundamentadas en información oficial (Ley General de Salud, CENATRA, Reglamento de Trasplantes). No uses asteriscos (*) ni viñetas. Si es posible, incluye una referencia breve a la fuente oficial. Las preguntas deben ser variadas y no repetirse.
-                Devuelve únicamente un array JSON válido de ${quizBlockSize} objetos, cada uno con 'question', 'isTrue' y 'explanation'.
+                Tu tarea es generar ${quizBlockSize} preguntas de VERDADERO o FALSO sobre mitos y realidades comunes acerca de la donación de órganos y tejidos después de que una persona ha fallecido en México.
+                Devuelve la respuesta como un array JSON de ${quizBlockSize} objetos con las propiedades: "question" (string), "isTrue" (boolean), "explanation" (string).
+                Las explicaciones deben ser breves, claras y fundamentadas en información oficial (Ley General de Salud, CENATRA). No uses asteriscos.
+                Enfócate en desmitificar creencias falsas comunes sobre la donación.
             `;
+            
             try {
                 const response = await fetch('/api/openai', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt: [
-                        { role: "user", content: quizGenerationPrompt }
-                    ] })
+                    body: JSON.stringify({ 
+                        historial: [
+                            { role: "system", content: "Responde únicamente con un array JSON válido de " + quizBlockSize + " objetos." }
+                        ],
+                        mensaje: quizGenerationPrompt
+                    })
                 });
-                if (!response.ok) throw new Error('API request for quiz failed');
+                
+                if (!response.ok) throw new Error('API request failed');
+                
                 const result = await response.json();
-                let quizRaw = result.choices?.[0]?.message?.content || '';
-                let quizArr = extractFirstJSONArray(quizRaw);
-                if (!quizArr || !Array.isArray(quizArr) || quizArr.length < 2) {
-                    addMessageToChat('bot', 'No se pudo generar el quiz correctamente. El formato recibido fue inesperado. Intenta de nuevo más tarde.\n\nRespuesta recibida:\n' + quizRaw);
-                    currentQuizQuestionIndex = -1;
-                    return;
+                const newQuestions = JSON.parse(result.choices[0].message.content);
+                
+                if (Array.isArray(newQuestions) && newQuestions.length > 0) {
+                    quizQuestions = quizQuestions.concat(newQuestions);
+                    displayQuizQuestion();
+                } else {
+                    throw new Error("Generated question array is invalid.");
                 }
-                quizQuestions = quizArr;
-                currentQuizQuestionIndex = 0;
-                displayQuizQuestion(currentQuizQuestionIndex);
             } catch (error) {
                 console.error("Error generating quiz questions:", error);
-                addMessageToChat('bot', 'Hubo un problema de conexión al generar el quiz. Por favor, inténtalo de nuevo.');
-                currentQuizQuestionIndex = -1;
-            } finally {
-                showTypingIndicator(false);
-                chatInput.disabled = false;
-                chatForm.querySelector('button[type="submit"]').disabled = false;
-                suggestQuestionsBtn.disabled = false;
-                chatInput.focus();
+                quizQuestion.textContent = 'Hubo un problema al generar el quiz. Por favor, intenta de nuevo más tarde.';
             }
         }
 
-        function displayQuizQuestion(index) {
-            if (index >= quizQuestions.length) {
-                quizTotalAnswered += quizQuestions.length;
-                if (quizTotalAnswered >= quizMaxQuestions) {
-                    endQuiz();
-                    return;
-                }
-                // Mostrar opción de seguir o terminar
-                suggestedQuestionsContainer.innerHTML = '';
-                suggestedQuestionsContainer.classList.remove('hidden');
-                const moreBtn = document.createElement('button');
-                moreBtn.textContent = `Quiero más preguntas (${quizTotalAnswered}/${quizMaxQuestions})`;
-                moreBtn.className = `px-4 py-2 rounded-lg bg-[var(--vida-btn-green)] text-white text-sm font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colores`;
-                moreBtn.onclick = async () => {
-                    addMessageToChat('user', moreBtn.textContent);
-                    suggestedQuestionsContainer.innerHTML = '';
-                    suggestedQuestionsContainer.classList.add('hidden');
-                    await generateQuizQuestions();
-                };
-                suggestedQuestionsContainer.appendChild(moreBtn);
-                const finishBtn = document.createElement('button');
-                finishBtn.textContent = "Terminar Quiz";
-                finishBtn.className = `ml-2 px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium hover:bg-[var(--vida-module-btn-hover)] transition-colores shadow-sm`;
-                finishBtn.onclick = () => {
-                    addMessageToChat('user', finishBtn.textContent);
-                    endQuiz();
-                };
-                suggestedQuestionsContainer.appendChild(finishBtn);
+        async function generateMoreQuestions() {
+            quizQuestion.textContent = 'Generando más preguntas...';
+            await generateQuizQuestionsStandalone();
+        }
+
+        function displayQuizQuestion() {
+            if (currentQuizQuestionIndex >= quizQuestions.length) {
+                generateMoreQuestions();
                 return;
             }
-            const questionData = quizQuestions[index];
-            addMessageToChat('bot', `Pregunta ${quizTotalAnswered + index + 1} de ${quizMaxQuestions}: ${questionData.question}`);
-            suggestedQuestionsContainer.innerHTML = '';
-            suggestedQuestionsContainer.classList.remove('hidden');
+
+            const questionData = quizQuestions[currentQuizQuestionIndex];
+            const totalQuestions = Math.min(quizQuestions.length, quizMaxQuestions);
+            const currentProgress = ((currentQuizQuestionIndex) / totalQuestions) * 100;
+            
+            quizProgressText.textContent = `Pregunta ${currentQuizQuestionIndex + 1} de ${totalQuestions}`;
+            quizProgressFill.style.width = `${currentProgress}%`;
+            quizScoreDisplay.textContent = `Aciertos: ${quizScore}/${quizTotalAnswered}`;
+            quizQuestion.textContent = questionData.question;
+            
+            quizAnswerButtons.innerHTML = '';
+            quizFeedback.classList.remove('visible');
+            quizNavigation.innerHTML = '';
+
             const trueBtn = document.createElement('button');
             trueBtn.textContent = "✅ Verdadero";
-            trueBtn.className = `px-6 py-3 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colores`;
-            trueBtn.onclick = () => handleAnswerClick(true, questionData);
-            suggestedQuestionsContainer.appendChild(trueBtn);
+            trueBtn.className = 'quiz-answer-btn w-full text-lg font-bold p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100';
+            trueBtn.onclick = () => handleQuizAnswer(true, questionData, trueBtn, falseBtn);
+            
             const falseBtn = document.createElement('button');
             falseBtn.textContent = "❌ Falso";
-            falseBtn.className = `px-6 py-3 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colores`;
-            falseBtn.onclick = () => handleAnswerClick(false, questionData);
-            suggestedQuestionsContainer.appendChild(falseBtn);
-            chatContainerWrapper.scrollTop = chatContainerWrapper.scrollHeight;
+            falseBtn.className = 'quiz-answer-btn w-full text-lg font-bold p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100';
+            falseBtn.onclick = () => handleQuizAnswer(false, questionData, falseBtn, trueBtn);
+
+            quizAnswerButtons.appendChild(trueBtn);
+            quizAnswerButtons.appendChild(falseBtn);
         }
 
-        function handleAnswerClick(isTrueAnswer, questionData) {
-            addMessageToChat('user', isTrueAnswer ? "✅ Verdadero" : "❌ Falso");
-            const quizButtons = suggestedQuestionsContainer.querySelectorAll('button');
-            quizButtons.forEach(button => {
-                button.disabled = true;
-                button.classList.add('opacity-50', 'cursor-not-allowed');
-            });
-            const isCorrect = (isTrueAnswer === questionData.isTrue);
-            let feedbackText = isCorrect ? "✔️ ¡Correcto!" : "❌ Incorrecto.";
-            feedbackText += `\n${questionData.explanation}`;
-            addMessageToChat('bot', feedbackText);
-            suggestedQuestionsContainer.innerHTML = '';
-            const nextQuestionBtn = document.createElement('button');
-            nextQuestionBtn.textContent = "➡️ Siguiente pregunta";
-            nextQuestionBtn.className = `mt-4 px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium hover:bg-[var(--vida-module-btn-hover)] transition-colores`;
-            nextQuestionBtn.onclick = () => {
-                addMessageToChat('user', nextQuestionBtn.textContent);
-                suggestedQuestionsContainer.classList.add('hidden');
-                suggestedQuestionsContainer.innerHTML = '';
-                currentQuizQuestionIndex++;
-                displayQuizQuestion(currentQuizQuestionIndex);
-            };
-            suggestedQuestionsContainer.appendChild(nextQuestionBtn);
-            suggestedQuestionsContainer.classList.remove('hidden');
+        function handleQuizAnswer(userAnswer, questionData, selectedBtn, otherBtn) {
+            selectedBtn.disabled = true;
+            otherBtn.disabled = true;
+            quizTotalAnswered++;
+
+            const isCorrect = (userAnswer === questionData.isTrue);
+            
+            if (isCorrect) {
+                quizScore++;
+                selectedBtn.classList.add('correct');
+            } else {
+                selectedBtn.classList.add('incorrect');
+                // Marcar la respuesta correcta
+                if (questionData.isTrue) {
+                    // Si la respuesta correcta es verdadero, marcar el botón verdadero
+                    if (otherBtn.textContent.includes('Verdadero')) {
+                        otherBtn.classList.add('correct');
+                    }
+                } else {
+                    // Si la respuesta correcta es falso, marcar el botón falso
+                    if (otherBtn.textContent.includes('Falso')) {
+                        otherBtn.classList.add('correct');
+                    }
+                }
+            }
+            
+            quizFeedbackText.textContent = questionData.explanation;
+            quizFeedback.classList.add('visible');
+
+            // Actualizar el display del puntaje
+            quizScoreDisplay.textContent = `Aciertos: ${quizScore}/${quizTotalAnswered}`;
+
+            const nextButton = document.createElement('button');
+            
+            // Decidir qué botón mostrar
+            if (quizTotalAnswered >= quizMaxQuestions) {
+                nextButton.textContent = 'Ver Resultados Finales 🏆';
+                nextButton.onclick = () => endQuiz();
+            } else if (quizTotalAnswered % 10 === 0 && quizTotalAnswered >= 10) {
+                nextButton.textContent = 'Continuar ➡️';
+                nextButton.onclick = () => showIntermediateResults();
+            } else {
+                nextButton.textContent = 'Siguiente Pregunta ➡️';
+                nextButton.onclick = () => {
+                    currentQuizQuestionIndex++;
+                    displayQuizQuestion();
+                };
+            }
+            
+            nextButton.className = 'bg-[var(--vida-btn-green)] text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all mt-4';
+            quizNavigation.innerHTML = '';
+            quizNavigation.appendChild(nextButton);
+        }
+
+        function showIntermediateResults() {
+            quizActiveView.classList.add('hidden');
+            quizIntermediateView.classList.remove('hidden');
+            
+            const percentage = Math.round((quizScore / quizTotalAnswered) * 100);
+            quizIntermediateScore.textContent = `Tienes ${quizScore} de ${quizTotalAnswered} respuestas correctas (${percentage}%)`;
+            
+            // Actualizar el botón de continuar
+            const remainingQuestions = quizMaxQuestions - quizTotalAnswered;
+            const nextBlockSize = Math.min(remainingQuestions, quizBlockSize);
+            continueQuizBtn.textContent = `Continuar (${nextBlockSize} preguntas más)`;
+            
+            if (remainingQuestions <= 0) {
+                continueQuizBtn.style.display = 'none';
+            }
         }
 
         function endQuiz() {
-            addMessageToChat('bot', `🎉 ¡Has completado el Desmitificador Express! Respondiste ${quizTotalAnswered} preguntas. Gracias por informarte con VIDA. Cada duda resuelta es un paso más hacia una cultura de donación más humana y consciente.`);
-            suggestedQuestionsContainer.innerHTML = '';
-            suggestedQuestionsContainer.classList.remove('hidden');
-            const startDonorPathBtn = document.createElement('button');
-            startDonorPathBtn.textContent = "Iniciar “Tu camino como donante”";
-            startDonorPathBtn.className = `px-4 py-2 rounded-lg bg-[var(--vida-btn-green)] text-white text-sm font-bold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colores`;
-            startDonorPathBtn.onclick = () => {
-                addMessageToChat('user', startDonorPathBtn.textContent);
-                suggestedQuestionsContainer.classList.add('hidden');
-                suggestedQuestionsContainer.innerHTML = '';
-                currentQuizQuestionIndex = -1;
-                handleDonorInterest("Quiero iniciar el camino como donante");
-            };
-            suggestedQuestionsContainer.appendChild(startDonorPathBtn);
-            const askAnotherQuestionBtn = document.createElement('button');
-            askAnotherQuestionBtn.textContent = "Hacer otra pregunta a VIDA";
-            askAnotherQuestionBtn.className = `px-4 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium hover:bg-[var(--vida-module-btn-hover)] transition-colores shadow-sm`;
-            askAnotherQuestionBtn.onclick = () => {
-                addMessageToChat('user', askAnotherQuestionBtn.textContent);
-                reset_chat_and_offer_suggestions();
-            };
-            suggestedQuestionsContainer.appendChild(askAnotherQuestionBtn);
+            quizActiveView.classList.add('hidden');
+            quizIntermediateView.classList.add('hidden');
+            quizResultsView.classList.remove('hidden');
+            
+            const percentage = Math.round((quizScore / quizTotalAnswered) * 100);
+            quizFinalScore.textContent = `Obtuviste ${quizScore} de ${quizTotalAnswered} respuestas correctas (${percentage}%)`;
+            
+            // Mensaje de retroalimentación basado en el puntaje
+            let feedbackMessage = '';
+            if (percentage >= 90) {
+                feedbackMessage = "¡Excelente! Tienes un conocimiento muy sólido sobre la donación de órganos. Eres un gran promotor de la cultura de donación.";
+            } else if (percentage >= 70) {
+                feedbackMessage = "¡Muy bien! Tienes un buen entendimiento sobre la donación. Sigues aprendiendo y desmitificando conceptos importantes.";
+            } else if (percentage >= 50) {
+                feedbackMessage = "¡Buen trabajo! Cada pregunta respondida te acerca más a entender la realidad de la donación. Sigue explorando este tema.";
+            } else {
+                feedbackMessage = "¡Gracias por participar! Este quiz te ayudó a descubrir nueva información sobre la donación. Cada aprendizaje cuenta.";
+            }
+            
+            quizFeedbackTextFinal.textContent = feedbackMessage;
         }
+
+        function resetQuiz() {
+            quizScore = 0;
+            quizTotalAnswered = 0;
+            currentQuizQuestionIndex = 0;
+            quizQuestions = [];
+            showQuizStartView();
+        }
+
+        function showQuiz() {
+            welcomeScreen.style.display = 'none';
+            quizScreen.style.display = 'flex';
+            quizScreen.style.opacity = '1';
+            resetQuiz();
+        }
+
+        function hideQuiz() {
+            quizScreen.style.opacity = '0';
+            setTimeout(() => {
+                quizScreen.style.display = 'none';
+                welcomeScreen.style.display = 'flex';
+            }, 300);
+        }
+
+        function showQuizStartView() {
+            quizStartView.classList.remove('hidden');
+            quizActiveView.classList.add('hidden');
+            quizIntermediateView.classList.add('hidden');
+            quizResultsView.classList.add('hidden');
+        }
+
+        function showQuizActiveView() {
+            quizStartView.classList.add('hidden');
+            quizActiveView.classList.remove('hidden');
+            quizIntermediateView.classList.add('hidden');
+            quizResultsView.classList.add('hidden');
+        }
+
+        // Actualizar las referencias a las funciones
+        // beginQuizBtn.addEventListener('click', async () => {
+        //     await startQuizStandalone();
+        // });
 
     </script>
 </body>

@@ -1,5 +1,11 @@
 // /api/openai.js
-// Vercel Serverless Function para proxy seguro a OpenAI
+// Vercel/Next.js Serverless Function para proxy seguro a OpenAI
+
+export const config = {
+  api: {
+    bodyParser: true, // Asegura que req.body esté disponible
+  },
+};
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -13,23 +19,9 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Leer el body de la request de forma compatible con Vercel serverless
-  let rawBody = '';
-  await new Promise((resolve, reject) => {
-    req.on('data', chunk => { rawBody += chunk; });
-    req.on('end', resolve);
-    req.on('error', reject);
-  });
+  // Usa req.body directamente (Next.js ya lo parsea)
+  const payload = req.body;
 
-  let payload;
-  try {
-    payload = JSON.parse(rawBody);
-  } catch (e) {
-    res.status(400).json({ error: 'JSON inválido en el body.', rawBody, parseError: e.message });
-    return;
-  }
-
-  // Determina si es chat o prompt simple
   let openaiPayload;
   if (Array.isArray(payload.prompt)) {
     openaiPayload = {
@@ -64,11 +56,11 @@ export default async function handler(req, res) {
     });
     const data = await openaiRes.json();
     if (!openaiRes.ok) {
-      res.status(openaiRes.status).json({ error: data.error?.message || 'Error de OpenAI' });
+      res.status(openaiRes.status).json({ error: data.error?.message || 'Error de OpenAI', openaiError: data });
       return;
     }
     res.status(200).json(data);
   } catch (err) {
-    res.status(500).json({ error: 'Error al conectar con OpenAI.' });
+    res.status(500).json({ error: 'Error al conectar con OpenAI.', details: err.message });
   }
 }

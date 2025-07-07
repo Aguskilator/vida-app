@@ -849,6 +849,27 @@
         - Evita respuestas robóticas al cerrar. Usa finales como: “Gracias por tu tiempo. Si más adelante quieres hablar de esto, aquí estaré”, o “Fue un gusto platicar contigo, te mando un saludo cálido.”
         `;
 
+        // --- Utilidad para extraer JSON robusto de texto ---
+        function extractFirstJSONArray(text) {
+            // Busca el primer bloque que parece un array JSON
+            const arrayRegex = /\[\s*{[\s\S]*?}\s*\]/g;
+            const match = text.match(arrayRegex);
+            if (match) {
+                try {
+                    return JSON.parse(match[0]);
+                } catch (e) {
+                    // Si falla, intenta limpiar comas finales o errores comunes
+                    let cleaned = match[0].replace(/,\s*]/g, "]");
+                    try {
+                        return JSON.parse(cleaned);
+                    } catch (e2) {
+                        return null;
+                    }
+                }
+            }
+            return null;
+        }
+
         // --- UI Functions ---
         const showChat = () => {
             welcomeScreen.style.display = 'none';

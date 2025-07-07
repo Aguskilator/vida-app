@@ -651,6 +651,23 @@
         let currentQuizQuestionIndex = -1;
         let quizQuestions = [];
 
+        // --- Función para mostrar botones de módulo y asociar eventos ---
+        function displayModuleButtons(buttons, handler) {
+            suggestedQuestionsContainer.innerHTML = '';
+            if (!buttons || !Array.isArray(buttons) || buttons.length === 0) {
+                suggestedQuestionsContainer.classList.add('hidden');
+                return;
+            }
+            buttons.forEach(btn => {
+                const button = document.createElement('button');
+                button.textContent = btn.text;
+                button.className = `px-3 py-2 rounded-lg bg-[var(--vida-module-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium hover:bg-[var(--vida-module-btn-hover)] transition-colores shadow-sm m-1`;
+                button.onclick = () => handler(btn.action, btn);
+                suggestedQuestionsContainer.appendChild(button);
+            });
+            suggestedQuestionsContainer.classList.remove('hidden');
+        }
+
         // --- Module Functions ---
         function reset_chat_and_offer_suggestions() {
             chatHistory = [];

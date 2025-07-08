@@ -224,6 +224,11 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                             </svg>
                         </button>
+                        <button id="restart-quiz-btn" class="text-gray-400 hover:text-gray-600 transition-colors" title="Reiniciar quiz">
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
                 
@@ -248,9 +253,6 @@
                 <div id="quiz-navigation" class="mt-3 text-center">
                     <button id="next-question" class="hidden mt-2 answer-btn bg-[var(--vida-primary-blue)] text-white hover:opacity-90 transform hover:scale-105">
                         Siguiente pregunta →
-                    </button>
-                    <button id="back-to-main-btn" class="mt-2 text-sm text-gray-500 hover:text-gray-700 underline transition-colors">
-                        ← Volver al inicio
                     </button>
                 </div>
             </div>
@@ -430,14 +432,31 @@
         document.getElementById('welcome-exit-btn').addEventListener('click', () => {
             window.location.href = 'index.html';
         });
+        document.getElementById('restart-quiz-btn').addEventListener('click', () => {
+            // Reiniciar quiz a la pantalla de bienvenida
+            currentQuestion = 0;
+            score = 0;
+            questions = [];
+            
+            // Ocultar pantalla de quiz y mostrar pantalla de bienvenida
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            welcomeScreen.classList.remove('hidden');
+            
+            // Resetear barra de progreso
+            progressFill.style.width = '0%';
+            
+            // Limpiar feedback
+            const existingFeedback = document.querySelector('#results-screen .bg-gray-50');
+            if (existingFeedback) {
+                existingFeedback.remove();
+            }
+        });
         btnTrue.addEventListener('click', () => answerQuestion(true));
         btnFalse.addEventListener('click', () => answerQuestion(false));
         nextQuestionBtn.addEventListener('click', nextQuestion);
         restartQuizBtn.addEventListener('click', restartQuiz);
         backToChatBtn.addEventListener('click', () => {
-            window.location.href = 'index.html';
-        });
-        backToMainBtn.addEventListener('click', () => {
             window.location.href = 'index.html';
         });
 

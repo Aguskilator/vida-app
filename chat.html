@@ -307,12 +307,21 @@
                 text: "Para poder decidir, es importante que sepas qué significa donar. En México, se puede donar órganos y tejidos después de fallecer, ya sea por Muerte encefálica (cuando el cerebro deja de funcionar por completo) o por Paro cardíaco (cuando el corazón deja de latir y ya no se puede revivir). En ambos casos, la donación puede salvar vidas o mejorar la salud de muchas personas.",
                 buttons: [
                     { text: "¿Qué es la muerte encefálica? 🧠", action: "donor_path_explain_muerte_encefalica" },
+                    { text: "¿Qué es el paro cardíaco? ❤️", action: "donor_path_explain_paro_cardiaco" },
                     { text: "Entendido, continuar 👉", action: "donor_path_step2" }
                 ]
             },
             explain_muerte_encefalica: {
                 text: "La muerte encefálica es cuando el cerebro, que controla todo el cuerpo, deja de funcionar de forma total e irreversible. Esto se confirma con pruebas médicas rigurosas que demuestran que ya no hay actividad cerebral ni capacidad de respirar por sí mismo. Es el momento en que una persona es legal y médicamente declarada fallecida.",
                 buttons: [
+                    { text: "¿Qué es el paro cardíaco? ❤️", action: "donor_path_explain_paro_cardiaco" },
+                    { text: "Entendido, siguiente paso 👉", action: "donor_path_step2" }
+                ]
+            },
+            explain_paro_cardiaco: {
+                text: "El paro cardíaco es cuando el corazón deja de latir de forma definitiva y no puede ser revivido a pesar de las maniobras médicas. A diferencia de la muerte encefálica, aquí el corazón se detiene primero y luego el cerebro. En este caso, la donación debe realizarse muy rápidamente para que los órganos sigan siendo viables para trasplante.",
+                buttons: [
+                    { text: "¿Qué es la muerte encefálica? 🧠", action: "donor_path_explain_muerte_encefalica" },
                     { text: "Entendido, siguiente paso 👉", action: "donor_path_step2" }
                 ]
             },
@@ -660,6 +669,9 @@
                         break;
                     case 'donor_path_explain_muerte_encefalica':
                         displayDonorPathStep('explain_muerte_encefalica');
+                        break;
+                    case 'donor_path_explain_paro_cardiaco':
+                        displayDonorPathStep('explain_paro_cardiaco');
                         break;
                     case 'donor_path_examples_family_talk':
                         displayDonorPathStep('examples_family_talk');

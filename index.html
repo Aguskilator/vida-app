@@ -478,14 +478,12 @@
             animation: fadeIn 1s ease-out forwards;
         }
         
-        /* Mobile override para el botón de feedback */
-        @media (max-width: 640px) {
-            #feedback-btn {
-                /* Forzar visibilidad por defecto en móviles */
-                opacity: 1 !important;
-                display: flex !important;
-                visibility: visible !important;
-            }
+        /* Asegurar que el welcome-screen siempre sea visible */
+        #welcome-screen {
+            display: flex !important;
+            flex-direction: column !important;
+            min-height: 100vh !important;
+            opacity: 1 !important;
         }
 
         @keyframes fadeIn {

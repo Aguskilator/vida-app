@@ -271,15 +271,21 @@
 
         /* Feedback button optimizations for mobile */
         #feedback-btn {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            /* Forzar que se mantenga fijo */
+            transform: translateZ(0);
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
 
         @media (max-width: 640px) {
             #feedback-btn {
                 /* Posicionar el botón justo encima del footer en móviles */
-                bottom: 70px !important; /* Altura calculada del footer + margen */
+                /* No establecer bottom aquí, se establecerá via JavaScript */
                 /* Asegurar que no se mueva */
                 position: fixed !important;
+                left: 1.25rem !important; /* 20px */
                 /* Suavizar las animaciones en móviles */
                 transform: translateZ(0) !important;
                 will-change: transform;
@@ -292,6 +298,8 @@
                 transform-origin: center;
                 /* Desactivar transiciones problemáticas en móviles */
                 transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+                /* Asegurar que las transiciones no afecten la posición */
+                transition-property: transform, box-shadow, background-color !important;
             }
             
             #feedback-btn:hover {
@@ -917,7 +925,7 @@
         </footer>
     </div>
     
-    <button id="feedback-btn" class="fixed bottom-[70px] sm:bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-[999] flex items-center gap-2 enhanced-button">
+    <button id="feedback-btn" class="fixed bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-[999] flex items-center gap-2 enhanced-button">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.08-3.239A8.939 8.939 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.416 11.603a.75.75 0 00-.029.048l.029-.048zM5.022 13.013a.75.75 0 00.213.024l.028-.024z" clip-rule="evenodd" /></svg>
         Danos tu opinión
     </button>
@@ -2212,15 +2220,30 @@
                 const feedbackBtn = document.getElementById('feedback-btn');
                 const footer = document.querySelector('footer');
                 
-                if (feedbackBtn && footer && window.innerWidth <= 640) {
-                    // Obtener la altura del footer
-                    const footerHeight = footer.offsetHeight;
-                    // Agregar un margen de 10px
-                    const bottomPosition = footerHeight + 10;
-                    
-                    // Aplicar la posición solo en móviles
-                    feedbackBtn.style.bottom = `${bottomPosition}px`;
-                    console.log(`Feedback button positioned ${bottomPosition}px from bottom`);
+                if (feedbackBtn && footer) {
+                    if (window.innerWidth <= 640) {
+                        // Solo en móviles
+                        // Obtener la altura del footer
+                        const footerHeight = footer.offsetHeight;
+                        // Agregar un margen de 15px
+                        const bottomPosition = footerHeight + 15;
+                        
+                        // Aplicar la posición solo en móviles
+                        feedbackBtn.style.bottom = `${bottomPosition}px`;
+                        feedbackBtn.style.position = 'fixed';
+                        feedbackBtn.style.left = '1.25rem';
+                        feedbackBtn.style.zIndex = '999';
+                        
+                        console.log(`Mobile: Feedback button positioned ${bottomPosition}px from bottom`);
+                    } else {
+                        // En desktop, resetear a la posición original
+                        feedbackBtn.style.bottom = '1.25rem';
+                        feedbackBtn.style.position = 'fixed';
+                        feedbackBtn.style.left = '1.25rem';
+                        feedbackBtn.style.zIndex = '999';
+                        
+                        console.log('Desktop: Feedback button at 20px from bottom');
+                    }
                 }
             };
             
@@ -2228,10 +2251,20 @@
             positionFeedbackButton();
             
             // Actualizar en cambios de tamaño de ventana
-            window.addEventListener('resize', positionFeedbackButton);
+            window.addEventListener('resize', () => {
+                setTimeout(positionFeedbackButton, 100);
+            });
             
             // Actualizar después de que las imágenes se carguen (puede afectar el footer)
-            window.addEventListener('load', positionFeedbackButton);
+            window.addEventListener('load', () => {
+                setTimeout(positionFeedbackButton, 200);
+            });
+            
+            // Actualizar en cambios de orientación
+            window.addEventListener('orientationchange', () => {
+                setTimeout(positionFeedbackButton, 300);
+            });
+            
             window.addEventListener('orientationchange', () => {
                 setTimeout(setVH, 100);
             });

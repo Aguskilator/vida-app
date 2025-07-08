@@ -117,7 +117,7 @@
             background: rgba(255, 255, 255, 0.3);
             border-radius: 4px;
             overflow: hidden;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .progress-fill {
@@ -171,15 +171,15 @@
     
     <canvas id="confetti-canvas"></canvas>
 
-    <div class="quiz-container w-full max-w-3xl p-6 md:p-10 relative">
+    <div class="quiz-container w-full max-w-3xl p-4 md:p-6 relative">
         <div id="feedback-icon-container"></div>
         
-        <header class="text-center mb-8 fade-in">
-            <img src="Vidalogo.png" alt="VIDA" class="mx-auto h-16 mb-4">
-            <h1 class="text-3xl font-bold text-[var(--vida-primary-blue)] mb-2">
+        <header class="text-center mb-4 fade-in">
+            <img src="Vidalogo.png" alt="VIDA" class="mx-auto h-28 mb-3">
+            <h1 class="text-2xl md:text-3xl font-bold text-[var(--vida-primary-blue)] mb-2">
                 Desmitificador Express
             </h1>
-            <p class="text-gray-600">
+            <p class="text-gray-600 text-sm md:text-base">
                 Pon a prueba tus conocimientos sobre donación de órganos
             </p>
         </header>
@@ -222,7 +222,7 @@
                     </div>
                 </div>
                 
-                <h3 id="question-text" class="text-xl md:text-2xl font-bold text-slate-800 min-h-[100px] flex items-center justify-center text-center mb-4">
+                <h3 id="question-text" class="text-xl md:text-2xl font-bold text-slate-800 min-h-[80px] flex items-center justify-center text-center mb-4">
                     <!-- Aquí aparecerá la pregunta -->
                 </h3>
                 
@@ -235,13 +235,13 @@
                     </button>
                 </div>
                 
-                <div id="explanation" class="hidden mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 class="font-bold mb-2 text-sm">Explicación:</h4>
+                <div id="explanation" class="hidden mt-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 class="font-bold mb-1 text-sm">Explicación:</h4>
                     <p id="explanation-text" class="text-gray-700 text-sm"></p>
                 </div>
                 
-                <div id="quiz-navigation" class="mt-4 text-center">
-                    <button id="next-question" class="hidden mt-3 answer-btn bg-[var(--vida-primary-blue)] text-white hover:opacity-90 transform hover:scale-105">
+                <div id="quiz-navigation" class="mt-3 text-center">
+                    <button id="next-question" class="hidden mt-2 answer-btn bg-[var(--vida-primary-blue)] text-white hover:opacity-90 transform hover:scale-105">
                         Siguiente pregunta →
                     </button>
                 </div>
@@ -443,7 +443,7 @@
 
         function loadQuestion() {
             if (currentQuestion >= questions.length) {
-                if (currentBlock === 1 && currentQuestion === 5) {
+                if (currentBlock === 1 && questions.length === 5) {
                     // Terminamos el primer bloque, generar más preguntas
                     generateMoreQuestions();
                     return;
@@ -671,7 +671,7 @@
             
             // Mostrar mensaje de carga
             questionText.textContent = 'Generando preguntas adicionales...';
-            questionText.className = 'text-lg md:text-xl font-bold text-slate-600 min-h-[100px] flex items-center justify-center text-center mb-4';
+            questionText.className = 'text-lg md:text-xl font-bold text-slate-600 min-h-[80px] flex items-center justify-center text-center mb-4';
             
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'flex justify-center items-center mt-2';
@@ -740,7 +740,7 @@
                         
                         // Remover el indicador de carga
                         loadingDiv.remove();
-                        questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[100px] flex items-center justify-center text-center mb-4';
+                        questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[80px] flex items-center justify-center text-center mb-4';
                         
                         // Continuar con la siguiente pregunta
                         loadQuestion();
@@ -788,7 +788,7 @@
                 
                 // Remover el indicador de carga
                 loadingDiv.remove();
-                questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[100px] flex items-center justify-center text-center mb-4';
+                questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[80px] flex items-center justify-center text-center mb-4';
                 
                 loadQuestion();
             }
@@ -803,7 +803,7 @@
             
             // Mostrar mensaje de carga inicial
             questionText.textContent = 'Preparando tu quiz personalizado...';
-            questionText.className = 'text-lg md:text-xl font-bold text-slate-600 min-h-[100px] flex items-center justify-center text-center mb-4';
+            questionText.className = 'text-lg md:text-xl font-bold text-slate-600 min-h-[80px] flex items-center justify-center text-center mb-4';
             
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'flex justify-center items-center mt-2';
@@ -869,7 +869,7 @@
                         
                         // Remover el indicador de carga
                         loadingDiv.remove();
-                        questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[100px] flex items-center justify-center text-center mb-4';
+                        questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[80px] flex items-center justify-center text-center mb-4';
                         
                         // Comenzar el quiz
                         loadQuestion();
@@ -888,7 +888,7 @@
                 
                 // Remover el indicador de carga
                 loadingDiv.remove();
-                questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[100px] flex items-center justify-center text-center mb-4';
+                questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[80px] flex items-center justify-center text-center mb-4';
                 
                 // Comenzar el quiz
                 loadQuestion();

@@ -136,8 +136,8 @@
         /* Banner hero principal */
         .vida-hero-banner {
             position: relative;
-            padding: 1.5rem 1.5rem;
-            border-radius: 1.5rem;
+            padding: 1rem 1rem;
+            border-radius: 1rem;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.95) 0%, 
                 rgba(255, 255, 255, 0.88) 50%, 
@@ -146,8 +146,8 @@
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 
-                0 10px 35px rgba(13, 27, 42, 0.12),
-                0 5px 15px rgba(255, 255, 255, 0.3),
+                0 8px 25px rgba(13, 27, 42, 0.10),
+                0 4px 12px rgba(255, 255, 255, 0.3),
                 inset 0 1px 0 rgba(255, 255, 255, 0.8);
             max-width: 100%;
             margin: 0 auto;
@@ -158,6 +158,11 @@
         @media (min-width: 640px) {
             .vida-hero-banner {
                 padding: 2rem 2rem;
+                border-radius: 1.5rem;
+                box-shadow: 
+                    0 10px 35px rgba(13, 27, 42, 0.12),
+                    0 5px 15px rgba(255, 255, 255, 0.3),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8);
             }
         }
 
@@ -479,9 +484,9 @@
                 </div>
                 <div class="flex items-center space-x-2 sm:space-x-3">
                     <!-- Privacy button -->
-                    <button id="privacy-btn" class="text-[var(--vida-text-dark)] font-semibold py-2 px-3 sm:px-4 text-sm sm:text-base rounded-lg transition hover:bg-blue-200/50">Aviso de Privacidad</button>
+                    <button id="privacy-btn" class="text-[var(--vida-text-dark)] font-semibold py-1 px-2 sm:py-2 sm:px-4 text-xs sm:text-base rounded-lg transition hover:bg-blue-200/50">Aviso de Privacidad</button>
                     <!-- About button -->
-                    <button id="about-btn" class="px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base rounded-lg bg-[var(--vida-btn-green)] text-white font-semibold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] focus:ring-offset-2 enhanced-button">
+                    <button id="about-btn" class="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-base rounded-lg bg-[var(--vida-btn-green)] text-white font-semibold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] focus:ring-offset-2 enhanced-button">
                         ¿Qué hace VIDA?
                     </button>
                 </div>
@@ -493,11 +498,11 @@
             <div class="lg:w-3/5 flex flex-col items-center lg:items-start space-y-4 sm:space-y-6">
                 <!-- Banner principal con diseño elegante -->
                 <div class="vida-hero-banner fade-in-element w-full" style="animation-delay: 0.3s;">
-                    <h2 class="vida-main-title text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-[var(--vida-text-dark)] fade-in-element leading-tight" style="animation-delay: 0.4s;">
+                    <h2 class="vida-main-title text-lg sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-[var(--vida-text-dark)] fade-in-element leading-tight" style="animation-delay: 0.4s;">
                         Voz de Información y Donación Asistida
                     </h2>
-                    <div class="vida-main-subtitle text-sm sm:text-base md:text-lg lg:text-xl mt-4 sm:mt-5 fade-in-element" style="animation-delay: 0.6s;">
-                        <p class="subtitle-line-1 mb-2 sm:mb-3 text-center lg:text-left">
+                    <div class="vida-main-subtitle text-xs sm:text-base md:text-lg lg:text-xl mt-3 sm:mt-5 fade-in-element" style="animation-delay: 0.6s;">
+                        <p class="subtitle-line-1 mb-1 sm:mb-3 text-center lg:text-left">
                             <span class="font-semibold">Tu aliado informativo</span> en momentos críticos
                         </p>
                         <p class="subtitle-line-2 text-center lg:text-left leading-relaxed">

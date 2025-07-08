@@ -279,6 +279,42 @@
             -webkit-backface-visibility: hidden;
         }
 
+        /* Animación suave para el botón de feedback */
+        #feedback-btn.fade-in-element {
+            opacity: 0;
+            transform: translateY(20px) translateZ(0);
+            animation: feedbackFadeIn 0.8s ease-out forwards;
+        }
+
+        /* En móviles, después de la animación inicial, forzar estabilidad */
+        @media (max-width: 640px) {
+            #feedback-btn.fade-in-element {
+                animation: feedbackFadeInMobile 0.8s ease-out forwards;
+            }
+        }
+
+        @keyframes feedbackFadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) translateZ(0); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) translateZ(0); 
+            }
+        }
+
+        @keyframes feedbackFadeInMobile {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) translateZ(0); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateZ(0); 
+            }
+        }
+
         @media (max-width: 640px) {
             #feedback-btn {
                 /* Posicionar el botón justo encima del footer en móviles */
@@ -286,9 +322,9 @@
                 /* Asegurar que no se mueva */
                 position: fixed !important;
                 left: 1.25rem !important; /* 20px */
-                /* Suavizar las animaciones en móviles */
+                /* Forzar que se mantenga completamente fijo */
                 transform: translateZ(0) !important;
-                will-change: transform;
+                will-change: auto !important;
                 /* Mejorar la estabilidad en móviles */
                 -webkit-backface-visibility: hidden;
                 backface-visibility: hidden;
@@ -296,18 +332,29 @@
                 z-index: 999 !important;
                 /* Evitar que se mueva con el scroll */
                 transform-origin: center;
-                /* Desactivar transiciones problemáticas en móviles */
-                transition: transform 0.2s ease, box-shadow 0.2s ease !important;
-                /* Asegurar que las transiciones no afecten la posición */
-                transition-property: transform, box-shadow, background-color !important;
+                /* Desactivar TODAS las transiciones problemáticas en móviles */
+                transition: none !important;
+                /* Asegurar que no haya interferencias */
+                animation: none !important;
+                /* Forzar posición fija sin movimiento */
+                top: auto !important;
+                right: auto !important;
+                /* Evitar cualquier cambio de posición */
+                margin: 0 !important;
+                /* Stability fixes */
+                -webkit-transform: translateZ(0) !important;
+                -moz-transform: translateZ(0) !important;
+                -ms-transform: translateZ(0) !important;
+                -o-transform: translateZ(0) !important;
             }
             
-            #feedback-btn:hover {
-                transform: translateZ(0) scale(1.02) !important;
-            }
-            
-            #feedback-btn:active {
-                transform: translateZ(0) scale(0.98) !important;
+            /* Remover hover effects en móviles para evitar movimiento */
+            #feedback-btn:hover,
+            #feedback-btn:active,
+            #feedback-btn:focus {
+                transform: translateZ(0) !important;
+                transition: none !important;
+                animation: none !important;
             }
         }
 
@@ -925,7 +972,7 @@
         </footer>
     </div>
     
-    <button id="feedback-btn" class="fixed bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-[999] flex items-center gap-2 enhanced-button">
+    <button id="feedback-btn" class="fixed bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-[999] flex items-center gap-2 enhanced-button fade-in-element" style="animation-delay: 1.4s;">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.08-3.239A8.939 8.939 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.416 11.603a.75.75 0 00-.029.048l.029-.048zM5.022 13.013a.75.75 0 00.213.024l.028-.024z" clip-rule="evenodd" /></svg>
         Danos tu opinión
     </button>
@@ -2222,25 +2269,34 @@
                 
                 if (feedbackBtn && footer) {
                     if (window.innerWidth <= 640) {
-                        // Solo en móviles
+                        // Solo en móviles - FORZAR posición fija
                         // Obtener la altura del footer
                         const footerHeight = footer.offsetHeight;
                         // Agregar un margen de 15px
                         const bottomPosition = footerHeight + 15;
                         
-                        // Aplicar la posición solo en móviles
+                        // Aplicar la posición solo en móviles con máxima fuerza
                         feedbackBtn.style.bottom = `${bottomPosition}px`;
                         feedbackBtn.style.position = 'fixed';
                         feedbackBtn.style.left = '1.25rem';
                         feedbackBtn.style.zIndex = '999';
+                        feedbackBtn.style.transform = 'translateZ(0)';
+                        feedbackBtn.style.transition = 'none';
+                        feedbackBtn.style.animation = 'none';
+                        feedbackBtn.style.willChange = 'auto';
+                        feedbackBtn.style.backfaceVisibility = 'hidden';
+                        feedbackBtn.style.webkitBackfaceVisibility = 'hidden';
                         
-                        console.log(`Mobile: Feedback button positioned ${bottomPosition}px from bottom`);
+                        console.log(`Mobile: Feedback button FIXED at ${bottomPosition}px from bottom`);
                     } else {
                         // En desktop, resetear a la posición original
                         feedbackBtn.style.bottom = '1.25rem';
                         feedbackBtn.style.position = 'fixed';
                         feedbackBtn.style.left = '1.25rem';
                         feedbackBtn.style.zIndex = '999';
+                        feedbackBtn.style.transform = 'translateZ(0)';
+                        feedbackBtn.style.transition = '';
+                        feedbackBtn.style.animation = '';
                         
                         console.log('Desktop: Feedback button at 20px from bottom');
                     }
@@ -2249,6 +2305,18 @@
             
             // Ejecutar inicialmente
             positionFeedbackButton();
+            
+            // Forzar posición fija después de la animación inicial
+            setTimeout(() => {
+                positionFeedbackButton();
+                const feedbackBtn = document.getElementById('feedback-btn');
+                if (feedbackBtn && window.innerWidth <= 640) {
+                    feedbackBtn.style.transition = 'none';
+                    feedbackBtn.style.animation = 'none';
+                    feedbackBtn.style.transform = 'translateZ(0)';
+                    console.log('Mobile: Feedback button animations disabled after initial load');
+                }
+            }, 2000); // Después de 2 segundos (animación + delay)
             
             // Actualizar en cambios de tamaño de ventana
             window.addEventListener('resize', () => {

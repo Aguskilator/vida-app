@@ -99,7 +99,7 @@
         }
 
         .chat-bubble-text {
-            text-align: left;
+            text-align: justify;
             line-height: 1.6;
         }
         
@@ -722,6 +722,18 @@
                         addMessageToChat('assistant', '¡Perfecto! Te voy a llevar al portal oficial de CENATRA donde puedes registrarte como donante. Se abrirá una nueva ventana.');
                         setTimeout(() => {
                             window.open('https://dv.cenatra.salud.gob.mx/registrar.php', '_blank');
+                            // Después de abrir el enlace, mostrar opciones para continuar
+                            setTimeout(() => {
+                                addMessageToChat('assistant', 'Ya abrí el portal de CENATRA para ti. Cuando termines de registrarte (o si prefieres hacerlo después), podemos continuar con el siguiente paso.');
+                                const continueButtons = [
+                                    { text: "Ya me registré, continuar 👍", action: "donor_path_step5" },
+                                    { text: "Lo haré después, continuar 📅", action: "donor_path_step5" },
+                                    { text: "Enséñame un ejemplo de carta", action: "donor_path_example_carta" }
+                                ];
+                                setTimeout(() => {
+                                    displayModuleButtons(continueButtons, handleDonorPathAction);
+                                }, 800);
+                            }, 3000);
                         }, 1000);
                         break;
                     case 'share_whatsapp':

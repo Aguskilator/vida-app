@@ -156,6 +156,15 @@
             pointer-events: none;
             z-index: 100;
         }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -213,7 +222,7 @@
                     </div>
                 </div>
                 
-                <h3 id="question-text" class="text-2xl md:text-3xl font-bold text-slate-800 min-h-[140px] flex items-center justify-center text-center mb-6">
+                <h3 id="question-text" class="text-xl md:text-2xl font-bold text-slate-800 min-h-[100px] flex items-center justify-center text-center mb-4">
                     <!-- Aquí aparecerá la pregunta -->
                 </h3>
                 
@@ -226,13 +235,13 @@
                     </button>
                 </div>
                 
-                <div id="explanation" class="hidden mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 class="font-bold mb-2">Explicación:</h4>
-                    <p id="explanation-text" class="text-gray-700"></p>
+                <div id="explanation" class="hidden mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 class="font-bold mb-2 text-sm">Explicación:</h4>
+                    <p id="explanation-text" class="text-gray-700 text-sm"></p>
                 </div>
                 
-                <div id="quiz-navigation" class="mt-6 text-center">
-                    <button id="next-question" class="hidden mt-4 answer-btn bg-[var(--vida-primary-blue)] text-white hover:opacity-90 transform hover:scale-105">
+                <div id="quiz-navigation" class="mt-4 text-center">
+                    <button id="next-question" class="hidden mt-3 answer-btn bg-[var(--vida-primary-blue)] text-white hover:opacity-90 transform hover:scale-105">
                         Siguiente pregunta →
                     </button>
                 </div>
@@ -290,6 +299,8 @@
         let questions = [];
         let totalQuestions = 10;
         let audioInitialized = false;
+        let isGeneratingQuestions = false;
+        let currentBlock = 1; // 1 = preguntas estáticas, 2 = preguntas generadas
 
         // --- Audio Synths ---
         let correctSound, incorrectSound, clickSound;
@@ -299,15 +310,18 @@
             try {
                 correctSound = new Tone.Synth({
                     oscillator: { type: 'sine' },
-                    envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 }
+                    envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.1 },
+                    volume: -20 // Más sutil
                 }).toDestination();
                 incorrectSound = new Tone.Synth({
                     oscillator: { type: 'square' },
-                    envelope: { attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.3 }
+                    envelope: { attack: 0.01, decay: 0.15, sustain: 0.05, release: 0.15 },
+                    volume: -25 // Más sutil
                 }).toDestination();
                 clickSound = new Tone.MembraneSynth({
-                    octaves: 4,
-                    pitchDecay: 0.1
+                    octaves: 2,
+                    pitchDecay: 0.05,
+                    volume: -30 // Mucho más sutil
                 }).toDestination();
                 audioInitialized = true;
             } catch (error) {
@@ -315,32 +329,57 @@
             }
         }
 
-        // --- Preguntas de ejemplo ---
-        const sampleQuestions = [
+        // --- Banco de preguntas de respaldo (solo si falla la IA) ---
+        const backupQuestions = [
             {
                 question: "Los donantes de órganos no pueden tener un funeral con ataúd abierto",
                 isTrue: false,
-                explanation: "Falso. Después de la donación, el cuerpo se trata con respeto y se reconstituye para que la familia pueda tener un funeral normal, incluyendo ataúd abierto si así lo desean."
+                explanation: "Falso. Después de la donación, el cuerpo se trata con respeto y se reconstituye para que la familia pueda tener un funeral normal."
             },
             {
                 question: "Solo las personas jóvenes pueden ser donantes de órganos",
                 isTrue: false,
-                explanation: "Falso. No existe límite de edad para ser donante. Se evalúa la viabilidad de cada órgano individualmente, y personas mayores pueden donar córneas, tejidos y algunos órganos."
+                explanation: "Falso. No existe límite de edad para ser donante. Se evalúa la viabilidad de cada órgano individualmente."
             },
             {
                 question: "La muerte encefálica es lo mismo que estar en coma",
                 isTrue: false,
-                explanation: "Falso. La muerte encefálica es la pérdida total e irreversible de todas las funciones cerebrales, mientras que el coma es un estado de inconsciencia del cual la persona puede recuperarse."
+                explanation: "Falso. La muerte encefálica es la pérdida total e irreversible de todas las funciones cerebrales."
             },
             {
                 question: "En México, la familia debe autorizar la donación aunque la persona haya manifestado su voluntad",
                 isTrue: true,
-                explanation: "Verdadero. Según la ley mexicana, aunque una persona haya expresado su voluntad de donar, la familia debe dar su autorización en el hospital para proceder con la donación."
+                explanation: "Verdadero. Según la ley mexicana, la familia debe dar su autorización en el hospital para proceder con la donación."
             },
             {
                 question: "Los órganos donados se asignan por orden de llegada",
                 isTrue: false,
-                explanation: "Falso. Los órganos se asignan según criterios médicos estrictos: compatibilidad, gravedad del caso, tiempo en lista de espera y proximidad geográfica, no por orden de llegada."
+                explanation: "Falso. Se asignan según criterios médicos: compatibilidad, gravedad del caso, tiempo en lista de espera y proximidad geográfica."
+            },
+            {
+                question: "La donación de córneas puede realizarse hasta 12 horas después del fallecimiento",
+                isTrue: true,
+                explanation: "Verdadero. Las córneas pueden extraerse hasta 12 horas después del fallecimiento, a diferencia de otros órganos."
+            },
+            {
+                question: "Los tatuajes impiden automáticamente ser donante de órganos",
+                isTrue: false,
+                explanation: "Falso. Los tatuajes no impiden la donación automáticamente. Se evalúa cada caso individualmente."
+            },
+            {
+                question: "México tiene uno de los índices de donación más altos de América Latina",
+                isTrue: false,
+                explanation: "Falso. México tiene uno de los índices más bajos de donación en la región, con aproximadamente 3.8 donantes por millón."
+            },
+            {
+                question: "Las personas con diabetes pueden donar algunos órganos y tejidos",
+                isTrue: true,
+                explanation: "Verdadero. Dependiendo del control de la diabetes, algunas personas diabéticas pueden donar córneas y tejidos."
+            },
+            {
+                question: "La donación de órganos es gratuita tanto para el donante como para el receptor",
+                isTrue: true,
+                explanation: "Verdadero. La donación y el trasplante son completamente gratuitos en el sistema público de salud mexicano."
             }
         ];
 
@@ -387,23 +426,32 @@
 
         function startQuiz() {
             if (!audioInitialized) initializeAudio();
-            if (clickSound) clickSound.triggerAttackRelease("C2", "8n");
+            if (clickSound) clickSound.triggerAttackRelease("C2", "16n");
             
             welcomeScreen.classList.add('hidden');
             quizScreen.classList.remove('hidden');
             
-            // Usar preguntas de ejemplo
-            questions = [...sampleQuestions];
+            // Inicializar estado
+            questions = [];
             currentQuestion = 0;
             score = 0;
+            currentBlock = 1;
             
-            loadQuestion();
+            // Generar las primeras 5 preguntas con IA
+            generateFirstQuestions();
         }
 
         function loadQuestion() {
             if (currentQuestion >= questions.length) {
-                showResults();
-                return;
+                if (currentBlock === 1 && currentQuestion === 5) {
+                    // Terminamos el primer bloque, generar más preguntas
+                    generateMoreQuestions();
+                    return;
+                } else {
+                    // Terminamos todo el quiz
+                    showResults();
+                    return;
+                }
             }
 
             const question = questions[currentQuestion];
@@ -421,12 +469,20 @@
             explanation.classList.add('hidden');
             nextQuestionBtn.classList.add('hidden');
             
-            // Update counters
-            questionCounter.textContent = 'Pregunta ' + (currentQuestion + 1) + ' de ' + questions.length;
-            scoreDisplay.textContent = 'Puntaje: ' + score + '/' + currentQuestion;
+            // Update counters - Mostrar progreso más claro
+            const totalQuestions = 10;
+            const progressNumber = currentQuestion + 1;
+            
+            if (currentQuestion < 5) {
+                questionCounter.textContent = `Pregunta ${progressNumber} de ${totalQuestions}`;
+            } else {
+                questionCounter.textContent = `Pregunta ${progressNumber} de ${totalQuestions}`;
+            }
+            
+            scoreDisplay.textContent = 'Puntaje: ' + score + '/' + (currentQuestion > 0 ? currentQuestion : 0);
             
             // Update progress bar
-            const progress = ((currentQuestion) / questions.length) * 100;
+            const progress = (currentQuestion / totalQuestions) * 100;
             progressFill.style.width = progress + '%';
         }
 
@@ -461,9 +517,9 @@
             // Update score
             if (isCorrect) {
                 score++;
-                if (correctSound) correctSound.triggerAttackRelease("C5", "8n");
+                if (correctSound) correctSound.triggerAttackRelease("C5", "32n");
             } else {
-                if (incorrectSound) incorrectSound.triggerAttackRelease("C3", "8n");
+                if (incorrectSound) incorrectSound.triggerAttackRelease("C3", "32n");
             }
             
             // Show explanation
@@ -476,7 +532,7 @@
         }
 
         function nextQuestion() {
-            if (clickSound) clickSound.triggerAttackRelease("C2", "8n");
+            if (clickSound) clickSound.triggerAttackRelease("C2", "32n");
             currentQuestion++;
             loadQuestion();
         }
@@ -485,20 +541,54 @@
             quizScreen.classList.add('hidden');
             resultsScreen.classList.remove('hidden');
             
-            finalScore.innerHTML = '0 <span class="text-2xl font-medium text-slate-500">/ ' + questions.length + '</span>';
+            finalScore.innerHTML = '0 <span class="text-2xl font-medium text-slate-500">/ 10</span>';
             animateScore(score);
             
             // Complete progress bar
             progressFill.style.width = '100%';
             
+            // Mostrar retroalimentación personalizada
+            setTimeout(() => {
+                showPersonalizedFeedback(score);
+            }, 1500);
+            
             // Launch confetti for high scores
-            if (score >= Math.floor(questions.length * 0.8)) {
+            if (score >= 8) {
                 launchConfetti();
             }
         }
+        
+        function showPersonalizedFeedback(finalScore) {
+            let feedbackMessage = '';
+            let feedbackColor = '';
+            
+            if (finalScore >= 9) {
+                feedbackMessage = '¡Excelente! Tienes un conocimiento sólido sobre donación de órganos. Eres un verdadero promotor de esta noble causa.';
+                feedbackColor = 'text-green-600';
+            } else if (finalScore >= 7) {
+                feedbackMessage = '¡Muy bien! Conoces bastante sobre donación de órganos. Con un poco más de información podrías ser un gran embajador del tema.';
+                feedbackColor = 'text-blue-600';
+            } else if (finalScore >= 5) {
+                feedbackMessage = '¡Buen intento! Tienes conocimientos básicos. Te invitamos a seguir aprendiendo sobre la importancia de la donación de órganos.';
+                feedbackColor = 'text-yellow-600';
+            } else {
+                feedbackMessage = 'Gracias por participar. La donación de órganos es un tema complejo, pero cada pregunta resuelta es un paso hacia mayor conciencia. ¡Sigue aprendiendo!';
+                feedbackColor = 'text-orange-600';
+            }
+            
+            // Insertar el mensaje de retroalimentación
+            const resultsContainer = document.querySelector('#results-screen .space-y-3');
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.className = `mt-6 p-4 bg-gray-50 rounded-lg border ${feedbackColor}`;
+            feedbackDiv.innerHTML = `
+                <h4 class="font-bold mb-2 ${feedbackColor}">Tu Retroalimentación:</h4>
+                <p class="text-gray-700">${feedbackMessage}</p>
+            `;
+            resultsContainer.parentNode.insertBefore(feedbackDiv, resultsContainer);
+        }
 
         function restartQuiz() {
-            if (clickSound) clickSound.triggerAttackRelease("C2", "8n");
+            if (clickSound) clickSound.triggerAttackRelease("C2", "32n");
             resetQuiz();
         }
 
@@ -506,12 +596,20 @@
             score = 0;
             currentQuestion = 0;
             questions = [];
+            currentBlock = 1;
+            isGeneratingQuestions = false;
             welcomeScreen.classList.remove('hidden');
             quizScreen.classList.add('hidden');
             resultsScreen.classList.add('hidden');
             explanation.classList.add('hidden');
             nextQuestionBtn.classList.add('hidden');
             progressFill.style.width = '0%';
+            
+            // Limpiar retroalimentación anterior
+            const existingFeedback = document.querySelector('#results-screen .mt-6.p-4.bg-gray-50');
+            if (existingFeedback) {
+                existingFeedback.remove();
+            }
         }
 
         // --- Confetti ---
@@ -565,6 +663,239 @@
         // Initialize canvas
         confettiCanvas.width = window.innerWidth;
         confettiCanvas.height = window.innerHeight;
+        
+        // --- Generación de preguntas adicionales (preguntas 6-10) ---
+        async function generateMoreQuestions() {
+            if (isGeneratingQuestions) return;
+            isGeneratingQuestions = true;
+            
+            // Mostrar mensaje de carga
+            questionText.textContent = 'Generando preguntas adicionales...';
+            questionText.className = 'text-lg md:text-xl font-bold text-slate-600 min-h-[100px] flex items-center justify-center text-center mb-4';
+            
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'flex justify-center items-center mt-2';
+            loadingDiv.innerHTML = `
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--vida-primary-blue)]"></div>
+                <span class="ml-2 text-gray-600 text-sm">Generando preguntas 6-10...</span>
+            `;
+            
+            // Insertar después del texto de la pregunta
+            questionText.parentNode.insertBefore(loadingDiv, questionText.nextSibling);
+            
+            try {
+                const prompt = `
+                Eres VIDA, un asistente experto en donación de órganos, tejidos y sangre en México.
+                Genera exactamente 5 preguntas adicionales de VERDADERO o FALSO sobre mitos y realidades de la donación de órganos en México.
+                Las preguntas deben ser diferentes a las típicas y abordar aspectos menos conocidos pero importantes del tema.
+                
+                Devuelve ÚNICAMENTE un array JSON con 5 objetos, cada uno con:
+                - "question": string (la pregunta, clara y directa)
+                - "isTrue": boolean (true o false)
+                - "explanation": string (explicación educativa, máximo 2 líneas)
+                
+                Ejemplo del formato esperado:
+                [
+                  {
+                    "question": "La donación de córneas puede realizarse hasta 12 horas después del fallecimiento",
+                    "isTrue": true,
+                    "explanation": "Verdadero. Las córneas pueden extraerse hasta 12 horas después del fallecimiento, a diferencia de otros órganos que requieren tiempos menores."
+                  }
+                ]
+                `;
+
+                const response = await fetch('/api/openai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: [
+                            { role: "system", content: "Responde únicamente con un array JSON válido de 5 objetos. No incluyas texto adicional." },
+                            { role: "user", content: prompt }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.choices && result.choices[0] && result.choices[0].message) {
+                    const content = result.choices[0].message.content.trim();
+                    
+                    // Intentar parsear el JSON
+                    let newQuestions;
+                    try {
+                        newQuestions = JSON.parse(content);
+                    } catch (parseError) {
+                        console.error('Error parsing generated questions:', parseError);
+                        throw new Error('Error en el formato de las preguntas generadas');
+                    }
+                    
+                    if (Array.isArray(newQuestions) && newQuestions.length === 5) {
+                        // Agregar las nuevas preguntas generadas por IA
+                        questions = questions.concat(newQuestions);
+                        currentBlock = 2;
+                        
+                        // Remover el indicador de carga
+                        loadingDiv.remove();
+                        questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[100px] flex items-center justify-center text-center mb-4';
+                        
+                        // Continuar con la siguiente pregunta
+                        loadQuestion();
+                    } else {
+                        throw new Error('Formato incorrecto de preguntas generadas');
+                    }
+                } else {
+                    throw new Error('Respuesta vacía de la API');
+                }
+                
+            } catch (error) {
+                console.error('Error generating additional questions:', error);
+                
+                // Usar preguntas de respaldo (preguntas 6-10 del banco)
+                const backupQuestionsSecondBlock = [
+                    {
+                        question: "La donación de córneas puede realizarse hasta 12 horas después del fallecimiento",
+                        isTrue: true,
+                        explanation: "Verdadero. Las córneas pueden extraerse hasta 12 horas después del fallecimiento, a diferencia de otros órganos que requieren tiempos menores."
+                    },
+                    {
+                        question: "Los tatuajes impiden automáticamente ser donante de órganos",
+                        isTrue: false,
+                        explanation: "Falso. Los tatuajes no impiden la donación automáticamente. Se evalúa cada caso individualmente considerando factores como antigüedad y tipo de tinta."
+                    },
+                    {
+                        question: "México tiene uno de los índices de donación más altos de América Latina",
+                        isTrue: false,
+                        explanation: "Falso. México tiene uno de los índices más bajos de donación en la región, con aproximadamente 3.8 donantes por millón de habitantes."
+                    },
+                    {
+                        question: "Las personas con diabetes pueden donar algunos órganos y tejidos",
+                        isTrue: true,
+                        explanation: "Verdadero. Dependiendo del control de la diabetes y el estado de los órganos, algunas personas diabéticas pueden donar córneas, tejidos y ocasionalmente otros órganos."
+                    },
+                    {
+                        question: "La donación de órganos es gratuita tanto para el donante como para el receptor",
+                        isTrue: true,
+                        explanation: "Verdadero. La donación y el trasplante son completamente gratuitos en el sistema público de salud mexicano. No hay costo para las familias donantes."
+                    }
+                ];
+                
+                questions = questions.concat(backupQuestionsSecondBlock);
+                currentBlock = 2;
+                
+                // Remover el indicador de carga
+                loadingDiv.remove();
+                questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[100px] flex items-center justify-center text-center mb-4';
+                
+                loadQuestion();
+            }
+            
+            isGeneratingQuestions = false;
+        }
+        
+        // --- Generación de las primeras 5 preguntas ---
+        async function generateFirstQuestions() {
+            if (isGeneratingQuestions) return;
+            isGeneratingQuestions = true;
+            
+            // Mostrar mensaje de carga inicial
+            questionText.textContent = 'Preparando tu quiz personalizado...';
+            questionText.className = 'text-lg md:text-xl font-bold text-slate-600 min-h-[100px] flex items-center justify-center text-center mb-4';
+            
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'flex justify-center items-center mt-2';
+            loadingDiv.innerHTML = `
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--vida-primary-blue)]"></div>
+                <span class="ml-2 text-gray-600 text-sm">Generando preguntas...</span>
+            `;
+            
+            questionText.parentNode.insertBefore(loadingDiv, questionText.nextSibling);
+            
+            try {
+                const prompt = `
+                Eres VIDA, un asistente experto en donación de órganos, tejidos y sangre en México.
+                Genera exactamente 5 preguntas de VERDADERO o FALSO sobre mitos y realidades de la donación de órganos en México.
+                Las preguntas deben ser variadas, educativas y abordar aspectos importantes pero diversos del tema.
+                
+                Devuelve ÚNICAMENTE un array JSON con 5 objetos, cada uno con:
+                - "question": string (la pregunta, clara y directa)
+                - "isTrue": boolean (true o false)
+                - "explanation": string (explicación educativa, máximo 2 líneas)
+                
+                Ejemplo del formato esperado:
+                [
+                  {
+                    "question": "La donación de córneas puede realizarse hasta 12 horas después del fallecimiento",
+                    "isTrue": true,
+                    "explanation": "Verdadero. Las córneas pueden extraerse hasta 12 horas después del fallecimiento, a diferencia de otros órganos que requieren tiempos menores."
+                  }
+                ]
+                `;
+
+                const response = await fetch('/api/openai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: [
+                            { role: "system", content: "Responde únicamente con un array JSON válido de 5 objetos. No incluyas texto adicional." },
+                            { role: "user", content: prompt }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.choices && result.choices[0] && result.choices[0].message) {
+                    const content = result.choices[0].message.content.trim();
+                    
+                    let newQuestions;
+                    try {
+                        newQuestions = JSON.parse(content);
+                    } catch (parseError) {
+                        console.error('Error parsing generated questions:', parseError);
+                        throw new Error('Error en el formato de las preguntas generadas');
+                    }
+                    
+                    if (Array.isArray(newQuestions) && newQuestions.length === 5) {
+                        // Usar las preguntas generadas
+                        questions = newQuestions;
+                        
+                        // Remover el indicador de carga
+                        loadingDiv.remove();
+                        questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[100px] flex items-center justify-center text-center mb-4';
+                        
+                        // Comenzar el quiz
+                        loadQuestion();
+                    } else {
+                        throw new Error('Formato incorrecto de preguntas generadas');
+                    }
+                } else {
+                    throw new Error('Respuesta vacía de la API');
+                }
+                
+            } catch (error) {
+                console.error('Error generating first questions:', error);
+                
+                // Usar las primeras 5 preguntas del banco de respaldo
+                questions = backupQuestions.slice(0, 5);
+                
+                // Remover el indicador de carga
+                loadingDiv.remove();
+                questionText.className = 'text-xl md:text-2xl font-bold text-slate-800 min-h-[100px] flex items-center justify-center text-center mb-4';
+                
+                // Comenzar el quiz
+                loadQuestion();
+            }
+            
+            isGeneratingQuestions = false;
+        }
     </script>
 </body>
 </html>

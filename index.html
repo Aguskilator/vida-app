@@ -625,6 +625,9 @@
             } else if (action === 'suggest_questions') {
                 currentDonorPathStep = null;
                 await generateSuggestedQuestions();
+            }
+        }
+
         // --- Instrucción simplificada para la IA ---
         const systemPrompt = `
         Eres "VIDA", un asistente virtual sobre donación de órganos, tejidos y sangre en México.
@@ -782,7 +785,6 @@
             currentQuizQuestionIndex = -1;
             quizQuestions = [];
             setTimeout(() => { chatScreen.style.display = 'none'; welcomeScreen.style.display = 'flex'; }, 300);
-        };
         };
         
         const openModal = (modal) => modal.style.display = 'flex';

@@ -483,9 +483,6 @@
         let currentDonorPathStep = null;
         let currentQuizQuestionIndex = -1;
         let quizQuestions = [];
-        let currentIndecisionStep = null;
-        let currentGriefStep = null;
-        let currentFamilyDonationStep = null;
 
         // --- Module Content Definition ---
         const donorPathModule = {
@@ -561,317 +558,6 @@
             }
         };
 
-        const indecisionModule = {
-            initial: {
-                text: "Es completamente válido tener dudas. La donación es un tema profundo y personal. Muchas personas también se sienten inseguras cuando empiezan a informarse. Estoy aquí para ayudarte a pensar en ello con calma.",
-                buttons: [
-                    { text: "Cuéntame por qué donar es valioso", action: "indecision_explain_impact" },
-                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
-                ]
-            },
-            explain_impact: {
-                text: "Donar órganos después de fallecer puede transformar por completo la vida de varias personas. Con una sola decisión, puedes ayudar a que una madre vea crecer a sus hijos, o que un niño recupere la salud.",
-                buttons: [
-                    { text: "¿Qué legado me gustaría dejar?", action: "indecision_ask_reflection" },
-                    { text: "Quiero saber cómo hablar con mi familia", action: "donor_path_examples_family_talk" },
-                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
-                ]
-            },
-            ask_reflection: {
-                text: "¿Te gustaría que alguien ayudara a un ser querido tuyo si lo necesitara? ¿Has pensado en qué legado te gustaría dejar?",
-                buttons: [
-                    { text: "Quiero saber cómo hablar con mi familia", action: "donor_path_examples_family_talk" },
-                    { text: "Pregúntame sobre la ley de donación", action: "donor_path_step4" },
-                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
-                ]
-            },
-            cierre: {
-                text: "Lo más importante es que tomes una decisión con la información adecuada y en paz contigo mismo. Gracias por atreverte a pensar en esto. Estás dando un gran paso, sin importar tu elección final.",
-                buttons: [
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Iniciar camino como donante", action: "donor_path_initial" },
-                    { text: "Hablar con VIDA nuevamente", action: "reset_chat" }
-                ]
-            }
-        };
-
-        const griefModule = {
-            initial: {
-                text: "Lamento profundamente tu pérdida. Entiendo que este es un momento de mucho dolor y confusión. Soy VIDA, y estoy aquí para brindarte información clara y respetuosa sobre la donación de órganos y tejidos, lo cual puede ser una opción de esperanza en momentos así. Sé que es un tema delicado ahora, pero estoy aquí para explicarte todo lo que necesites saber al respecto.", 
-                buttons: [
-                    { text: "Comprendo, gracias", action: "grief_step2_validation" },
-                    { text: "No quiero hablar de eso ahora", action: "grief_final_thanks" } 
-                ]
-            },
-            step2_validation: {
-                text: "Tus emociones son válidas. Comprendo que este momento es abrumador. Mi propósito es ayudarte a entender cómo la donación puede ser un acto de generosidad que transforma vidas, si esto es algo que te interesa explorar ahora.", 
-                buttons: [
-                    { text: "Quiero entender la donación", action: "grief_step3_intro" },
-                    { text: "Prefiero hablar de otra cosa", action: "reset_chat" }
-                ]
-            },
-            step3_intro: {
-                text: "En estos momentos difíciles, algunas familias encuentran consuelo al considerar la donación de órganos o tejidos. Es una forma de transformar el dolor en esperanza. Solo si lo deseas, puedo explicarte en qué consiste la donación y cómo puede ser un acto de amor y trascendencia.",
-                buttons: [
-                    { text: "Sí, explícame el valor de donar", action: "grief_step4_reflection" },
-                    { text: "Prefiero hacer otra pregunta", action: "reset_chat" }
-                ]
-            },
-            step4_reflection: {
-                text: "La donación puede ofrecer vida a otras personas y dar un sentido especial a la pérdida. Muchas familias dicen que eso les ayudó en su duelo. Aceptar donar no borra el dolor, pero puede llenarlo de significado. Es una forma poderosa de que tu ser querido siga presente en el mundo. Cada decisión tomada con amor deja huella. Donar puede ser ese tipo de huella.",
-                buttons: [
-                    { text: "Entiendo, la decisión es mía", action: "grief_step5_autonomy" },
-                    { text: "Quiero saber más sobre el proceso de donación", action: "grief_process_overview" }
-                ]
-            },
-            step5_autonomy: {
-                text: "Estoy aquí para informarte y acompañarte. La decisión que tomes será la correcta si la haces con el corazón. Tú tienes la libertad de decidir. Yo puedo ayudarte a entender, nunca a forzarte.",
-                buttons: [
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Iniciar Tu camino como donante", action: "donor_path_initial" },
-                    { text: "Gracias, por ahora es suficiente", action: "grief_final_thanks" }
-                ]
-            },
-            grief_process_overview: {
-                text: "El proceso de donación se hace con el máximo respeto. Primero, se confirma el fallecimiento, luego se evalúa al donante y si es apto, se extraen los órganos con cuidado. El cuerpo se restaura para el funeral. Todo ocurre rápidamente y con dignidad.",
-                buttons: [
-                    { text: "Mitos comunes sobre donación (quiz)", action: "start_quiz" },
-                    { text: "Necesito hablar con un experto", action: "grief_suggest_professional" },
-                    { text: "Gracias, por ahora es suficiente", action: "grief_final_thanks" }
-                ]
-            },
-            grief_suggest_professional: {
-                text: "Si sientes que necesitas un apoyo más profundo en este momento, considera hablar con un tanatólogo o psicólogo. Ellos pueden ofrecerte herramientas para manejar el duelo. Estoy aquí para cualquier otra pregunta que tengas sobre donación.",
-                buttons: [
-                    { text: "Volver a preguntas de donación", action: "suggest_questions" },
-                    { text: "Gracias, por ahora es suficiente", action: "grief_final_thanks" }
-                ]
-            },
-            grief_final_thanks: {
-                text: "Gracias por confiarme este momento. Sé que es un proceso doloroso y tu sentir es muy valioso. Si en algún futuro, cuando te sientas listo, deseas explorar más sobre cómo la donación puede brindar esperanza, recuerda que aquí estaré para informarte.",
-                buttons: [
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Hablar con VIDA nuevamente", action: "reset_chat" }
-                ]
-            }
-        };
-
-        const familyDonationModule = {
-            initial: {
-                text: "Entiendo que estás considerando la donación de órganos de un familiar. Este es un momento muy difícil y es natural tener muchas preguntas. Estoy aquí para ayudarte con información clara y respetuosa sobre el proceso.",
-                buttons: [
-                    { text: "Quiero entender el proceso", action: "family_donation_process" },
-                    { text: "Tengo dudas sobre la decisión", action: "family_donation_doubts" },
-                    { text: "Necesito apoyo emocional", action: "grief_initial" }
-                ]
-            },
-            process: {
-                text: "El proceso de donación familiar incluye varios pasos importantes: confirmación médica del fallecimiento, evaluación de viabilidad de órganos, coordinación con CENATRA, y el proceso quirúrgico. Todo se hace con el máximo respeto y profesionalismo.",
-                buttons: [
-                    { text: "¿Qué necesito saber sobre tiempos?", action: "family_donation_timing" },
-                    { text: "¿Afecta el cuerpo para el funeral?", action: "family_donation_funeral" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" }
-                ]
-            },
-            doubts: {
-                text: "Es completamente normal tener dudas en este momento. Algunas familias se preguntan si están tomando la decisión correcta, si el proceso es digno, o si realmente ayudará a otras personas. Todas estas preocupaciones son válidas.",
-                buttons: [
-                    { text: "¿Cómo sé si es lo correcto?", action: "family_donation_decision" },
-                    { text: "¿Realmente ayudará a otros?", action: "family_donation_impact" },
-                    { text: "Necesito más tiempo para decidir", action: "family_donation_time" }
-                ]
-            },
-            timing: {
-                text: "El tiempo es un factor importante en la donación. Una vez confirmado el fallecimiento, hay ventanas específicas para cada órgano. El equipo médico te guiará paso a paso, sin presiones, respetando tu ritmo emocional.",
-                buttons: [
-                    { text: "¿Cuánto tiempo tengo para decidir?", action: "family_donation_decision_time" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Necesito apoyo emocional", action: "grief_initial" }
-                ]
-            },
-            funeral: {
-                text: "La donación de órganos no impide tener un funeral digno. El cuerpo es tratado con respeto, las incisiones son mínimas y se restaura la apariencia. Podrás despedirte como desees.",
-                buttons: [
-                    { text: "¿Qué sucede después del proceso?", action: "family_donation_after" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            decision: {
-                text: "La decisión correcta es la que tomes con amor y reflexión. Muchas familias encuentran consuelo sabiendo que su ser querido puede salvar vidas. No hay decisiones incorrectas, solo decisiones tomadas con el corazón.",
-                buttons: [
-                    { text: "¿Cómo explico esto a otros familiares?", action: "family_donation_explaining" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Necesito apoyo emocional", action: "grief_initial" }
-                ]
-            },
-            impact: {
-                text: "Sí, la donación de órganos puede salvar hasta 8 vidas y mejorar la calidad de vida de muchas más personas. Un corazón, hígado, riñones, pulmones, páncreas e intestinos pueden dar nueva vida a quienes los necesitan.",
-                buttons: [
-                    { text: "¿Sabré quién recibió los órganos?", action: "family_donation_recipient" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            time: {
-                text: "Es natural necesitar tiempo para procesar esta decisión. El equipo médico comprende esto y te dará el espacio que necesites, dentro de los tiempos médicos necesarios para la viabilidad de los órganos.",
-                buttons: [
-                    { text: "¿Con quién puedo hablar?", action: "family_donation_support" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Necesito apoyo emocional", action: "grief_initial" }
-                ]
-            },
-            decision_time: {
-                text: "Generalmente tienes algunas horas para tomar la decisión, dependiendo de la condición médica. El equipo de coordinación te informará sobre los tiempos específicos y te acompañará en el proceso sin presionarte.",
-                buttons: [
-                    { text: "¿Qué pasa si no estoy seguro?", action: "family_donation_uncertainty" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            after: {
-                text: "Después del proceso, el cuerpo es preparado con cuidado para el funeral. Muchas familias reciben seguimiento emocional y, si lo desean, pueden conocer el impacto que tuvo su decisión en las vidas que se salvaron.",
-                buttons: [
-                    { text: "¿Hay seguimiento después?", action: "family_donation_followup" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            explaining: {
-                text: "Explicar esta decisión a otros familiares puede ser difícil. Puedes compartir que es un acto de amor y generosidad, que respeta la dignidad de tu ser querido y que puede traer esperanza a otras familias.",
-                buttons: [
-                    { text: "¿Qué decir si no están de acuerdo?", action: "family_donation_disagreement" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            recipient: {
-                text: "Por confidencialidad, no se revela la identidad específica de los receptores. Sin embargo, las familias pueden recibir cartas anónimas de agradecimiento o información general sobre cómo ayudaron (edad aproximada, mejoría, etc.).",
-                buttons: [
-                    { text: "¿Puedo escribir una carta?", action: "family_donation_letter" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            support: {
-                text: "Puedes hablar con el coordinador de donación del hospital, trabajadores sociales especializados, capellanes, o solicitar apoyo psicológico. También hay grupos de apoyo para familias donantes.",
-                buttons: [
-                    { text: "¿Hay grupos de apoyo?", action: "family_donation_groups" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Necesito apoyo emocional", action: "grief_initial" }
-                ]
-            },
-            uncertainty: {
-                text: "Si no estás seguro, es importante que expreses tus dudas al equipo médico. Ellos pueden darte más información, tiempo adicional si es posible, o conectarte con apoyo emocional para ayudarte a decidir.",
-                buttons: [
-                    { text: "¿Puedo cambiar de opinión?", action: "family_donation_change_mind" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Necesito apoyo emocional", action: "grief_initial" }
-                ]
-            },
-            followup: {
-                text: "Muchos programas de donación ofrecen seguimiento emocional a las familias donantes. Esto puede incluir terapia de duelo, grupos de apoyo, ceremonias de reconocimiento, e información sobre el impacto de la donación.",
-                buttons: [
-                    { text: "¿Cómo solicitar este apoyo?", action: "family_donation_request_support" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            disagreement: {
-                text: "Si otros familiares no están de acuerdo, es importante escuchar sus preocupaciones con empatía. Puedes explicar que es una decisión de amor, que respeta la dignidad del ser querido, y que puede ayudar a otras familias en dolor.",
-                buttons: [
-                    { text: "¿Quién toma la decisión final?", action: "family_donation_final_decision" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            letter: {
-                text: "Sí, muchas familias donantes pueden escribir cartas anónimas para los receptores, compartiendo amor y esperanza. De igual manera, los receptores pueden escribir cartas de agradecimiento que llegan a las familias donantes.",
-                buttons: [
-                    { text: "¿Cómo funciona este proceso?", action: "family_donation_letter_process" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            groups: {
-                text: "Existen grupos de apoyo para familias donantes donde puedes compartir experiencias con otras personas que han pasado por situaciones similares. Estos grupos ofrecen comprensión, apoyo emocional y sanación.",
-                buttons: [
-                    { text: "¿Cómo encontrar estos grupos?", action: "family_donation_find_groups" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            change_mind: {
-                text: "Hasta cierto punto en el proceso, es posible cambiar de opinión. Es importante comunicar cualquier cambio de sentimiento inmediatamente al equipo médico para que puedan actuar en consecuencia.",
-                buttons: [
-                    { text: "¿Hasta cuándo puedo cambiar de opinión?", action: "family_donation_change_timeline" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            request_support: {
-                text: "Puedes solicitar apoyo emocional directamente al coordinador de donación del hospital, a través de CENATRA, o contactando organizaciones especializadas en apoyo a familias donantes.",
-                buttons: [
-                    { text: "¿Qué tipo de apoyo ofrecen?", action: "family_donation_support_types" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            final_decision: {
-                text: "En México, la decisión final generalmente recae en el familiar más cercano (cónyuge, hijos, padres), pero es importante buscar consenso familiar cuando sea posible. El equipo médico puede ayudar a mediar estas conversaciones.",
-                buttons: [
-                    { text: "¿Qué pasa si no hay consenso?", action: "family_donation_no_consensus" },
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            letter_process: {
-                text: "El proceso de cartas se maneja a través del coordinador de donación o CENATRA. Las cartas pasan por un proceso de revisión para mantener el anonimato pero permitir el intercambio de gratitud y sanación emocional.",
-                buttons: [
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Necesito apoyo emocional", action: "grief_initial" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            find_groups: {
-                text: "Puedes encontrar grupos de apoyo a través de hospitales especializados en trasplantes, CENATRA, organizaciones como la Fundación Mexicana para la Donación de Órganos, o preguntando al coordinador de donación.",
-                buttons: [
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Necesito apoyo emocional", action: "grief_initial" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            change_timeline: {
-                text: "Puedes cambiar de opinión hasta antes de que comience el proceso quirúrgico de extracción. Una vez iniciado el procedimiento, ya no es posible revertir la decisión. Es importante comunicar cualquier duda inmediatamente.",
-                buttons: [
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Necesito apoyo emocional", action: "grief_initial" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            support_types: {
-                text: "El apoyo incluye: terapia de duelo especializada, grupos de apoyo, seguimiento telefónico, ceremonia de reconocimiento, información sobre el impacto de la donación, y conexión con otras familias donantes si lo deseas.",
-                buttons: [
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Necesito apoyo emocional", action: "grief_initial" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            },
-            no_consensus: {
-                text: "Si no hay consenso familiar, el equipo médico puede ofrecer mediación, más tiempo para la reflexión, o apoyo de trabajadores sociales especializados. La decisión final seguirá las normativas legales y el bienestar de la familia.",
-                buttons: [
-                    { text: "Ver más dudas frecuentes", action: "suggest_questions" },
-                    { text: "Necesito apoyo emocional", action: "grief_initial" },
-                    { text: "Volver al inicio", action: "reset_chat" }
-                ]
-            }
-        };
-
-        // --- New Quiz Module ---
-        let quizTotalAnswered = 0; // Nuevo: cuenta total de preguntas respondidas
-        let quizMaxQuestions = 20; // Máximo de preguntas por sesión
-        let quizBlockSize = 5; // Tamaño del bloque
-
         // --- Función para mostrar botones de módulo y asociar eventos ---
         function displayModuleButtons(buttons, handler) {
             suggestedQuestionsContainer.innerHTML = '';
@@ -889,6 +575,11 @@
             suggestedQuestionsContainer.classList.remove('hidden');
         }
 
+        // --- Quiz Configuration ---
+        let quizTotalAnswered = 0; // Nuevo: cuenta total de preguntas respondidas
+        let quizMaxQuestions = 20; // Máximo de preguntas por sesión
+        let quizBlockSize = 5; // Tamaño del bloque
+
         // --- Module Functions ---
         function reset_chat_and_offer_suggestions() {
             chatHistory = [];
@@ -896,9 +587,6 @@
             suggestedQuestionsContainer.innerHTML = '';
             chatContainer.innerHTML = '';
             currentDonorPathStep = null;
-            currentIndecisionStep = null;
-            currentGriefStep = null;
-            currentFamilyDonationStep = null;
             currentQuizQuestionIndex = -1;
             quizQuestions = [];
             addInitialBotMessage();
@@ -937,127 +625,26 @@
             } else if (action === 'suggest_questions') {
                 currentDonorPathStep = null;
                 await generateSuggestedQuestions();
-            } else if (action === 'indecision_start') {
-                currentDonorPathStep = null;
-                currentIndecisionStep = 'initial';
-                displayIndecisionStep(currentIndecisionStep);
-            }
-        }
-
-        // --- Indecision Module Functions ---
-        function displayIndecisionStep(stepKey) {
-            const stepContent = indecisionModule[stepKey];
-            if (!stepContent) {
-                console.error("Invalid indecision step:", stepKey);
-                addMessageToChat('bot', "Lo siento, hubo un problema. Por favor, intenta de nuevo.");
-                currentIndecisionStep = null;
-                return;
-            }
-            addMessageToChat('bot', stepContent.text);
-            displayModuleButtons(stepContent.buttons, handleIndecisionAction);
-        }
-
-        async function handleIndecisionAction(action, buttonData = {}) {
-            addMessageToChat('user', buttonData.text || action);
-            if (action.startsWith('indecision_')) {
-                currentIndecisionStep = action.replace('indecision_', '');
-                displayIndecisionStep(currentIndecisionStep);
-            } else if (action.startsWith('donor_path_')) {
-                currentIndecisionStep = null;
-                const nextStep = action.replace('donor_path_', '');
-                if(nextStep === 'initial'){
-                    currentDonorPathStep = 'introduction'; // Start with introduction now
-                    displayDonorPathStep(currentDonorPathStep);
-                } else {
-                    displayDonorPathStep(nextStep);
-                }
-            } else if (action === 'reset_chat') {
-                reset_chat_and_offer_suggestions();
-            } else if (action === 'suggest_questions') {
-                currentIndecisionStep = null;
-                await generateSuggestedQuestions();
-            }
-        }
-        
-        // --- Grief Module Functions ---
-        function displayGriefStep(stepKey) {
-            const stepContent = griefModule[stepKey];
-            if (!stepContent) {
-                console.error("Invalid grief step:", stepKey);
-                addMessageToChat('bot', "Lo siento, hubo un problema. Por favor, intenta de nuevo.");
-                currentGriefStep = null;
-                return;
-            }
-            addMessageToChat('bot', stepContent.text);
-            displayModuleButtons(stepContent.buttons, handleGriefAction);
-        }
-
-        async function handleGriefAction(action, buttonData = {}) {
-            addMessageToChat('user', buttonData.text || action);
-            if (action.startsWith('grief_')) {
-                currentGriefStep = action.replace('grief_', '');
-                displayGriefStep(currentGriefStep);
-            } else if (action.startsWith('donor_path_')) {
-                currentGriefStep = null;
-                currentDonorPathStep = action.replace('donor_path_', '');
-                displayDonorPathStep(currentDonorPathStep);
-            } else if (action === 'start_quiz') {
-                currentGriefStep = null;
-                startQuiz();
-            } else if (action === 'suggest_questions') {
-                currentGriefStep = null;
-                await generateSuggestedQuestions();
-            } else if (action === 'reset_chat') {
-                reset_chat_and_offer_suggestions();
-            }
-        }
-
-        // --- Family Donation Module Functions ---
-        function displayFamilyDonationStep(stepKey) {
-            const stepContent = familyDonationModule[stepKey];
-            if (!stepContent) {
-                console.error("Invalid family donation step:", stepKey);
-                addMessageToChat('bot', "Lo siento, hubo un problema. Por favor, intenta de nuevo.");
-                currentFamilyDonationStep = null;
-                return;
-            }
-            addMessageToChat('bot', stepContent.text);
-            displayModuleButtons(stepContent.buttons, handleFamilyDonationAction);
-        }
-
-        async function handleFamilyDonationAction(action, buttonData = {}) {
-            addMessageToChat('user', buttonData.text || action);
-            if (action.startsWith('family_donation_')) {
-                currentFamilyDonationStep = action.replace('family_donation_', '');
-                displayFamilyDonationStep(currentFamilyDonationStep);
-            } else if (action === 'grief_initial') {
-                currentFamilyDonationStep = null;
-                currentGriefStep = 'initial';
-                displayGriefStep(currentGriefStep);
-            } else if (action === 'reset_chat') {
-                reset_chat_and_offer_suggestions();
-            } else if (action === 'suggest_questions') {
-                currentFamilyDonationStep = null;
-                await generateSuggestedQuestions();
-            }
-        }
-
-        // --- Nuevo: Instrucción para la IA en el prompt del sistema ---
+        // --- Instrucción simplificada para la IA ---
         const systemPrompt = `
-        **DIRECTRICES PRINCIPALES PARA VIDA (ASISTENTE CONVERSACIONAL)**
+        Eres "VIDA", un asistente virtual sobre donación de órganos, tejidos y sangre en México.
 
-        **Identidad y Propósito:**
-        Eres "VIDA", un asistente virtual que ofrece orientación confiable y respetuosa sobre la donación de órganos, tejidos y sangre después de que una persona ha fallecido en México (ya sea por muerte encefálica, cuando el corazón deja de latir, o sobre donación de sangre en vida). Tu rol es ser una herramienta de apoyo para decisiones informadas y humanas. Siempre responde como VIDA.
+        **Reglas básicas:**
+        - Responde de forma cálida, natural y conversacional. NUNCA como robot.
+        - EVITA respuestas repetitivas. Varía tu lenguaje y estructura completamente.
+        - PROHIBIDO usar palabras como "maravilloso", "increíble", "generoso" repetidamente.
+        - Usa sinónimos y diferentes estructuras: "Me da gusto saber que...", "Qué bueno que hayas decidido...", "Te agradezco que compartas...", "Es valioso que quieras..."
+        - Sé conciso, claro y empático. Usa lenguaje sencillo, sin tecnicismos.
+        - No uses asteriscos. Puedes usar listas numeradas o guiones si es necesario.
+        - Si detectas duelo o dolor, prioriza el apoyo emocional.
+        - Solo responde sobre donación de órganos, tejidos y sangre.
+        - Si está fuera de tema: "Lo siento, solo puedo ayudarte con preguntas sobre donación de órganos, tejidos o sangre."
 
-        **Reglas de Estilo y Comprensión:**
-        - Nunca uses asteriscos en tus respuestas, bajo ninguna circunstancia.
-        - Entiende y responde correctamente aunque el usuario escriba con faltas de ortografía, errores de redacción o lenguaje coloquial. Interpreta la intención y el contexto.
-        - Responde de forma cálida, humana y natural, nunca como robot. Usa frases empáticas y cercanas, como si hablaras con una persona.
-        - Sé siempre concreto y conciso. Si el usuario quiere más información, debe pedirla (por ejemplo: "quiero saber más", "dame detalles", "explícame mejor"). Solo entonces amplía la respuesta, manteniendo claridad y sencillez.
-        - Usa siempre lenguaje claro, sencillo y accesible para el público general. Evita tecnicismos y explica cualquier término difícil con palabras cotidianas.
-        - Organiza la información en párrafos cortos o listas numeradas (1. 2. 3.) o guiones, pero nunca con asteriscos ni viñetas.
-        - Las respuestas deben ser breves y claras por defecto, tanto si son respuesta libre como si son respuestas a opciones sugeridas. Solo si el usuario pide más información, puedes extenderte.
-        - No uses palabras médicas, ni diagnósticos complejos, ni expresiones clínicas. Habla siempre como lo harías con cualquier persona fuera de un hospital.
+        **IMPORTANTE - Detección de intención de donante:**
+        Si el usuario expresa claramente que quiere ser donante (frases como "quiero ser donante", "me interesa donar"), NO incluyas botones automáticos.
+        En su lugar, pregunta naturalmente qué específicamente le interesa saber.
+        
+        Responde siempre de manera natural, empática y sin sonar robótico.
         - Si hay que explicar algo complejo, hazlo con ejemplos sencillos y sin tecnicismos.
         - No muestres cifras, nombres de leyes o documentos técnicos a menos que el usuario lo solicite explícitamente.
         - Las respuestas a preguntas sugeridas deben ser breves, claras y fáciles de entender.
@@ -1159,7 +746,7 @@
         - Evita respuestas robóticas al cerrar. Usa finales como: “Gracias por tu tiempo. Si más adelante quieres hablar de esto, aquí estaré”, o “Fue un gusto platicar contigo, te mando un saludo cálido.”
         `;
 
-        // --- Utilidad para extraer JSON robusto de texto ---
+        // --- Utilidad para extraer JSON robusto de texto (solo para quiz) ---
         function extractFirstJSONArray(text) {
             // Busca el primer bloque que parece un array JSON
             const arrayRegex = /\[\s*{[\s\S]*?}\s*\]/g;
@@ -1180,18 +767,6 @@
             return null;
         }
 
-         // --- Nueva función para extraer el primer objeto JSON de la respuesta ---
-        function extractFirstJSON(text) {
-            const jsonRegex = /{\s*"activarModulo"\s*:\s*"(donorPath|indecision|grief|familyDonation|quiz|null)"\s*}/;
-            const match = text.match(jsonRegex);
-            if (match) {
-                try {
-                    return JSON.parse(match[0]);
-                } catch (e) { return null; }
-            }
-            return null;
-        }
-
         // --- UI Functions ---
         const showChat = () => {
             welcomeScreen.style.display = 'none';
@@ -1206,10 +781,8 @@
             currentDonorPathStep = null;
             currentQuizQuestionIndex = -1;
             quizQuestions = [];
-            currentIndecisionStep = null;
-            currentGriefStep = null;
-            currentFamilyDonationStep = null;
             setTimeout(() => { chatScreen.style.display = 'none'; welcomeScreen.style.display = 'flex'; }, 300);
+        };
         };
         
         const openModal = (modal) => modal.style.display = 'flex';
@@ -1223,9 +796,6 @@
             currentDonorPathStep = null;
             currentQuizQuestionIndex = -1;
             quizQuestions = [];
-            currentIndecisionStep = null;
-            currentGriefStep = null;
-            currentFamilyDonationStep = null;
             addInitialBotMessage();
         });
 
@@ -1302,490 +872,55 @@
             if (userMessageLower.includes('quiero ser donante') || 
                 userMessageLower.includes('como puedo donar') || 
                 userMessageLower.includes('me interesa donar') || 
-                userMessageLower.includes('mi camino como donador') || 
-                userMessageLower.includes('quiero registrarme como donante') ||
-                userMessageLower.includes('camino como donante') ||
                 userMessageLower.includes('ser donante')) {
                 
                 // Responder primero de manera natural con IA
                 await handleDonorIntentWithAI(userMessage);
                 return;
             }
-
-            // 3. Detectar contexto emocional y situacional
-            const contextPrompt = `
-            Analiza el siguiente mensaje del usuario y determina el contexto emocional y situacional.
-            Identifica si el usuario:
-            - Está en duelo o perdió a alguien recientemente
-            - Quiere ser donante (expresa interés directo en convertirse en donante de órganos) - frases como "quiero ser donante", "como puedo donar", "me interesa donar", "mi camino como donador", "quiero registrarme como donante"
-            - Está considerando donación familiar (de un ser querido que falleció o está por fallecer)
-            - Tiene dudas o indecisión sobre donación
-            - Está pidiendo información general sobre donación
-            - Está fuera del tema de donación completamente
             
-            IMPORTANTE: Solo marca "donor_path" si el usuario expresa claramente que QUIERE ser donante, no solo si pregunta información general.
-            
-            Mensaje del usuario: "${userMessage}"
-            
-            Responde SOLO con un JSON en este formato:
-            {
-                "contexto": "grief|donor_path|family_donation|indecision|general|off_topic",
-                "emocion": "dolor|esperanza|confusion|miedo|curiosidad|neutral",
-                "urgencia": "alta|media|baja",
-                "necesita_apoyo": true/false
-            }
-            `;
-
-            try {
-                // Detectar contexto con IA
-                const contextResponse = await fetch('/api/openai', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        prompt: [
-                            { role: "system", content: "Responde únicamente con un JSON válido." },
-                            { role: "user", content: contextPrompt }
-                        ]
-                    })
-                });
-
-                let detectedContext = null;
-                if (contextResponse.ok) {
-                    const contextResult = await contextResponse.json();
-                    try {
-                        const contextText = contextResult.choices?.[0]?.message?.content || '{}';
-                        detectedContext = JSON.parse(contextText);
-                    } catch (e) {
-                        console.log("Error parsing context, using general approach");
-                    }
-                }
-
-                // 4. Generar respuesta con IA basada en contexto
-                let specificSystemPrompt = systemPrompt;
+            // Detección específica para cuando piden guía paso a paso
+            if (userMessageLower.includes('mi camino como donador') || 
+                userMessageLower.includes('camino como donante') ||
+                userMessageLower.includes('guíame paso a paso') ||
+                userMessageLower.includes('acompañame') ||
+                userMessageLower.includes('paso a paso')) {
                 
-                if (detectedContext) {
-                    switch (detectedContext.contexto) {
-                        case 'grief':
-                            specificSystemPrompt += `\n\nCONTEXTO ESPECIAL: El usuario está en duelo o perdió a alguien. Responde con máxima empatía, contención emocional y sensibilidad. Ofrece apoyo antes que información técnica.`;
-                            break;
-                        case 'donor_path':
-                            specificSystemPrompt += `\n\nCONTEXTO ESPECIAL: El usuario quiere ser donante. Guíalo paso a paso en su camino personal, siendo motivador pero no presionante. Personaliza los consejos según sus dudas específicas.`;
-                            break;
-                        case 'family_donation':
-                            specificSystemPrompt += `\n\nCONTEXTO ESPECIAL: El usuario está considerando donación familiar. Combina información práctica con apoyo emocional. Respeta su proceso de decisión y ofrece claridad sin presión.`;
-                            break;
-                        case 'indecision':
-                            specificSystemPrompt += `\n\nCONTEXTO ESPECIAL: El usuario tiene dudas sobre donación. Ayúdale a reflexionar, ofrece perspectivas balanceadas y respeta cualquier decisión que tome.`;
-                            break;
-                    }
-
-                    if (detectedContext.necesita_apoyo) {
-                        specificSystemPrompt += `\n\nIMPORTANTE: El usuario necesita apoyo emocional adicional. Prioriza la contención y validación de sus sentimientos.`;
-                    }
-                }
-
-                // 5. Obtener respuesta de IA personalizada
-                const botResponseText = await getBotResponse(userMessage, specificSystemPrompt);
-
-                // 6. Activar módulo específico basado en contexto detectado - pero de manera natural
-                if (detectedContext) {
-                    switch (detectedContext.contexto) {
-                        case 'donor_path':
-                            // No activar directamente, sino responder naturalmente primero
-                            await handleDonorIntentWithAI(userMessage);
-                            return;
-                        case 'grief':
-                            currentGriefStep = 'initial';
-                            displayGriefStep(currentGriefStep);
-                            return;
-                        case 'family_donation':
-                            currentFamilyDonationStep = 'initial';
-                            displayFamilyDonationStep(currentFamilyDonationStep);
-                            return;
-                        case 'indecision':
-                            currentIndecisionStep = 'initial';
-                            displayIndecisionStep(currentIndecisionStep);
-                            return;
-                    }
-                }
-
-                // 7. Buscar si la IA sugiere activar un módulo especial en la respuesta
-                const moduloObj = extractFirstJSON(botResponseText);
-                if (moduloObj && moduloObj.activarModulo) {
-                    switch (moduloObj.activarModulo) {
-                        case 'donorPath':
-                            currentDonorPathStep = 'introduction';
-                            displayDonorPathStep(currentDonorPathStep);
-                            break;
-                        case 'grief':
-                            currentGriefStep = 'initial';
-                            displayGriefStep(currentGriefStep);
-                            break;
-                        case 'familyDonation':
-                            currentFamilyDonationStep = 'initial';
-                            displayFamilyDonationStep(currentFamilyDonationStep);
-                            break;
-                        case 'quiz':
-                            startQuiz();
-                            break;
-                    }
-                }
-
-            } catch (error) {
-                console.error("Error in AI-enhanced chat:", error);
-                // Fallback a respuesta básica
-                await getBotResponse(userMessage);
+                currentDonorPathStep = 'introduction';
+                displayDonorPathStep(currentDonorPathStep);
+                return;
             }
+
+            // 3. Para todo lo demás, usar respuesta natural de la IA sin módulos extra
+            await getBotResponse(userMessage, systemPrompt);
         });
 
-        // --- AI-Enhanced Module Functions ---
+        // --- AI-Enhanced Module Functions (Solo para Donor Path) ---
         async function handleDonorIntentWithAI(userMessage) {
             const donorIntentPrompt = `
             El usuario acaba de expresar interés en ser donante de órganos. Su mensaje fue: "${userMessage}"
             
             Como VIDA, responde de manera cálida y natural a su interés. Tu respuesta debe:
-            - Reconocer y validar su decisión generosa sin presionar
-            - Expresar apoyo y comprensión por su interés
-            - Ser empática y motivadora pero no robótica
-            - Usar un tono conversacional como si hablaras con un amigo
-            - Hacer que se sienta acompañado en esta decisión importante
-            - Terminar sugiriendo naturalmente que puedes guiarlo paso a paso
+            - Reconocer su decisión de forma variada y auténtica (evita palabras como "maravilloso", "generoso" que suenan repetitivas)
+            - Ser empática pero conversacional, como si hablaras con un amigo cercano
+            - Usar lenguaje natural y variado - no formulaico
+            - Hacer que se sienta escuchado y comprendido
+            - Terminar preguntando qué le gustaría saber específicamente o si tiene alguna duda particular
+            - NO ofrecer múltiples opciones ni mencionar "guías paso a paso"
             
-            No menciones módulos ni sistemas. Habla como una persona real que entiende la importancia de su decisión.
+            Ejemplos de inicios variados: "Me da mucho gusto saber que...", "Qué bueno que hayas tomado...", "Te agradezco que compartas...", "Es valioso que quieras..."
+            
+            Responde como una persona real y empática, no como un sistema.
             `;
 
-            const naturalResponse = await getBotResponse(donorIntentPrompt, systemPrompt + "\n\nResponde de forma completamente natural y humana, como si fueras un amigo comprensivo que lo está apoyando en esta decisión.");
+            await getBotResponse(donorIntentPrompt, systemPrompt + "\n\nResponde de forma completamente natural y humana. NO ofrezcas botones ni opciones múltiples. Deja que la conversación fluya naturalmente preguntando qué específicamente le interesa saber.");
             
-            // Después de la respuesta natural, ofrecer opciones para continuar
-            setTimeout(() => {
-                showDonorIntentOptions();
-            }, 1500);
+            // NO mostrar botones automáticamente - dejar que la conversación continúe naturalmente
         }
 
-        function showDonorIntentOptions() {
-            const options = [
-                { text: "Sí, me gustaría que me guíes paso a paso", action: "start_donor_path" },
-                { text: "Tengo algunas dudas primero", action: "donor_questions_first" },
-                { text: "¿Qué implica realmente ser donante?", action: "donor_basic_info" },
-                { text: "Me da un poco de miedo, ¿es normal?", action: "donor_fears_normal" }
-            ];
-
-            displayModuleButtons(options, handleDonorIntentAction);
-        }
-
-        async function handleDonorIntentAction(action, buttonData = {}) {
-            addMessageToChat('user', buttonData.text || action);
-            
-            let promptForAI = "";
-            
-            switch (action) {
-                case 'start_donor_path':
-                    // Ahora sí iniciar el módulo formal
-                    currentDonorPathStep = 'introduction';
-                    displayDonorPathStep(currentDonorPathStep);
-                    return;
-                case 'donor_questions_first':
-                    promptForAI = "El usuario tiene dudas antes de empezar su camino como donante. Respóndele con empatía que es completamente normal tener preguntas, y que estás aquí para resolverlas todas. Pregúntale qué es lo que más le preocupa o qué le gustaría saber primero.";
-                    break;
-                case 'donor_basic_info':
-                    promptForAI = "El usuario quiere entender qué implica ser donante. Explícale de forma sencilla y cálida qué significa ser donante de órganos, cuándo puede ocurrir la donación, y el impacto positivo que tiene. Mantén un tono alentador pero informativo.";
-                    break;
-                case 'donor_fears_normal':
-                    promptForAI = "El usuario expresa que tiene miedo sobre ser donante. Valida completamente sus sentimientos - es absolutamente normal sentir miedo o incertidumbre sobre estos temas. Explícale que muchas personas sienten lo mismo y que hablarlo ayuda a aclarar las dudas. Ofrécele abordar sus miedos específicos.";
-                    break;
-            }
-            
-            if (promptForAI) {
-                await getBotResponse(promptForAI, systemPrompt + "\n\nResponde con máxima empatía y naturalidad. El usuario está en un proceso de reflexión importante y necesita sentirse acompañado y comprendido.");
-                
-                // Después de responder, ofrecer opciones para continuar
-                setTimeout(() => {
-                    showFollowUpDonorOptions(action);
-                }, 1000);
-            }
-        }
-
-        function showFollowUpDonorOptions(previousAction) {
-            let options = [];
-            
-            // Opciones específicas según la acción anterior
-            if (previousAction === 'donor_questions_first' || previousAction === 'donor_basic_info') {
-                options = [
-                    { text: "Ahora sí, quiero empezar mi camino como donante", action: "start_donor_path" },
-                    { text: "¿Cómo hablo con mi familia sobre esto?", action: "donor_family_talk_ai" },
-                    { text: "¿Qué mitos existen sobre la donación?", action: "start_quiz" },
-                    { text: "Tengo más preguntas", action: "suggest_questions" }
-                ];
-            } else if (previousAction === 'donor_fears_normal') {
-                options = [
-                    { text: "¿Cómo puedo superar estos miedos?", action: "donor_overcome_fears" },
-                    { text: "Quiero conocer historias de otros donantes", action: "donor_stories" },
-                    { text: "Empezar mi camino paso a paso", action: "start_donor_path" },
-                    { text: "Hacer el quiz sobre mitos", action: "start_quiz" }
-                ];
-            }
-            
-            displayModuleButtons(options, handleFollowUpDonorAction);
-        }
-
-        async function handleFollowUpDonorAction(action, buttonData = {}) {
-            addMessageToChat('user', buttonData.text || action);
-            
-            let promptForAI = "";
-            
-            switch (action) {
-                case 'start_donor_path':
-                    currentDonorPathStep = 'introduction';
-                    displayDonorPathStep(currentDonorPathStep);
-                    return;
-                case 'donor_family_talk_ai':
-                    promptForAI = "El usuario quiere saber cómo hablar con su familia sobre ser donante. Dale consejos prácticos y empáticos sobre cómo abordar este tema tan importante con los seres queridos. Incluye ejemplos de frases y enfoques que han funcionado para otras personas.";
-                    break;
-                case 'donor_overcome_fears':
-                    promptForAI = "El usuario quiere superar sus miedos sobre ser donante. Ofrécele estrategias concretas y comprensivas para manejar estos sentimientos. Explícale que la información y el conocimiento suelen ayudar a reducir los miedos.";
-                    break;
-                case 'donor_stories':
-                    promptForAI = "El usuario quiere conocer historias de donantes. Comparte de manera inspiradora cómo la donación ha impactado positivamente vidas, tanto de receptores como de familias donantes. Mantén un tono esperanzador y humano.";
-                    break;
-                case 'start_quiz':
-                    startQuiz();
-                    return;
-                case 'suggest_questions':
-                    await generateSuggestedQuestions();
-                    return;
-            }
-            
-            if (promptForAI) {
-                await getBotResponse(promptForAI, systemPrompt + "\n\nMantienes una conversación natural y empática. El usuario está explorando ser donante y necesita sentirse apoyado y comprendido en cada paso.");
-            }
-        }
-
-        async function handleDonorPathWithAI(userMessage) {
-            const donorPathPrompt = `
-            El usuario quiere ser donante de órganos. Su mensaje fue: "${userMessage}"
-            
-            Historial de conversación: ${JSON.stringify(chatHistory.slice(-3))}
-            
-            Como VIDA, responde de manera personalizada y empática, guiándolo en su camino como donante. 
-            - Si pregunta por pasos, explícale el proceso paso a paso
-            - Si tiene miedos, abórdalos con comprensión
-            - Si busca información legal, dásela de forma clara
-            - Si quiere saber cómo hablar con familia, ofrece ejemplos prácticos
-            - Siempre termina preguntando si necesita más información específica
-            
-            Mantén el tono cálido y motivador, pero nunca presiones.
-            `;
-
-            const response = await getBotResponse(donorPathPrompt, systemPrompt + "\n\nEres un guía experto en el camino del donante, personaliza tu respuesta según las necesidades específicas del usuario.");
-            
-            // Ofrecer opciones relacionadas después de la respuesta
-            setTimeout(() => {
-                showDonorPathOptions(userMessage);
-            }, 1000);
-        }
-
-        async function handleFamilyDonationWithAI(userMessage) {
-            const familyPrompt = `
-            El usuario está considerando la donación de órganos de un familiar. Su mensaje fue: "${userMessage}"
-            
-            Historial de conversación: ${JSON.stringify(chatHistory.slice(-3))}
-            
-            Como VIDA, responde con máxima empatía y comprensión. Esta es una situación muy delicada:
-            - Reconoce el dolor y la dificultad del momento
-            - Ofrece información clara pero sensible
-            - Respeta completamente su proceso de decisión
-            - No presiones ni juzgues ninguna decisión
-            - Proporciona apoyo emocional antes que información técnica
-            - Si pregunta por el proceso, explícalo con respeto y claridad
-            
-            Prioriza siempre la contención emocional y la validación de sus sentimientos.
-            `;
-
-            const response = await getBotResponse(familyPrompt, systemPrompt + "\n\nEstás hablando con alguien en una situación familiar muy delicada. La empatía y el apoyo emocional son tu prioridad absoluta.");
-            
-            // Ofrecer opciones de apoyo después de la respuesta
-            setTimeout(() => {
-                showFamilyDonationOptions(userMessage);
-            }, 1000);
-        }
-
-        async function handleGriefWithAI(userMessage) {
-            const griefPrompt = `
-            El usuario está en duelo o ha perdido a alguien recientemente. Su mensaje fue: "${userMessage}"
-            
-            Historial de conversación: ${JSON.stringify(chatHistory.slice(-3))}
-            
-            Como VIDA, responde con máxima sensibilidad y apoyo emocional:
-            - Reconoce inmediatamente su pérdida con empatía profunda
-            - Valida todas sus emociones como normales y válidas
-            - Ofrece contención emocional antes que información
-            - Si menciona donación, manéjalo con extrema delicadeza
-            - Sugiere apoyo profesional si es apropiado
-            - Mantén esperanza sin minimizar su dolor
-            
-            Tu prioridad es el bienestar emocional del usuario.
-            `;
-
-            const response = await getBotResponse(griefPrompt, systemPrompt + "\n\nEstás proporcionando apoyo tanatológico básico. La contención emocional y validación son tu prioridad absoluta.");
-            
-            // Ofrecer recursos de apoyo después de la respuesta
-            setTimeout(() => {
-                showGriefSupportOptions();
-            }, 1000);
-        }
-
-        // --- Enhanced Option Display Functions ---
-        function showDonorPathOptions(userMessage) {
-            const options = [];
-            
-            // Opciones inteligentes basadas en el mensaje del usuario
-            if (userMessage.toLowerCase().includes('familia') || userMessage.toLowerCase().includes('hablar')) {
-                options.push({ text: "¿Cómo hablo con mi familia sobre ser donante?", action: "donor_family_talk" });
-            }
-            
-            if (userMessage.toLowerCase().includes('registro') || userMessage.toLowerCase().includes('ine')) {
-                options.push({ text: "¿Cómo me registro oficialmente?", action: "donor_registration" });
-            }
-            
-            if (userMessage.toLowerCase().includes('miedo') || userMessage.toLowerCase().includes('duda')) {
-                options.push({ text: "Tengo miedos sobre ser donante", action: "donor_fears" });
-            }
-            
-            // Opciones generales siempre disponibles
-            options.push({ text: "Ver pasos completos del camino del donante", action: "donor_complete_path" });
-            options.push({ text: "Quiero hacer el quiz sobre mitos", action: "start_quiz" });
-            options.push({ text: "Hablar de otro tema", action: "reset_chat" });
-
-            displayModuleButtons(options, handleDonorPathActionAI);
-        }
-
-        function showFamilyDonationOptions(userMessage) {
-            const options = [];
-            
-            // Opciones inteligentes basadas en el contexto emocional
-            if (userMessage.toLowerCase().includes('tiempo') || userMessage.toLowerCase().includes('urgente')) {
-                options.push({ text: "¿Cuánto tiempo tengo para decidir?", action: "family_timing" });
-            }
-            
-            if (userMessage.toLowerCase().includes('proceso') || userMessage.toLowerCase().includes('cómo')) {
-                options.push({ text: "Explícame el proceso completo", action: "family_process" });
-            }
-            
-            if (userMessage.toLowerCase().includes('familia') || userMessage.toLowerCase().includes('otros')) {
-                options.push({ text: "¿Cómo explico esto a otros familiares?", action: "family_explaining" });
-            }
-            
-            // Opciones de apoyo siempre disponibles
-            options.push({ text: "Necesito apoyo emocional", action: "grief_support" });
-            options.push({ text: "¿Con quién más puedo hablar?", action: "family_professional_support" });
-            options.push({ text: "Tomarme más tiempo para pensar", action: "family_time" });
-
-            displayModuleButtons(options, handleFamilyDonationActionAI);
-        }
-
-        function showGriefSupportOptions() {
-            const options = [
-                { text: "¿Cómo puede ayudar la donación en el duelo?", action: "grief_donation_help" },
-                { text: "Necesito hablar con un profesional", action: "grief_professional" },
-                { text: "¿Qué recursos de apoyo hay disponibles?", action: "grief_resources" },
-                { text: "Tomarme tiempo sin presión", action: "grief_time" },
-                { text: "Volver cuando esté listo", action: "reset_chat" }
-            ];
-
-            displayModuleButtons(options, handleGriefActionAI);
-        }
-
-        // --- AI-Enhanced Action Handlers ---
-        async function handleDonorPathActionAI(action, buttonData = {}) {
-            addMessageToChat('user', buttonData.text || action);
-            
-            let promptForAI = "";
-            
-            switch (action) {
-                case 'donor_family_talk':
-                    promptForAI = "El usuario quiere saber cómo hablar con su familia sobre ser donante. Dale ejemplos prácticos, frases específicas y consejos para abordar el tema con tacto y claridad.";
-                    break;
-                case 'donor_registration':
-                    promptForAI = "El usuario quiere saber cómo registrarse oficialmente como donante. Explícale las opciones disponibles en México: INE, CENATRA, carta de voluntad anticipada, etc.";
-                    break;
-                case 'donor_fears':
-                    promptForAI = "El usuario tiene miedos sobre ser donante. Aborda sus miedos con comprensión, desmiente mitos comunes y ofrece tranquilidad basada en hechos.";
-                    break;
-                case 'donor_complete_path':
-                    promptForAI = "El usuario quiere ver el camino completo del donante. Preséntale los pasos de forma clara y motivadora, desde la decisión hasta el registro y comunicación familiar.";
-                    break;
-                case 'start_quiz':
-                    startQuiz();
-                    return;
-                case 'reset_chat':
-                    reset_chat_and_offer_suggestions();
-                    return;
-            }
-            
-            if (promptForAI) {
-                await getBotResponse(promptForAI, systemPrompt + "\n\nPersonaliza tu respuesta para el camino del donante con información práctica y motivadora.");
-            }
-        }
-
-        async function handleFamilyDonationActionAI(action, buttonData = {}) {
-            addMessageToChat('user', buttonData.text || action);
-            
-            let promptForAI = "";
-            
-            switch (action) {
-                case 'family_timing':
-                    promptForAI = "El usuario necesita saber sobre los tiempos en la donación familiar. Explica con sensibilidad los tiempos médicos, pero asegura que no hay presión y que respetan su proceso emocional.";
-                    break;
-                case 'family_process':
-                    promptForAI = "El usuario quiere entender el proceso completo de donación familiar. Explícalo paso a paso con respeto, claridad y énfasis en la dignidad y cuidado durante todo el proceso.";
-                    break;
-                case 'family_explaining':
-                    promptForAI = "El usuario necesita ayuda para explicar la decisión de donación a otros familiares. Dale estrategias empáticas, frases útiles y formas de manejar posibles desacuerdos con amor.";
-                    break;
-                case 'grief_support':
-                    currentGriefStep = 'ai_guided';
-                    await handleGriefWithAI("Necesito apoyo emocional en este momento");
-                    return;
-                case 'family_professional_support':
-                    promptForAI = "El usuario busca apoyo profesional adicional. Menciona coordinadores de donación, trabajadores sociales, capellanes, psicólogos especializados en duelo y grupos de apoyo.";
-                    break;
-                case 'family_time':
-                    promptForAI = "El usuario necesita más tiempo para decidir sobre donación familiar. Valida esta necesidad, asegura que es normal y natural, y explica cómo el equipo médico respeta esto.";
-                    break;
-            }
-            
-            if (promptForAI) {
-                await getBotResponse(promptForAI, systemPrompt + "\n\nEstás hablando con alguien en una situación familiar muy delicada. Máxima empatía y apoyo emocional.");
-            }
-        }
-
-        async function handleGriefActionAI(action, buttonData = {}) {
-            addMessageToChat('user', buttonData.text || action);
-            
-            let promptForAI = "";
-            
-            switch (action) {
-                case 'grief_donation_help':
-                    promptForAI = "El usuario quiere entender cómo la donación puede ayudar en el proceso de duelo. Explica con mucha sensibilidad cómo algunas familias encuentran significado y esperanza, pero sin presionar.";
-                    break;
-                case 'grief_professional':
-                    promptForAI = "El usuario necesita apoyo profesional para el duelo. Menciona tanatólogos, psicólogos especializados en duelo, grupos de apoyo y cómo acceder a estos recursos.";
-                    break;
-                case 'grief_resources':
-                    promptForAI = "El usuario busca recursos de apoyo para el duelo. Lista recursos prácticos: líneas de apoyo, grupos presenciales y virtuales, libros útiles, y organizaciones especializadas.";
-                    break;
-                case 'grief_time':
-                    promptForAI = "El usuario necesita tiempo para procesar su duelo. Valida completamente esta necesidad, asegura que no hay presión y que puede volver cuando se sienta listo.";
-                    break;
-                case 'reset_chat':
-                    reset_chat_and_offer_suggestions();
-                    return;
-            }
-            
-            if (promptForAI) {
-                await getBotResponse(promptForAI, systemPrompt + "\n\nEstás proporcionando apoyo tanatológico. La contención emocional es tu prioridad absoluta.");
-            }
-        }
+        // --- Removed: Automatic button display functions ---
+        // La conversación ahora fluye naturalmente sin botones automáticos
+        
         function addInitialBotMessage() {
             if (chatHistory.length === 0) {
                 addMessageToChat('bot', 'Hola, soy VIDA. Estoy aquí para ofrecerte información clara y respetuosa sobre la donación de órganos y tejidos ¿En qué puedo ayudarte hoy?');

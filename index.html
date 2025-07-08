@@ -317,39 +317,44 @@
             }
         }
 
+        /* Reglas específicas para botones de feedback */
         @media (max-width: 640px) {
-            /* Botón de feedback móvil - arriba del footer, a la izquierda */
+            /* En móviles: mostrar solo el botón móvil */
             #feedback-btn-mobile {
                 display: flex !important;
+                opacity: 1 !important;
+                visibility: visible !important;
             }
             
-            /* Contenedor del botón móvil */
-            div:has(#feedback-btn-mobile) {
+            .feedback-mobile-container {
                 display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
             }
             
-            /* Asegurar que el botón flotante NO se vea en móviles */
             #feedback-btn {
                 display: none !important;
             }
         }
 
         @media (min-width: 641px) {
-            /* Asegurar que el botón móvil y su contenedor NO se vean en desktop */
+            /* En desktop: mostrar solo el botón flotante */
             #feedback-btn-mobile {
                 display: none !important;
             }
             
-            div:has(#feedback-btn-mobile) {
+            .feedback-mobile-container {
                 display: none !important;
             }
             
             #feedback-btn {
-                /* En desktop mantener la posición original */
-                bottom: 1.25rem !important; /* 20px */
-                position: fixed !important;
-                z-index: 999 !important;
                 display: flex !important;
+                position: fixed !important;
+                bottom: 1.25rem !important;
+                left: 1.25rem !important;
+                z-index: 999 !important;
+                opacity: 1 !important;
+                visibility: visible !important;
             }
         }
 
@@ -477,18 +482,55 @@
             opacity: 0;
             animation: fadeIn 1s ease-out forwards;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         
+        /* Asegurar que el contenido principal sea visible */
+        body {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
         /* Asegurar que el welcome-screen siempre sea visible */
         #welcome-screen {
             display: flex !important;
             flex-direction: column !important;
             min-height: 100vh !important;
             opacity: 1 !important;
+            visibility: visible !important;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        /* Asegurar que todos los elementos principales sean visibles */
+        #welcome-screen > * {
+            visibility: visible !important;
+        }
+        
+        /* Asegurar que el header, main y footer sean visibles */
+        #welcome-screen header,
+        #welcome-screen main,
+        #welcome-screen footer {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        /* Asegurar que los botones del header sean visibles */
+        #welcome-screen header button,
+        #welcome-screen main button {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        /* Asegurar que el contenido del main sea visible */
+        #welcome-screen main > div,
+        #welcome-screen main .vida-hero-banner,
+        #welcome-screen main h2,
+        #welcome-screen main p,
+        #welcome-screen main button {
+            opacity: 1 !important;
+            visibility: visible !important;
         }
         
         /* Justify chat text */
@@ -959,7 +1001,7 @@
         </main>
 
         <!-- Botón de feedback ARRIBA del footer - SOLO para móviles -->
-        <div class="block sm:hidden px-4 py-2 fade-in-element" style="animation-delay: 1.4s;">
+        <div class="feedback-mobile-container block sm:hidden px-4 py-2 fade-in-element" style="animation-delay: 1.4s;">
             <button id="feedback-btn-mobile" class="bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.08-3.239A8.939 8.939 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.416 11.603a.75.75 0 00-.029.048l.029-.048zM5.022 13.013a.75.75 0 00.213.024l.028-.024z" clip-rule="evenodd" /></svg>
                 Danos tu opinión
@@ -982,7 +1024,7 @@
     </div>
     
     <!-- Botón de feedback flotante solo para desktop -->
-    <button id="feedback-btn" class="hidden sm:flex fixed bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-[999] items-center gap-2 enhanced-button fade-in-element" style="animation-delay: 1.4s;">
+    <button id="feedback-btn" class="bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform items-center gap-2 enhanced-button fade-in-element" style="animation-delay: 1.4s;">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.08-3.239A8.939 8.939 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.416 11.603a.75.75 0 00-.029.048l.029-.048zM5.022 13.013a.75.75 0 00.213.024l.028-.024z" clip-rule="evenodd" /></svg>
         Danos tu opinión
     </button>
@@ -1535,7 +1577,8 @@
 
         // --- Event Listeners ---
         startChatBtn.addEventListener('click', () => {
-            window.location.href = 'chat.html';
+            showChat();
+            addInitialBotMessage();
         });
 
         closeChatBtn.addEventListener('click', hideChat);
@@ -2264,6 +2307,42 @@
 
         // Initialize background when page loads
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, initializing...');
+            
+            // Forzar la visibilidad de todos los elementos principales
+            const welcomeScreen = document.getElementById('welcome-screen');
+            const header = document.querySelector('header');
+            const main = document.querySelector('main');
+            const footer = document.querySelector('footer');
+            
+            if (welcomeScreen) {
+                welcomeScreen.style.display = 'flex';
+                welcomeScreen.style.opacity = '1';
+                welcomeScreen.style.visibility = 'visible';
+            }
+            
+            [header, main, footer].forEach(element => {
+                if (element) {
+                    element.style.opacity = '1';
+                    element.style.visibility = 'visible';
+                }
+            });
+            
+            // Inicializar animaciones fade-in
+            const fadeInElements = document.querySelectorAll('.fade-in-element');
+            fadeInElements.forEach(element => {
+                element.style.opacity = '0';
+                element.style.animation = 'fadeIn 1s ease-out forwards';
+            });
+            
+            // Respaldo para asegurar visibilidad
+            setTimeout(() => {
+                fadeInElements.forEach(element => {
+                    element.style.opacity = '1';
+                    element.style.visibility = 'visible';
+                });
+            }, 2000);
+            
             initBackground();
             animateBackground();
             
@@ -2273,26 +2352,18 @@
                 document.documentElement.style.setProperty('--vh', `${vh}px`);
             };
             
-            // Establecer valor inicial
             setVH();
-            
-            // Actualizar en cambios de viewport (incluyendo teclado)
             window.addEventListener('resize', setVH);
             
             // Asegurar que la página inicie centrada
-            const ensurePageCentered = () => {
-                if (window.scrollY !== 0) {
-                    window.scrollTo(0, 0);
-                }
-            };
-            
-            // Ejecutar inicialmente
-            ensurePageCentered();
+            window.scrollTo(0, 0);
             
             // Actualizar en cambios de orientación
             window.addEventListener('orientationchange', () => {
                 setTimeout(setVH, 100);
             });
+            
+            console.log('Initialization complete');
         });
 
     </script>

@@ -318,71 +318,36 @@
         }
 
         @media (max-width: 640px) {
-            #feedback-btn {
-                /* POSICIÓN ABSOLUTAMENTE FIJA EN MÓVILES */
-                position: fixed !important;
-                bottom: 80px !important;
-                left: 20px !important;
-                
-                /* EVITAR CUALQUIER MOVIMIENTO */
-                transform: none !important;
-                -webkit-transform: none !important;
-                -moz-transform: none !important;
-                -ms-transform: none !important;
-                -o-transform: none !important;
-                
-                /* FORZAR ESTABILIDAD TOTAL */
-                will-change: auto !important;
-                backface-visibility: hidden !important;
-                -webkit-backface-visibility: hidden !important;
-                
-                /* Z-INDEX ALTO */
-                z-index: 9999 !important;
-                
-                /* RESETEAR PROPIEDADES QUE PUEDAN CAUSAR MOVIMIENTO */
-                top: auto !important;
-                right: auto !important;
-                margin: 0 !important;
-                padding: 0.5rem 1rem !important;
-                
-                /* FORZAR VISIBILIDAD */
-                opacity: 1 !important;
+            /* Botón de feedback móvil - arriba del footer, a la izquierda */
+            #feedback-btn-mobile {
                 display: flex !important;
-                visibility: visible !important;
-                
-                /* DESACTIVAR TODAS LAS ANIMACIONES Y TRANSICIONES */
-                transition: none !important;
-                animation: none !important;
-                
-                /* PROPIEDADES ADICIONALES DE ESTABILIDAD */
-                transform-origin: center !important;
-                contain: layout !important;
             }
             
-            /* FORZAR QUE NO SE MUEVA EN NINGÚN ESTADO */
-            #feedback-btn,
-            #feedback-btn:hover,
-            #feedback-btn:active,
-            #feedback-btn:focus,
-            #feedback-btn.fade-in-element,
-            #feedback-btn.animation-complete {
-                position: fixed !important;
-                bottom: 80px !important;
-                left: 20px !important;
-                transform: none !important;
-                transition: none !important;
-                animation: none !important;
-                opacity: 1 !important;
-                display: flex !important;
-                visibility: visible !important;
+            /* Contenedor del botón móvil */
+            #feedback-btn-mobile + div, 
+            div:has(#feedback-btn-mobile) {
+                display: block !important;
             }
         }
 
         @media (min-width: 641px) {
+            /* Asegurar que el botón móvil y su contenedor NO se vean en desktop */
+            #feedback-btn-mobile,
+            div:has(#feedback-btn-mobile) {
+                display: none !important;
+            }
+            
             #feedback-btn {
                 /* En desktop mantener la posición original */
                 bottom: 1.25rem !important; /* 20px */
+                position: fixed !important;
+                z-index: 999 !important;
             }
+        }
+
+        /* Footer normal - sin necesidad de z-index especial */
+        footer {
+            position: relative;
         }
 
         /* Header Buttons Styles */
@@ -987,6 +952,14 @@
             </div>
         </main>
 
+        <!-- Botón de feedback ARRIBA del footer - SOLO para móviles -->
+        <div class="block sm:hidden px-4 py-2 fade-in-element" style="animation-delay: 1.4s;">
+            <button id="feedback-btn-mobile" class="bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.08-3.239A8.939 8.939 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.416 11.603a.75.75 0 00-.029.048l.029-.048zM5.022 13.013a.75.75 0 00.213.024l.028-.024z" clip-rule="evenodd" /></svg>
+                Danos tu opinión
+            </button>
+        </div>
+
         <footer class="w-full py-1 px-0 sm:p-1 bg-[var(--vida-bg-footer)] fade-in-element" style="animation-delay: 1.2s;">
             <div class="container mx-auto max-w-xl lg:max-w-2xl px-4 sm:px-12 lg:px-16">
                 <div class="flex flex-col items-center justify-center py-1 sm:py-2">
@@ -1002,7 +975,8 @@
         </footer>
     </div>
     
-    <button id="feedback-btn" class="fixed bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-[999] flex items-center gap-2 enhanced-button fade-in-element" style="animation-delay: 1.4s;">
+    <!-- Botón de feedback flotante solo para desktop -->
+    <button id="feedback-btn" class="hidden sm:flex fixed bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-[999] items-center gap-2 enhanced-button fade-in-element" style="animation-delay: 1.4s;">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.08-3.239A8.939 8.939 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.416 11.603a.75.75 0 00-.029.048l.029-.048zM5.022 13.013a.75.75 0 00.213.024l.028-.024z" clip-rule="evenodd" /></svg>
         Danos tu opinión
     </button>
@@ -1573,6 +1547,13 @@
         });
         
         feedbackBtn.addEventListener('click', () => openModal(feedbackModal));
+        
+        // Event listener para el botón de feedback en móviles
+        const feedbackBtnMobile = document.getElementById('feedback-btn-mobile');
+        if (feedbackBtnMobile) {
+            feedbackBtnMobile.addEventListener('click', () => openModal(feedbackModal));
+        }
+        
         closeFeedbackModalBtn.addEventListener('click', () => closeModal(feedbackModal));
         feedbackModal.addEventListener('click', (e) => {
              if (e.target === feedbackModal) closeModal(feedbackModal);
@@ -2292,43 +2273,6 @@
             // Actualizar en cambios de viewport (incluyendo teclado)
             window.addEventListener('resize', setVH);
             
-            // Posicionar botón de feedback correctamente en móviles
-            const positionFeedbackButton = () => {
-                const feedbackBtn = document.getElementById('feedback-btn');
-                
-                if (feedbackBtn) {
-                    // Prevenir scroll automático
-                    const scrollY = window.scrollY;
-                    
-                    if (window.innerWidth <= 640) {
-                        // EN MÓVILES: NO HACER NADA - EL CSS MANEJA TODO
-                        // Solo asegurar visibilidad sin tocar posición
-                        console.log('Mobile: Feedback button handled by CSS only');
-                        return; // Salir inmediatamente sin modificar nada
-                    } else {
-                        // Solo en desktop
-                        const footer = document.querySelector('footer');
-                        if (footer) {
-                            feedbackBtn.style.bottom = '1.25rem';
-                            feedbackBtn.style.position = 'fixed';
-                            feedbackBtn.style.left = '1.25rem';
-                            feedbackBtn.style.zIndex = '999';
-                            feedbackBtn.style.transform = 'translateZ(0)';
-                            feedbackBtn.style.transition = '';
-                            feedbackBtn.style.animation = '';
-                            feedbackBtn.style.opacity = '1';
-                            feedbackBtn.style.display = 'flex';
-                            feedbackBtn.style.visibility = 'visible';
-                            
-                            console.log('Desktop: Feedback button positioned');
-                        }
-                    }
-                    
-                    // Restaurar posición de scroll para evitar saltos
-                    window.scrollTo(0, scrollY);
-                }
-            };
-            
             // Asegurar que la página inicie centrada
             const ensurePageCentered = () => {
                 if (window.scrollY !== 0) {
@@ -2336,145 +2280,10 @@
                 }
             };
             
-            // Forzar visibilidad del botón de feedback
-            const ensureFeedbackButtonVisible = () => {
-                const feedbackBtn = document.getElementById('feedback-btn');
-                if (feedbackBtn) {
-                    feedbackBtn.style.opacity = '1';
-                    feedbackBtn.style.display = 'flex';
-                    feedbackBtn.style.visibility = 'visible';
-                    
-                    // En móviles, agregar clase para finalizar animación
-                    if (window.innerWidth <= 640) {
-                        feedbackBtn.classList.add('animation-complete');
-                    }
-                    
-                    console.log('Feedback button visibility forced');
-                }
-            };
-            
-            // Función específica para móviles - SOLO VISIBILIDAD
-            const forceMobileButtonVisibility = () => {
-                if (window.innerWidth <= 640) {
-                    const feedbackBtn = document.getElementById('feedback-btn');
-                    if (feedbackBtn) {
-                        // SOLO forzar visibilidad - EL CSS MANEJA LA POSICIÓN
-                        feedbackBtn.style.setProperty('opacity', '1', 'important');
-                        feedbackBtn.style.setProperty('display', 'flex', 'important');
-                        feedbackBtn.style.setProperty('visibility', 'visible', 'important');
-                        
-                        // Eliminar la clase fade-in-element si sigue activa
-                        if (feedbackBtn.classList.contains('fade-in-element')) {
-                            feedbackBtn.classList.remove('fade-in-element');
-                        }
-                        
-                        console.log('Mobile: Feedback button visibility forced - CSS handles position');
-                    }
-                }
-            };
-            
             // Ejecutar inicialmente
             ensurePageCentered();
             
-            // SOLO ejecutar positionFeedbackButton en desktop
-            if (window.innerWidth > 640) {
-                positionFeedbackButton();
-            }
-            
-            // En móviles, solo forzar visibilidad
-            if (window.innerWidth <= 640) {
-                forceMobileButtonVisibility();
-            }
-            
-            // Verificar inmediatamente si el botón está visible
-            setTimeout(() => {
-                if (window.innerWidth <= 640) {
-                    // Solo forzar visibilidad en móviles
-                    forceMobileButtonVisibility();
-                } else {
-                    // Solo verificar posición en desktop
-                    const feedbackBtn = document.getElementById('feedback-btn');
-                    if (feedbackBtn && feedbackBtn.style.opacity === '0') {
-                        console.log('Desktop: Feedback button not visible, forcing visibility');
-                        ensureFeedbackButtonVisible();
-                    }
-                }
-            }, 100);
-            
-            // Asegurar que el botón aparezca después del delay de animación
-            setTimeout(() => {
-                ensureFeedbackButtonVisible();
-                forceMobileButtonVisibility();
-                // Solo ejecutar positionFeedbackButton en desktop
-                if (window.innerWidth > 640) {
-                    positionFeedbackButton();
-                }
-            }, 1500); // 1.4s delay + 0.1s margen
-            
-            // Backup: Forzar visibilidad después de un tiempo más largo
-            setTimeout(() => {
-                ensureFeedbackButtonVisible();
-                forceMobileButtonVisibility();
-                // Solo ejecutar positionFeedbackButton en desktop
-                if (window.innerWidth > 640) {
-                    positionFeedbackButton();
-                }
-            }, 3000); // Backup después de 3 segundos
-            
-            // Forzar posición fija después de la animación inicial
-            setTimeout(() => {
-                ensurePageCentered();
-                
-                if (window.innerWidth <= 640) {
-                    // Solo forzar visibilidad en móviles
-                    forceMobileButtonVisibility();
-                } else {
-                    // Solo ejecutar positionFeedbackButton en desktop
-                    positionFeedbackButton();
-                }
-                
-                const feedbackBtn = document.getElementById('feedback-btn');
-                if (feedbackBtn && window.innerWidth <= 640) {
-                    // Eliminar cualquier clase que pueda causar animación
-                    feedbackBtn.classList.remove('fade-in-element');
-                    feedbackBtn.classList.add('animation-complete');
-                    console.log('Mobile: Feedback button classes updated');
-                }
-            }, 2000);
-            
-            // Actualizar en cambios de tamaño de ventana
-            window.addEventListener('resize', () => {
-                setTimeout(() => {
-                    if (window.innerWidth <= 640) {
-                        forceMobileButtonVisibility();
-                    } else {
-                        positionFeedbackButton();
-                    }
-                }, 100);
-            });
-            
-            // Actualizar después de que las imágenes se carguen (puede afectar el footer)
-            window.addEventListener('load', () => {
-                setTimeout(() => {
-                    if (window.innerWidth <= 640) {
-                        forceMobileButtonVisibility();
-                    } else {
-                        positionFeedbackButton();
-                    }
-                }, 200);
-            });
-            
             // Actualizar en cambios de orientación
-            window.addEventListener('orientationchange', () => {
-                setTimeout(() => {
-                    if (window.innerWidth <= 640) {
-                        forceMobileButtonVisibility();
-                    } else {
-                        positionFeedbackButton();
-                    }
-                }, 300);
-            });
-            
             window.addEventListener('orientationchange', () => {
                 setTimeout(setVH, 100);
             });

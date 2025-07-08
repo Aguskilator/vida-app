@@ -619,8 +619,10 @@
             // Esperar el tiempo de delay para simular que está escribiendo
             await new Promise(resolve => setTimeout(resolve, delay));
             
-            // Ocultar indicador y mostrar mensaje
+            // Ocultar indicador de escritura
             showTypingIndicator(false);
+            
+            // Agregar el mensaje del bot
             addMessageToChat('assistant', text);
         }
         
@@ -691,7 +693,8 @@
                     addMessageToChat('assistant', botResponseText);
                 }
             } catch (error) {
-                addMessageToChat('assistant', 'Hubo un problema de conexión. Por favor, verifica tu backend e inténtalo de nuevo.');
+                console.error("Error in getBotResponse:", error);
+                addMessageToChat('assistant', 'Lo siento, hubo un problema de conexión. Por favor, verifica tu conexión a internet e inténtalo de nuevo.');
             } finally {
                 chatInput.disabled = false;
                 chatForm.querySelector('button[type="submit"]').disabled = false;

@@ -324,15 +324,22 @@
             }
             
             /* Contenedor del botón móvil */
-            #feedback-btn-mobile + div, 
             div:has(#feedback-btn-mobile) {
                 display: block !important;
+            }
+            
+            /* Asegurar que el botón flotante NO se vea en móviles */
+            #feedback-btn {
+                display: none !important;
             }
         }
 
         @media (min-width: 641px) {
             /* Asegurar que el botón móvil y su contenedor NO se vean en desktop */
-            #feedback-btn-mobile,
+            #feedback-btn-mobile {
+                display: none !important;
+            }
+            
             div:has(#feedback-btn-mobile) {
                 display: none !important;
             }
@@ -342,6 +349,7 @@
                 bottom: 1.25rem !important; /* 20px */
                 position: fixed !important;
                 z-index: 999 !important;
+                display: flex !important;
             }
         }
 

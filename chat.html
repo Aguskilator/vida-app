@@ -611,6 +611,19 @@
             }
         }
         
+        // Función para agregar mensajes del bot con efecto de escritura
+        async function addBotMessageWithTyping(text, delay = 1500) {
+            // Mostrar indicador de escritura
+            showTypingIndicator(true);
+            
+            // Esperar el tiempo de delay para simular que está escribiendo
+            await new Promise(resolve => setTimeout(resolve, delay));
+            
+            // Ocultar indicador y mostrar mensaje
+            showTypingIndicator(false);
+            addMessageToChat('assistant', text);
+        }
+        
         async function getBotResponse(userMessage, isFromSuggestedQuestion = false) {
             showTypingIndicator(true); 
             chatInput.disabled = true; 
@@ -723,15 +736,16 @@
                 muerte_encefalica: false,
                 paro_cardiaco: false
             };
-            addMessageToChat('assistant', '¡Hola! Soy VIDA, tu asistente para información sobre donación de órganos, tejidos y sangre. Estoy aquí para ayudarte de manera clara y empática. ¿En qué puedo apoyarte hoy?');
+            // Usar el efecto de escritura para el mensaje inicial
+            addBotMessageWithTyping('¡Hola! Soy VIDA, tu asistente para información sobre donación de órganos, tejidos y sangre. Estoy aquí para ayudarte de manera clara y empática. ¿En qué puedo apoyarte hoy?');
         }
 
         // --- Donor Path Module Functions ---
-        function displayDonorPathStep(stepKey) {
+        async function displayDonorPathStep(stepKey) {
             const stepContent = donorPathModule[stepKey];
             if (!stepContent) {
                 console.error("Invalid donor path step:", stepKey);
-                addMessageToChat('assistant', "Lo siento, hubo un problema. Por favor, intenta de nuevo.");
+                await addBotMessageWithTyping("Lo siento, hubo un problema. Por favor, intenta de nuevo.");
                 return;
             }
             
@@ -753,19 +767,18 @@
                     }, 2000);
                 }
             } else {
-                // Para otros pasos, comportamiento normal
+                // Para otros pasos, comportamiento normal con efecto de escritura
                 if (stepContent.text) {
-                    setTimeout(() => {
-                        addMessageToChat('assistant', stepContent.text);
-                        
-                        // Mostrar botones después de que aparezca el mensaje
-                        const buttonsToShow = typeof stepContent.buttons === 'function' ? stepContent.buttons() : stepContent.buttons;
-                        if (buttonsToShow && buttonsToShow.length > 0) {
-                            setTimeout(() => {
-                                displayModuleButtons(buttonsToShow, handleDonorPathAction);
-                            }, 800);
-                        }
-                    }, 300);
+                    // Usar efecto de escritura para el mensaje
+                    await addBotMessageWithTyping(stepContent.text);
+                    
+                    // Mostrar botones después de que aparezca el mensaje
+                    const buttonsToShow = typeof stepContent.buttons === 'function' ? stepContent.buttons() : stepContent.buttons;
+                    if (buttonsToShow && buttonsToShow.length > 0) {
+                        setTimeout(() => {
+                            displayModuleButtons(buttonsToShow, handleDonorPathAction);
+                        }, 800);
+                    }
                 } else {
                     // Si no hay texto, mostrar botones directamente
                     const buttonsToShow = typeof stepContent.buttons === 'function' ? stepContent.buttons() : stepContent.buttons;
@@ -791,37 +804,37 @@
             }, buttons.length * 50 + 200);
             
             // Ejecutar acción después de un pequeño delay para naturalidad
-            setTimeout(() => {
+            setTimeout(async () => {
                 switch(action) {
                     case 'donor_path_step1':
                     case 'donor_path_step2':
                     case 'donor_path_step3':
                     case 'donor_path_step4':
                     case 'donor_path_step5':
-                        displayDonorPathStep(action.replace('donor_path_', ''));
+                        await displayDonorPathStep(action.replace('donor_path_', ''));
                         break;
                     case 'donor_path_explain_muerte_encefalica':
-                        displayDonorPathStep('explain_muerte_encefalica');
+                        await displayDonorPathStep('explain_muerte_encefalica');
                         break;
                     case 'donor_path_explain_paro_cardiaco':
-                        displayDonorPathStep('explain_paro_cardiaco');
+                        await displayDonorPathStep('explain_paro_cardiaco');
                         break;
                     case 'donor_path_examples_family_talk':
-                        displayDonorPathStep('examples_family_talk');
+                        await displayDonorPathStep('examples_family_talk');
                         break;
                     case 'donor_path_example_carta':
-                        displayDonorPathStep('example_carta');
+                        await displayDonorPathStep('example_carta');
                         break;
                     case 'donor_path_cierre':
-                        displayDonorPathStep('cierre');
+                        await displayDonorPathStep('cierre');
                         break;
                     case 'cenatra_link':
-                        addMessageToChat('assistant', '¡Perfecto! Te voy a llevar al portal oficial de CENATRA donde puedes registrarte como donante. Se abrirá una nueva ventana.');
+                        await addBotMessageWithTyping('¡Perfecto! Te voy a llevar al portal oficial de CENATRA donde puedes registrarte como donante. Se abrirá una nueva ventana.');
                         setTimeout(() => {
                             window.open('https://dv.cenatra.salud.gob.mx/registrar.php', '_blank');
                             // Después de abrir el enlace, mostrar opciones para continuar
-                            setTimeout(() => {
-                                addMessageToChat('assistant', 'Ya abrí el portal de CENATRA para ti. Cuando termines de registrarte (o si prefieres hacerlo después), podemos continuar con el siguiente paso.');
+                            setTimeout(async () => {
+                                await addBotMessageWithTyping('Ya abrí el portal de CENATRA para ti. Cuando termines de registrarte (o si prefieres hacerlo después), podemos continuar con el siguiente paso.');
                                 const continueButtons = [
                                     { text: "Ya me registré, continuar 👍", action: "donor_path_step5" },
                                     { text: "Lo haré después, continuar 📅", action: "donor_path_step5" },
@@ -835,7 +848,7 @@
                         break;
                     case 'share_whatsapp':
                         if (buttonData.shareText) {
-                            addMessageToChat('assistant', '¡Perfecto! Te voy a ayudar a compartir tu decisión por WhatsApp. Se abrirá una nueva ventana.');
+                            await addBotMessageWithTyping('¡Perfecto! Te voy a ayudar a compartir tu decisión por WhatsApp. Se abrirá una nueva ventana.');
                             setTimeout(() => {
                                 const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(buttonData.shareText)}`;
                                 window.open(whatsappUrl, '_blank');
@@ -844,23 +857,23 @@
                         break;
                     case 'suggest_questions':
                         // Mostrar mensaje explicativo antes de las sugerencias
-                        addMessageToChat('assistant', 'Te voy a generar algunas preguntas que podrían interesarte:');
+                        await addBotMessageWithTyping('Te voy a generar algunas preguntas que podrían interesarte:');
                         setTimeout(async () => {
                             await toggleSuggestedQuestions();
                         }, 800);
                         break;
                     case 'reset_chat':
-                        addMessageToChat('assistant', 'Por supuesto, vamos a empezar de nuevo. ¡Estoy aquí para ayudarte!');
+                        await addBotMessageWithTyping('Por supuesto, vamos a empezar de nuevo. ¡Estoy aquí para ayudarte!');
                         setTimeout(() => {
                             reset_chat_and_offer_suggestions();
                         }, 1500);
                         break;
                     case 'indecision_start':
-                        addMessageToChat('assistant', 'Es completamente normal tener dudas sobre la donación. Es una decisión importante. ¿Qué te preocupa más: el proceso médico, hablar con tu familia, o algo más específico?');
+                        await addBotMessageWithTyping('Es completamente normal tener dudas sobre la donación. Es una decisión importante. ¿Qué te preocupa más: el proceso médico, hablar con tu familia, o algo más específico?');
                         break;
                     default:
                         console.warn("Unknown donor path action:", action);
-                        addMessageToChat('assistant', "Lo siento, no reconozco esa acción. ¿Puedes intentar de nuevo?");
+                        await addBotMessageWithTyping("Lo siento, no reconozco esa acción. ¿Puedes intentar de nuevo?");
                 }
             }, 400);
         }
@@ -1041,7 +1054,8 @@
 
         // Initialize Chat and Background
         document.addEventListener('DOMContentLoaded', () => {
-            addMessageToChat('assistant', '¡Hola! Soy VIDA, tu asistente para información sobre donación de órganos, tejidos y sangre. Estoy aquí para ayudarte de manera clara y empática. ¿En qué puedo apoyarte hoy?');
+            // Usar el efecto de escritura para el mensaje inicial
+            addBotMessageWithTyping('¡Hola! Soy VIDA, tu asistente para información sobre donación de órganos, tejidos y sangre. Estoy aquí para ayudarte de manera clara y empática. ¿En qué puedo apoyarte hoy?');
             chatInput.focus();
             initBackground();
             animateBackground();

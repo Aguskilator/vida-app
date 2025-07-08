@@ -720,10 +720,48 @@
             questionText.parentNode.insertBefore(loadingDiv, questionText.nextSibling);
             
             try {
+                // Generar elementos aleatorios para hacer el prompt más variable
+                const randomTopics = [
+                    "casos especiales y excepciones médicas",
+                    "mitos populares y creencias erróneas",
+                    "procedimientos hospitalarios específicos",
+                    "aspectos éticos y familiares",
+                    "estadísticas mexicanas actuales",
+                    "tipos específicos de tejidos y órganos",
+                    "condiciones médicas particulares",
+                    "procesos administrativos y legales",
+                    "impacto social y testimonios",
+                    "avances médicos y tecnológicos"
+                ];
+                
+                const randomAdvancedTopics = [
+                    "donación en vida vs. post-mortem",
+                    "compatibilidad y rechazo",
+                    "preservación de órganos",
+                    "coordinación hospitalaria",
+                    "aspectos psicológicos",
+                    "donación pediátrica",
+                    "trasplantes múltiples",
+                    "medicina regenerativa"
+                ];
+                
+                const randomFocus = randomTopics[Math.floor(Math.random() * randomTopics.length)];
+                const randomAdvanced = randomAdvancedTopics[Math.floor(Math.random() * randomAdvancedTopics.length)];
+                const randomNumber = Math.floor(Math.random() * 1000);
+                const currentTime = new Date().getTime();
+                
                 const prompt = `
                 Eres VIDA, un asistente experto en donación de órganos, tejidos y sangre en México.
-                Genera exactamente 5 preguntas adicionales de VERDADERO o FALSO sobre mitos y realidades de la donación de órganos en México.
-                Las preguntas deben ser diferentes a las típicas y abordar aspectos menos conocidos pero importantes del tema.
+                Genera exactamente 5 preguntas ADICIONALES Y ÚNICAS de VERDADERO o FALSO sobre donación de órganos en México.
+                
+                INSTRUCCIONES ESPECÍFICAS:
+                - Enfócate especialmente en: ${randomFocus}
+                - Incluye aspectos de: ${randomAdvanced}
+                - Estas son preguntas 6-10, deben ser MÁS ESPECÍFICAS y DESAFIANTES
+                - Incluye datos técnicos o menos conocidos
+                - Cada pregunta debe ser DIFERENTE y ORIGINAL
+                - Número de sesión avanzada: ${randomNumber}
+                - Timestamp: ${currentTime}
                 
                 Devuelve ÚNICAMENTE un array JSON con 5 objetos, cada uno con:
                 - "question": string (la pregunta, clara y directa)
@@ -745,9 +783,11 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         prompt: [
-                            { role: "system", content: "Responde únicamente con un array JSON válido de 5 objetos. No incluyas texto adicional." },
+                            { role: "system", content: "Responde únicamente con un array JSON válido de 5 objetos. No incluyas texto adicional. Genera preguntas avanzadas y específicas." },
                             { role: "user", content: prompt }
-                        ]
+                        ],
+                        temperature: 0.9,  // Mayor aleatoriedad para preguntas avanzadas
+                        max_tokens: 900    // Más tokens para respuestas más completas
                     })
                 });
 
@@ -851,10 +891,35 @@
             questionText.parentNode.insertBefore(loadingDiv, questionText.nextSibling);
             
             try {
+                // Generar elementos aleatorios para hacer el prompt más variable
+                const randomTopics = [
+                    "mitos comunes sobre la donación",
+                    "aspectos legales y familiares",
+                    "criterios médicos y de compatibilidad",
+                    "procesos hospitalarios y administrativos",
+                    "estadísticas y realidades mexicanas",
+                    "tipos de órganos y tejidos",
+                    "condiciones médicas y donación",
+                    "tiempos y procedimientos",
+                    "aspectos sociales y culturales",
+                    "beneficios y impacto social"
+                ];
+                
+                const randomFocus = randomTopics[Math.floor(Math.random() * randomTopics.length)];
+                const randomNumber = Math.floor(Math.random() * 1000);
+                const currentTime = new Date().getTime();
+                
                 const prompt = `
                 Eres VIDA, un asistente experto en donación de órganos, tejidos y sangre en México.
-                Genera exactamente 5 preguntas de VERDADERO o FALSO sobre mitos y realidades de la donación de órganos en México.
-                Las preguntas deben ser variadas, educativas y abordar aspectos importantes pero diversos del tema.
+                Genera exactamente 5 preguntas ÚNICAS de VERDADERO o FALSO sobre donación de órganos en México.
+                
+                INSTRUCCIONES ESPECÍFICAS:
+                - Enfócate especialmente en: ${randomFocus}
+                - Cada pregunta debe ser DIFERENTE y ORIGINAL
+                - Incluye datos específicos de México cuando sea relevante
+                - Mezcla preguntas obvias con otras más desafiantes
+                - Número de sesión: ${randomNumber}
+                - Timestamp: ${currentTime}
                 
                 Devuelve ÚNICAMENTE un array JSON con 5 objetos, cada uno con:
                 - "question": string (la pregunta, clara y directa)
@@ -876,9 +941,11 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         prompt: [
-                            { role: "system", content: "Responde únicamente con un array JSON válido de 5 objetos. No incluyas texto adicional." },
+                            { role: "system", content: "Responde únicamente con un array JSON válido de 5 objetos. No incluyas texto adicional. Sé creativo y genera preguntas variadas." },
                             { role: "user", content: prompt }
-                        ]
+                        ],
+                        temperature: 0.8,  // Mayor aleatoriedad
+                        max_tokens: 800    // Más tokens para respuestas más completas
                     })
                 });
 

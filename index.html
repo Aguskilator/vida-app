@@ -1301,10 +1301,10 @@
                     comments: fields.comments
                 });
                 
-                // Método 1: Intentar enviar usando fetch al proxy PHP
+                // Método 1: Intentar enviar usando fetch al endpoint serverless
                 let success = false;
                 try {
-                    const response = await fetch('submit-feedback.php', {
+                    const response = await fetch('/api/submit-feedback', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1316,80 +1316,103 @@
                         const result = await response.json();
                         if (result.success) {
                             success = true;
-                            console.log('Feedback enviado exitosamente via PHP proxy');
+                            console.log('Feedback enviado exitosamente via serverless function');
+                        } else {
+                            console.log('Error en serverless function:', result.error);
                         }
+                    } else {
+                        console.log('Error HTTP en serverless function:', response.status);
                     }
                 } catch (error) {
-                    console.log('Error con PHP proxy, intentando método iframe:', error);
+                    console.log('Error con serverless function, intentando método iframe:', error);
                 }
                 
-                // Método 2: Si el PHP proxy falla, usar iframe (método de respaldo)
+                // Método 2: Si el serverless function falla, usar iframe (método de respaldo)
                 if (!success) {
                     console.log('Usando método iframe como respaldo');
                     
-                    // URL actualizada con tu Google Form
-                    const googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfVcPvKM2TK63V-uT6JbQtbHrrg_OujPu__5jiowpDavE4p0A/formResponse';
-                    
-                    // Crear iframe permanente (no se elimina)
-                    let iframe = document.getElementById('feedback-iframe');
-                    if (!iframe) {
-                        iframe = document.createElement('iframe');
-                        iframe.id = 'feedback-iframe';
-                        iframe.name = 'feedback-iframe';
-                        iframe.style.display = 'none';
-                        iframe.style.width = '0px';
-                        iframe.style.height = '0px';
-                        iframe.style.border = 'none';
-                        document.body.appendChild(iframe);
-                    }
-                    
-                    // Crear formulario temporal
-                    const tempForm = document.createElement('form');
-                    tempForm.action = googleFormUrl;
-                    tempForm.method = 'POST';
-                    tempForm.target = 'feedback-iframe';
-                    tempForm.style.display = 'none';
-                    
-                    // Agregar campos al formulario temporal con entry IDs
-                    const entryFields = {
-                        'entry.1429993267': fields.clarity,
-                        'entry.962169197': fields.language,
-                        'entry.2266276': fields.solved_doubts,
-                        'entry.1344114409': fields.recommend,
-                        'entry.287412987': fields.comments
-                    };
-                    
-                    Object.keys(entryFields).forEach(key => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = key;
-                        input.value = entryFields[key];
-                        tempForm.appendChild(input);
-                    });
-                    
-                    // Agregar al DOM y enviar
-                    document.body.appendChild(tempForm);
-                    
-                    // Listener para cuando el iframe cargue
-                    iframe.onload = function() {
-                        console.log('Formulario enviado exitosamente via iframe');
-                        // Limpiar formulario temporal después de que se envíe
-                        setTimeout(() => {
+                    // Usar un setTimeout para permitir que el iframe se configure correctamente
+                    await new Promise((resolve) => {
+                        // URL actualizada con tu Google Form
+                        const googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfVcPvKM2TK63V-uT6JbQtbHrrg_OujPu__5jiowpDavE4p0A/formResponse';
+                        
+                        // Crear iframe permanente si no existe
+                        let iframe = document.getElementById('feedback-iframe');
+                        if (!iframe) {
+                            iframe = document.createElement('iframe');
+                            iframe.id = 'feedback-iframe';
+                            iframe.name = 'feedback-iframe';
+                            iframe.style.display = 'none';
+                            iframe.style.width = '1px';
+                            iframe.style.height = '1px';
+                            iframe.style.border = 'none';
+                            iframe.style.position = 'absolute';
+                            iframe.style.top = '-1000px';
+                            iframe.style.left = '-1000px';
+                            document.body.appendChild(iframe);
+                        }
+                        
+                        // Crear formulario temporal
+                        const tempForm = document.createElement('form');
+                        tempForm.action = googleFormUrl;
+                        tempForm.method = 'POST';
+                        tempForm.target = 'feedback-iframe';
+                        tempForm.style.display = 'none';
+                        
+                        // Agregar campos al formulario temporal con entry IDs
+                        const entryFields = {
+                            'entry.1429993267': fields.clarity,
+                            'entry.962169197': fields.language,
+                            'entry.2266276': fields.solved_doubts,
+                            'entry.1344114409': fields.recommend,
+                            'entry.287412987': fields.comments
+                        };
+                        
+                        Object.keys(entryFields).forEach(key => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = entryFields[key];
+                            tempForm.appendChild(input);
+                        });
+                        
+                        // Agregar al DOM
+                        document.body.appendChild(tempForm);
+                        
+                        // Configurar listeners antes de enviar
+                        let resolved = false;
+                        
+                        const cleanup = () => {
                             if (tempForm.parentNode) {
                                 document.body.removeChild(tempForm);
                             }
-                        }, 100);
-                    };
-                    
-                    // Enviar formulario
-                    tempForm.submit();
-                    
-                    // Limpiar formulario temporal después de 3 segundos como respaldo
-                    setTimeout(() => {
-                        if (tempForm.parentNode) {
-                            document.body.removeChild(tempForm);
-                        }
-                    }, 3000);
+                        };
+                        
+                        // Listener para cuando el iframe cargue
+                        const onLoad = () => {
+                            if (!resolved) {
+                                resolved = true;
+                                console.log('Formulario enviado exitosamente via iframe');
+                                setTimeout(cleanup, 500);
+                                resolve();
+                            }
+                        };
+                        
+                        iframe.onload = onLoad;
+                        
+                        // Timeout de respaldo
+                        setTimeout(() => {
+                            if (!resolved) {
+                                resolved = true;
+                                console.log('Timeout: Asumiendo que el formulario se envió correctamente');
+                                cleanup();
+                                resolve();
+                            }
+                        }, 5000);
+                        
+                        // Enviar formulario
+                        tempForm.submit();
+                    });
                 }
                 
                 // Mostrar mensaje de éxito

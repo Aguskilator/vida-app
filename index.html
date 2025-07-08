@@ -1283,56 +1283,114 @@
             submitButton.textContent = 'Enviando...';
             
             try {
-                // Crear iframe oculto para enviar el formulario
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.name = 'hidden-form-iframe';
-                document.body.appendChild(iframe);
-                
-                // URL actualizada con tu Google Form
-                const googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfVcPvKM2TK63V-uT6JbQtbHrrg_OujPu__5jiowpDavE4p0A/formResponse';
-                
-                // Crear formulario temporal
-                const tempForm = document.createElement('form');
-                tempForm.action = googleFormUrl;
-                tempForm.method = 'POST';
-                tempForm.target = 'hidden-form-iframe';
-                
-                // Agregar campos al formulario temporal
+                // Mapear valores
                 const fields = {
-                    'entry.1429993267': mapFormValue('clarity', formData.get('clarity')),
-                    'entry.962169197': mapFormValue('language', formData.get('language')),
-                    'entry.2266276': mapFormValue('solved_doubts', formData.get('solved_doubts')),
-                    'entry.1344114409': mapFormValue('recommend', formData.get('recommend')),
-                    'entry.287412987': formData.get('comments') || ''
+                    clarity: mapFormValue('clarity', formData.get('clarity')),
+                    language: mapFormValue('language', formData.get('language')),
+                    solved_doubts: mapFormValue('solved_doubts', formData.get('solved_doubts')),
+                    recommend: mapFormValue('recommend', formData.get('recommend')),
+                    comments: formData.get('comments') || ''
                 };
                 
                 // Debug: ver qué valores estamos enviando
                 console.log('Valores enviados:', {
-                    clarity: formData.get('clarity') + ' → ' + mapFormValue('clarity', formData.get('clarity')),
-                    language: formData.get('language') + ' → ' + mapFormValue('language', formData.get('language')),
-                    solved_doubts: formData.get('solved_doubts') + ' → ' + mapFormValue('solved_doubts', formData.get('solved_doubts')),
-                    recommend: formData.get('recommend') + ' → ' + mapFormValue('recommend', formData.get('recommend')),
-                    comments: formData.get('comments')
+                    clarity: formData.get('clarity') + ' → ' + fields.clarity,
+                    language: formData.get('language') + ' → ' + fields.language,
+                    solved_doubts: formData.get('solved_doubts') + ' → ' + fields.solved_doubts,
+                    recommend: formData.get('recommend') + ' → ' + fields.recommend,
+                    comments: fields.comments
                 });
                 
-                Object.keys(fields).forEach(key => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = key;
-                    input.value = fields[key];
-                    tempForm.appendChild(input);
-                });
+                // Método 1: Intentar enviar usando fetch al proxy PHP
+                let success = false;
+                try {
+                    const response = await fetch('submit-feedback.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(fields)
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            success = true;
+                            console.log('Feedback enviado exitosamente via PHP proxy');
+                        }
+                    }
+                } catch (error) {
+                    console.log('Error con PHP proxy, intentando método iframe:', error);
+                }
                 
-                // Agregar al DOM y enviar
-                document.body.appendChild(tempForm);
-                tempForm.submit();
-                
-                // Limpiar después de un momento
-                setTimeout(() => {
-                    document.body.removeChild(tempForm);
-                    document.body.removeChild(iframe);
-                }, 1000);
+                // Método 2: Si el PHP proxy falla, usar iframe (método de respaldo)
+                if (!success) {
+                    console.log('Usando método iframe como respaldo');
+                    
+                    // URL actualizada con tu Google Form
+                    const googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfVcPvKM2TK63V-uT6JbQtbHrrg_OujPu__5jiowpDavE4p0A/formResponse';
+                    
+                    // Crear iframe permanente (no se elimina)
+                    let iframe = document.getElementById('feedback-iframe');
+                    if (!iframe) {
+                        iframe = document.createElement('iframe');
+                        iframe.id = 'feedback-iframe';
+                        iframe.name = 'feedback-iframe';
+                        iframe.style.display = 'none';
+                        iframe.style.width = '0px';
+                        iframe.style.height = '0px';
+                        iframe.style.border = 'none';
+                        document.body.appendChild(iframe);
+                    }
+                    
+                    // Crear formulario temporal
+                    const tempForm = document.createElement('form');
+                    tempForm.action = googleFormUrl;
+                    tempForm.method = 'POST';
+                    tempForm.target = 'feedback-iframe';
+                    tempForm.style.display = 'none';
+                    
+                    // Agregar campos al formulario temporal con entry IDs
+                    const entryFields = {
+                        'entry.1429993267': fields.clarity,
+                        'entry.962169197': fields.language,
+                        'entry.2266276': fields.solved_doubts,
+                        'entry.1344114409': fields.recommend,
+                        'entry.287412987': fields.comments
+                    };
+                    
+                    Object.keys(entryFields).forEach(key => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = entryFields[key];
+                        tempForm.appendChild(input);
+                    });
+                    
+                    // Agregar al DOM y enviar
+                    document.body.appendChild(tempForm);
+                    
+                    // Listener para cuando el iframe cargue
+                    iframe.onload = function() {
+                        console.log('Formulario enviado exitosamente via iframe');
+                        // Limpiar formulario temporal después de que se envíe
+                        setTimeout(() => {
+                            if (tempForm.parentNode) {
+                                document.body.removeChild(tempForm);
+                            }
+                        }, 100);
+                    };
+                    
+                    // Enviar formulario
+                    tempForm.submit();
+                    
+                    // Limpiar formulario temporal después de 3 segundos como respaldo
+                    setTimeout(() => {
+                        if (tempForm.parentNode) {
+                            document.body.removeChild(tempForm);
+                        }
+                    }, 3000);
+                }
                 
                 // Mostrar mensaje de éxito
                 feedbackFormContainer.style.display = 'none';

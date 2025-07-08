@@ -174,9 +174,9 @@
     <div class="quiz-container w-full max-w-3xl p-4 md:p-6 relative">
         <div id="feedback-icon-container"></div>
         
-        <header class="text-center mb-4 fade-in">
-            <img src="Vidalogo.png" alt="VIDA" class="mx-auto h-28 mb-3">
-            <h1 class="text-2xl md:text-3xl font-bold text-[var(--vida-primary-blue)] mb-2">
+        <header class="text-center mb-2 fade-in">
+            <img src="Vidalogo.png" alt="VIDA" class="mx-auto h-24 mb-1">
+            <h1 class="text-2xl md:text-3xl font-bold text-[var(--vida-primary-blue)] mb-1">
                 Desmitificador Express
             </h1>
             <p class="text-gray-600 text-sm md:text-base">
@@ -189,7 +189,12 @@
                 <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
             </div>
 
-            <div id="welcome-screen" class="text-center">
+            <div id="welcome-screen" class="text-center relative">
+                <button id="welcome-exit-btn" class="absolute top-0 right-0 text-gray-400 hover:text-gray-600 transition-colors" title="Volver a la página principal">
+                    <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                    </svg>
+                </button>
                 <div class="w-20 h-20 mx-auto bg-gradient-to-br from-[var(--vida-primary-blue)] to-[var(--vida-secondary-blue)] rounded-2xl flex items-center justify-center shadow-lg mb-6">
                     <svg class="h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
@@ -214,9 +219,9 @@
                         <span id="score-display" class="text-sm font-medium text-[var(--vida-primary-blue)]">
                             Puntaje: 0/0
                         </span>
-                        <button id="exit-quiz-btn" class="text-gray-400 hover:text-gray-600" title="Salir del Quiz">
+                        <button id="exit-quiz-btn" class="text-gray-400 hover:text-gray-600 transition-colors" title="Volver a la página principal">
                             <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                             </svg>
                         </button>
                     </div>
@@ -243,6 +248,9 @@
                 <div id="quiz-navigation" class="mt-3 text-center">
                     <button id="next-question" class="hidden mt-2 answer-btn bg-[var(--vida-primary-blue)] text-white hover:opacity-90 transform hover:scale-105">
                         Siguiente pregunta →
+                    </button>
+                    <button id="back-to-main-btn" class="mt-2 text-sm text-gray-500 hover:text-gray-700 underline transition-colors">
+                        ← Volver al inicio
                     </button>
                 </div>
             </div>
@@ -290,6 +298,7 @@
         const finalScore = document.getElementById('final-score');
         const restartQuizBtn = document.getElementById('restart-quiz');
         const backToChatBtn = document.getElementById('back-to-chat');
+        const backToMainBtn = document.getElementById('back-to-main-btn');
         const feedbackIconContainer = document.getElementById('feedback-icon-container');
         const confettiCanvas = document.getElementById('confetti-canvas');
 
@@ -415,12 +424,20 @@
 
         // --- Event Listeners ---
         startQuizBtn.addEventListener('click', startQuiz);
-        exitQuizBtn.addEventListener('click', resetQuiz);
+        exitQuizBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+        document.getElementById('welcome-exit-btn').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
         btnTrue.addEventListener('click', () => answerQuestion(true));
         btnFalse.addEventListener('click', () => answerQuestion(false));
         nextQuestionBtn.addEventListener('click', nextQuestion);
         restartQuizBtn.addEventListener('click', restartQuiz);
         backToChatBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+        backToMainBtn.addEventListener('click', () => {
             window.location.href = 'index.html';
         });
 

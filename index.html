@@ -1237,6 +1237,37 @@
             await generateSuggestedQuestions();
         });
 
+        // Función para mapear valores del formulario a los valores exactos de Google Forms
+        function mapFormValue(fieldName, value) {
+            if (!value) return '';
+            
+            const mappings = {
+                'clarity': {
+                    'si': 'Si',
+                    'parcialmente': 'Parcialmente',
+                    'no': 'No'
+                },
+                'language': {
+                    'si': 'Si',
+                    'regular': 'Regular',
+                    'dificil': 'Difícil de entender'
+                },
+                'solved_doubts': {
+                    'si': 'Si completamente',
+                    'algunas': 'Algunas',
+                    'no': 'No'
+                },
+                'recommend': {
+                    'si': 'Si',
+                    'no': 'No'
+                }
+            };
+            
+            return mappings[fieldName] && mappings[fieldName][value] 
+                ? mappings[fieldName][value] 
+                : value;
+        }
+
         feedbackForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1253,12 +1284,12 @@
                 const googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfVcPvKM2TK63V-uT6JbQtbHrrg_OujPu__5jiowpDavE4p0A/formResponse';
                 
                 const params = new URLSearchParams({
-                    // Entry IDs actualizados de tu formulario
-                    'entry.1429993267': formData.get('clarity'),        // ¿La información fue clara y útil?
-                    'entry.962169197': formData.get('language'),        // ¿El lenguaje fue comprensible?
-                    'entry.2266276': formData.get('solved_doubts'),     // ¿Te ayudó a resolver tus dudas?
-                    'entry.1344114409': formData.get('recommend'),      // ¿Recomendarías esta herramienta?
-                    'entry.287412987': formData.get('comments')         // Comentarios adicionales
+                    // Entry IDs actualizados de tu formulario con valores exactos
+                    'entry.1429993267': mapFormValue('clarity', formData.get('clarity')),
+                    'entry.962169197': mapFormValue('language', formData.get('language')),
+                    'entry.2266276': mapFormValue('solved_doubts', formData.get('solved_doubts')),
+                    'entry.1344114409': mapFormValue('recommend', formData.get('recommend')),
+                    'entry.287412987': formData.get('comments') || ''
                 });
                 
                 // Enviar datos a Google Form

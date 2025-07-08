@@ -465,6 +465,53 @@
             border: 1px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.25);
         }
+
+        /* Específico para móviles - manejo del teclado virtual */
+        @supports (-webkit-touch-callout: none) {
+            #chat-screen {
+                /* Usar 100vh en lugar de 100% para viewport fijo */
+                height: 100vh;
+                height: 100dvh; /* Dynamic viewport height para navegadores que lo soporten */
+            }
+        }
+        
+        /* Mejoras para el chat en móviles */
+        @media (max-width: 640px) {
+            #chat-screen {
+                /* Prevenir zoom en inputs en iOS */
+                -webkit-text-size-adjust: 100%;
+            }
+            
+            #chat-input {
+                /* Prevenir zoom en inputs */
+                font-size: 16px !important;
+                -webkit-appearance: none;
+                appearance: none;
+                border-radius: 25px;
+            }
+            
+            /* Asegurar que el footer se mantenga visible */
+            #chat-screen footer {
+                position: relative;
+                z-index: 10;
+            }
+            
+            /* Mejorar el scroll del contenedor de mensajes */
+            #chat-container-wrapper {
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+        }
+        
+        /* Viewport dinámico para móviles modernos */
+        @media (max-width: 640px) and (max-height: 800px) {
+            #chat-screen .w-full.h-full {
+                height: 100vh;
+                height: 100dvh;
+                min-height: 100vh;
+                min-height: 100dvh;
+            }
+        }
     </style>
 </head>
 <body class="text-slate-800 antialiased">
@@ -539,9 +586,9 @@
             </div>
         </main>
 
-        <footer class="w-full p-1 sm:p-2 bg-[var(--vida-bg-footer)] fade-in-element" style="animation-delay: 1.2s;">
+        <footer class="w-full p-0 sm:p-1 bg-[var(--vida-bg-footer)] fade-in-element" style="animation-delay: 1.2s;">
             <div class="container mx-auto max-w-xl lg:max-w-2xl px-8 sm:px-12 lg:px-16">
-                <div class="flex flex-col items-center justify-center">
+                <div class="flex flex-col items-center justify-center py-1 sm:py-2">
                     <p class="text-sm sm:text-base md:text-xs text-slate-700 font-medium mb-0 leading-tight max-w-sm sm:max-w-md lg:max-w-lg text-center">
                         VIDA es una herramienta informativa. No sustituye la atención médica directa.<br class="hidden sm:block">
                         <span class="block sm:inline">Versión piloto para orientación en procesos de donación.</span>
@@ -656,25 +703,25 @@
     </div>
 
 
-    <div id="chat-screen" class="fixed inset-0 bg-slate-100 flex items-center justify-center p-0 sm:p-4 z-40 transition-opacity duration-300 opacity-0">
-        <div class="w-full h-full sm:max-w-4xl sm:h-[90vh] bg-white sm:rounded-2xl shadow-2xl flex flex-col">
-            <header class="bg-white border-b border-gray-200 p-4 sm:rounded-t-2xl flex items-center justify-between shadow-sm">
+    <div id="chat-screen" class="fixed inset-0 bg-slate-100 flex items-stretch justify-center p-0 sm:p-4 z-40 transition-opacity duration-300 opacity-0">
+        <div class="w-full h-full sm:max-w-4xl sm:h-[90vh] bg-white sm:rounded-2xl shadow-2xl flex flex-col relative overflow-hidden">
+            <header class="bg-white border-b border-gray-200 p-3 sm:p-4 sm:rounded-t-2xl flex items-center justify-between shadow-sm flex-shrink-0">
                  <div class="flex items-center space-x-1">
-                    <div class="w-12 h-12 bg-[var(--vida-text-dark)] rounded-full flex items-center justify-center mr-1">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--vida-text-dark)] rounded-full flex items-center justify-center mr-1">
                         <!-- Heart Icon for VIDA logo in chat header -->
-                        <svg class="h-7 w-7 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        <svg class="h-5 w-5 sm:h-7 sm:w-7 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                     </div>
-                    <img src="Vidalogo.png" alt="VIDA Logo" class="h-13 w-auto object-contain" style="max-width:90px;" onerror="this.onerror=null;this.src='https://placehold.co/90x40/E3F2FD/0D47A1?text=VIDA';" />
+                    <img src="Vidalogo.png" alt="VIDA Logo" class="h-10 sm:h-13 w-auto object-contain max-w-[80px] sm:max-w-[90px]" onerror="this.onerror=null;this.src='https://placehold.co/90x40/E3F2FD/0D47A1?text=VIDA';" />
                  </div>
                 <button id="close-chat-btn" class="text-gray-500 hover:bg-gray-200 p-2 rounded-full">
-                     <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                     <svg class="h-5 w-5 sm:h-6 sm:w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </header>
-            <main class="flex-1 flex overflow-hidden">
-                <div id="chat-container-wrapper" class="flex-1 flex flex-col p-4 sm:p-6 overflow-y-auto chat-messages">
-                     <div id="chat-container" class="flex flex-col space-y-4"></div>
+            <main class="flex-1 flex overflow-hidden min-h-0">
+                <div id="chat-container-wrapper" class="flex-1 flex flex-col p-3 sm:p-4 lg:p-6 overflow-y-auto chat-messages">
+                     <div id="chat-container" class="flex flex-col space-y-3 sm:space-y-4"></div>
                 </div>
-                <aside class="w-1/3 bg-slate-50 p-6 border-l border-slate-200 hidden md:flex flex-col items-center justify-center">
+                <aside class="w-1/3 bg-slate-50 p-6 border-l border-slate-200 hidden lg:flex flex-col items-center justify-center">
                     <!-- chat-robot-avatar element: using the provided image for the large avatar -->
                     <div id="chat-robot-avatar-large" class="w-48 h-48 mb-4 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
                         <img src="robot.png" alt="Robot VIDA" class="w-full h-full object-contain" onerror="this.onerror=null;this.src='https://placehold.co/192x192/FFFFFF/FFFFFF?text=Robot';" />
@@ -685,18 +732,18 @@
                     </div>
                 </aside>
             </main>
-            <footer class="p-4 bg-white border-t border-gray-200 sm:rounded-b-2xl">
-                <div id="suggested-questions-container" class="flex flex-wrap gap-2 mb-4 hidden"></div>
+            <footer class="p-2 sm:p-3 bg-white border-t border-gray-200 sm:rounded-b-2xl flex-shrink-0">
+                <div id="suggested-questions-container" class="flex flex-wrap gap-2 mb-2 sm:mb-3 hidden"></div>
 
-                <form id="chat-form" class="flex items-center space-x-3">
-                    <button type="button" id="suggest-questions-btn" class="bg-[var(--vida-suggest-btn-bg)] text-[var(--vida-text-dark)] rounded-full p-2.5 
+                <form id="chat-form" class="flex items-center space-x-2 sm:space-x-3">
+                    <button type="button" id="suggest-questions-btn" class="bg-[var(--vida-suggest-btn-bg)] text-[var(--vida-text-dark)] rounded-full p-2 sm:p-2.5 
                                      hover:bg-[var(--vida-suggest-btn-hover)] transition-colors focus:outline-none focus:ring-4 focus:ring-blue-100 
-                                     disabled:bg-gray-200 disabled:cursor-not-allowed flex items-center justify-center">
-                        <svg class="h-5 w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
-                        <span id="suggest-button-text" class="ml-1 text-sm font-semibold">Sugiere</span> </button>
-                    <input type="text" id="chat-input" placeholder="Escribe tu pregunta aquí..." autocomplete="off" class="flex-1 w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] transition">
-                    <button type="submit" class="bg-[var(--vida-btn-green)] text-white rounded-full p-3 hover:bg-[var(--vida-btn-green-hover)] transition-transform transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
+                                     disabled:bg-gray-200 disabled:cursor-not-allowed flex items-center justify-center flex-shrink-0">
+                        <svg class="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                        <span id="suggest-button-text" class="ml-1 text-xs sm:text-sm font-semibold hidden sm:inline">Sugiere</span> </button>
+                    <input type="text" id="chat-input" placeholder="Escribe tu pregunta aquí..." autocomplete="off" class="flex-1 w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] transition text-sm sm:text-base">
+                    <button type="submit" class="bg-[var(--vida-btn-green)] text-white rounded-full p-2 sm:p-3 hover:bg-[var(--vida-btn-green-hover)] transition-transform transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
                     </button>
                 </form>
             </footer>
@@ -1358,7 +1405,7 @@
             questions.forEach(q => {
                 const button = document.createElement('button');
                 button.textContent = q;
-                button.className = `px-3 py-2 rounded-lg bg-[var(--vida-suggest-btn-bg)] text-[var(--vida-text-dark)] text-sm font-medium 
+                button.className = `px-3 py-2 rounded-lg bg-[var(--vida-suggest-btn-bg)] text-[var(--vida-module-btn-text)] text-sm font-medium 
                                  hover:bg-[var(--vida-suggest-btn-hover)] transition-colores`;
                 button.onclick = () => {
                     chatInput.value = q;

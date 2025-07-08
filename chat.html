@@ -371,7 +371,7 @@
         - PROHIBIDO usar palabras como "maravilloso", "increíble", "generoso" repetidamente.
         - Usa sinónimos y diferentes estructuras: "Me da gusto saber que...", "Qué bueno que hayas decidido...", "Te agradezco que compartas...", "Es valioso que quieras..."
         - Sé conciso, claro y empático. Usa lenguaje sencillo, sin tecnicismos.
-        - No uses asteriscos. Puedes usar listas numeradas o guiones si es necesario.
+        - No uses asteriscos en ninguna respuesta. Puedes usar listas numeradas o guiones si es necesario.
         - Si detectas duelo o dolor, prioriza el apoyo emocional.
         - Solo responde sobre donación de órganos, tejidos y sangre.
         - Si está fuera de tema: "Lo siento, solo puedo ayudarte con preguntas sobre donación de órganos, tejidos o sangre."
@@ -488,7 +488,7 @@
         async function generateSuggestedQuestions() {
             try {
                 const suggestionPrompt = [
-                    { role: "system", content: "Eres VIDA. Genera exactamente 4 preguntas cortas (máximo 6 palabras cada una) sobre donación de órganos que una persona común haría. Responde SOLO con las 4 preguntas, una por línea, sin numeración ni puntos. Ejemplos: '¿Duele donar órganos?', '¿Qué órganos se donan?', '¿Cómo me registro?', '¿Es seguro donar?'" },
+                    { role: "system", content: "Eres VIDA. Genera exactamente 4 preguntas cortas (máximo 6 palabras cada una) sobre donación de órganos que una persona común haría. Deben ser preguntas concisas, en donde se entienda perfectamente lo que se esta preguntado.Responde SOLO con las 4 preguntas, una por línea, sin numeración ni puntos. Ejemplos: '¿Duele donar órganos?', '¿Qué órganos se donan?', '¿Cómo me registro?', '¿Es seguro donar?'" },
                     { role: "user", content: "Genera 4 preguntas cortas sobre donación de órganos" }
                 ];
                 

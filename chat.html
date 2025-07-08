@@ -36,6 +36,12 @@
             animation: gradient-animation 20s ease infinite;
             background-size: 200% 200%;
             background-image: linear-gradient(45deg, #e0e7ff 0%, #c7d2fe 25%, #e0f2f1 50%, #f0f9ff 75%, #e0e7ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
         
         @keyframes gradient-animation {
@@ -54,7 +60,17 @@
         }
         
         #chat-screen-container {
-             animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        @media (min-width: 640px) {
+            #chat-screen-container {
+                max-width: 900px;
+                max-height: 85vh;
+            }
         }
 
         .chat-bubble {
@@ -159,18 +175,18 @@
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-0 sm:p-4">
+<body class="flex items-center justify-center min-h-screen p-2 sm:p-4 bg-transparent">
     <canvas id="bg-canvas"></canvas>
     
     <!-- CHAT SCREEN -->
-    <div id="chat-screen-container" class="w-full h-screen sm:h-auto sm:max-w-5xl sm:max-h-[95vh] sm:rounded-2xl flex flex-col">
+    <div id="chat-screen-container" class="w-full max-w-4xl h-screen max-h-[95vh] sm:h-auto sm:rounded-2xl flex flex-col mx-auto">
         <div id="chat-screen" class="w-full h-full bg-white/60 backdrop-blur-xl sm:rounded-2xl shadow-2xl flex flex-col border border-gray-200/80">
             <header class="bg-white/80 backdrop-blur-sm border-b border-gray-200/80 p-4 sm:rounded-t-2xl flex items-center justify-between flex-shrink-0">
                  <div class="flex items-center space-x-3">
                      <div class="w-12 h-12 bg-gradient-to-br from-[var(--vida-primary)] to-[var(--vida-secondary)] rounded-full flex items-center justify-center shadow-md">
                          <svg class="h-7 w-7 text-white logo-heartbeat" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                      </div>
-                     <img src="Vidalogo.png" alt="VIDA Logo" class="h-10 w-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/90x40/E3F2FD/0D47A1?text=VIDA';" />
+                     <img src="Vidalogo.png" alt="VIDA Logo" class="h-13 w-auto object-contain" onerror="this.onerror=null;this.src='https://placehold.co/90x40/E3F2FD/0D47A1?text=VIDA';" />
                  </div>
                 <button id="close-chat-btn" class="text-gray-500 hover:bg-gray-200/50 p-2 rounded-full transition-colors" title="Cerrar Chat">
                      <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -245,8 +261,23 @@
         - Solo responde sobre donación de órganos, tejidos y sangre.
         - Si está fuera de tema: "Lo siento, solo puedo ayudarte con preguntas sobre donación de órganos, tejidos o sangre."
 
+        **PROHIBIDO ABSOLUTAMENTE:**
+        - NUNCA pidas datos personales (nombre, fecha de nacimiento, tipo de sangre, dirección, etc.)
+        - NO registres usuarios ni completes registros
+        - NO solicites información personal para "completar registro"
+        - Solo brindas información educativa y apoyo emocional
+
         **IMPORTANTE - Detección de intención de donante:**
-        Si el usuario expresa claramente que quiere ser donante (frases como "quiero ser donante", "me interesa donar"), responde empáticamente e incluye al final: { "activarModulo": "donorPath" }
+        Si el usuario expresa claramente que quiere ser donante (frases como "quiero ser donante", "me interesa donar", "quiero ayudar"), responde empáticamente e incluye al final: { "activarModulo": "donorPath" }
+        
+        El módulo donorPath es un proceso educativo que NO requiere datos personales, solo guía al usuario paso a paso.
+        
+        **EJEMPLOS DE RESPUESTAS CORRECTAS:**
+        Usuario: "Quiero ser donante"
+        Respuesta: "¡Qué decisión tan valiosa! Me da mucho gusto saber que quieres ayudar a otros. Te voy a acompañar paso a paso en este camino. { "activarModulo": "donorPath" }"
+        
+        Usuario: "Me interesa donar órganos"
+        Respuesta: "Te agradezco que compartas esta intención tan noble. Vamos a recorrer juntos el camino para que puedas tomar una decisión informada. { "activarModulo": "donorPath" }"
         
         Responde siempre de manera natural, empática y sin sonar robótico.
         `;
@@ -321,17 +352,29 @@
             }
         };
 
-        // --- Suggested Questions ---
-        const suggestedQuestions = [
-            "¿Qué es la donación de órganos?",
-            "¿Cuáles son los requisitos para ser donante?",
-            "¿Qué órganos se pueden donar?",
-            "¿Cómo funciona el proceso de donación?",
-            "¿Es seguro donar órganos?",
-            "¿Afecta la donación al funeral?",
-            "¿Qué dice la religión sobre la donación?",
-            "¿Cómo se registra uno como donante?"
-        ];
+        // --- Función para generar sugerencias con IA ---
+        async function generateSuggestedQuestions() {
+            try {
+                const suggestionPrompt = [
+                    { role: "system", content: "Eres VIDA. Genera exactamente 4 preguntas cortas (máximo 6 palabras cada una) sobre donación de órganos que una persona común haría. Responde SOLO con las 4 preguntas, una por línea, sin numeración ni puntos. Ejemplos: '¿Duele donar órganos?', '¿Qué órganos se donan?', '¿Cómo me registro?', '¿Es seguro donar?'" },
+                    { role: "user", content: "Genera 4 preguntas cortas sobre donación de órganos" }
+                ];
+                
+                const result = await callOpenAI(suggestionPrompt);
+                const response = result.choices?.[0]?.message?.content || "";
+                
+                // Dividir las preguntas por líneas y limpiar
+                const questions = response.split('\n')
+                    .map(q => q.trim())
+                    .filter(q => q.length > 0 && q.includes('?'))
+                    .slice(0, 4);
+                
+                return questions.length >= 3 ? questions : null;
+            } catch (error) {
+                console.error("Error generating suggestions:", error);
+                return null;
+            }
+        }
 
         // --- API Call Function ---
         async function callOpenAI(messages) {
@@ -438,12 +481,28 @@
                     
                     // Activar el módulo apropiado
                     if (moduleName === 'donorPath') {
-                        displayDonorPathStep('introduction');
+                        setTimeout(() => {
+                            displayDonorPathStep('introduction');
+                        }, 2000);
                     } else if (moduleName === 'indecision') {
-                        addMessageToChat('assistant', 'Es completamente normal tener dudas sobre la donación. Es una decisión importante. ¿Qué te preocupa más: el proceso médico, hablar con tu familia, o algo más específico?');
+                        setTimeout(() => {
+                            addMessageToChat('assistant', 'Es completamente normal tener dudas sobre la donación. Es una decisión importante. ¿Qué te preocupa más: el proceso médico, hablar con tu familia, o algo más específico?');
+                        }, 1500);
                     }
                 } else {
-                    addMessageToChat('assistant', botResponseText);
+                    // Si no hay módulo detectado, verificar manualmente si el usuario quiere ser donante
+                    const donorIntentions = ['quiero ser donante', 'me interesa donar', 'quiero ayudar', 'ser donante', 'donar organos', 'quiero donar'];
+                    const userMessageLower = userMessage.toLowerCase();
+                    const hasDonorIntention = donorIntentions.some(intention => userMessageLower.includes(intention));
+                    
+                    if (hasDonorIntention && !currentDonorPathStep) {
+                        addMessageToChat('assistant', botResponseText);
+                        setTimeout(() => {
+                            displayDonorPathStep('introduction');
+                        }, 2000);
+                    } else {
+                        addMessageToChat('assistant', botResponseText);
+                    }
                 }
             } catch (error) {
                 addMessageToChat('assistant', 'Hubo un problema de conexión. Por favor, verifica tu backend e inténtalo de nuevo.');
@@ -463,13 +522,20 @@
                 suggestedQuestionsContainer.classList.add('hidden');
                 return;
             }
-            buttons.forEach(btn => {
+            
+            buttons.forEach((btn, index) => {
                 const button = document.createElement('button');
                 button.textContent = btn.text;
-                button.className = `px-3 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium hover:bg-blue-100 transition-colors shadow-sm m-1`;
+                button.className = `px-4 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium hover:bg-blue-100 transition-all duration-200 shadow-sm m-1 opacity-0 transform translate-y-2`;
                 button.onclick = () => handler(btn.action, btn);
                 suggestedQuestionsContainer.appendChild(button);
+                
+                // Animación escalonada para que aparezcan uno por uno
+                setTimeout(() => {
+                    button.classList.remove('opacity-0', 'translate-y-2');
+                }, index * 100);
             });
+            
             suggestedQuestionsContainer.classList.remove('hidden');
         }
 
@@ -479,7 +545,7 @@
             suggestedQuestionsContainer.innerHTML = '';
             chatContainer.innerHTML = '';
             currentDonorPathStep = null;
-            addMessageToChat('assistant', 'Hola, soy VIDA. Estoy aquí para ofrecerte información clara y respetuosa sobre la donación de órganos y tejidos. ¿En qué puedo ayudarte hoy?');
+            addMessageToChat('assistant', '¡Hola! Soy VIDA, tu asistente para información sobre donación de órganos, tejidos y sangre. Estoy aquí para ayudarte de manera clara y empática. ¿En qué puedo apoyarte hoy?');
         }
 
         // --- Donor Path Module Functions ---
@@ -492,81 +558,146 @@
             }
             
             currentDonorPathStep = stepKey;
-            if (stepContent.text) {
-                addMessageToChat('assistant', stepContent.text);
-            }
             
-            if (stepContent.buttons && stepContent.buttons.length > 0) {
-                displayModuleButtons(stepContent.buttons, handleDonorPathAction);
+            // Añadir el mensaje del paso con una pequeña pausa para naturalidad
+            if (stepContent.text) {
+                setTimeout(() => {
+                    addMessageToChat('assistant', stepContent.text);
+                    
+                    // Mostrar botones después de que aparezca el mensaje
+                    if (stepContent.buttons && stepContent.buttons.length > 0) {
+                        setTimeout(() => {
+                            displayModuleButtons(stepContent.buttons, handleDonorPathAction);
+                        }, 800);
+                    }
+                }, 300);
+            } else {
+                // Si no hay texto, mostrar botones directamente
+                if (stepContent.buttons && stepContent.buttons.length > 0) {
+                    setTimeout(() => {
+                        displayModuleButtons(stepContent.buttons, handleDonorPathAction);
+                    }, 300);
+                }
             }
         }
 
         async function handleDonorPathAction(action, buttonData = {}) {
-            // Ocultar botones previos
-            suggestedQuestionsContainer.classList.add('hidden');
+            // Ocultar botones previos con animación suave
+            const buttons = suggestedQuestionsContainer.querySelectorAll('button');
+            buttons.forEach((btn, index) => {
+                setTimeout(() => {
+                    btn.classList.add('opacity-0', 'transform', 'scale-95');
+                }, index * 50);
+            });
             
-            switch(action) {
-                case 'donor_path_step1':
-                case 'donor_path_step2':
-                case 'donor_path_step3':
-                case 'donor_path_step4':
-                case 'donor_path_step5':
-                    displayDonorPathStep(action.replace('donor_path_', ''));
-                    break;
-                case 'donor_path_explain_muerte_encefalica':
-                    displayDonorPathStep('explain_muerte_encefalica');
-                    break;
-                case 'donor_path_examples_family_talk':
-                    displayDonorPathStep('examples_family_talk');
-                    break;
-                case 'donor_path_example_carta':
-                    displayDonorPathStep('example_carta');
-                    break;
-                case 'donor_path_cierre':
-                    displayDonorPathStep('cierre');
-                    break;
-                case 'share_whatsapp':
-                    if (buttonData.shareText) {
-                        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(buttonData.shareText)}`;
-                        window.open(whatsappUrl, '_blank');
-                    }
-                    break;
-                case 'suggest_questions':
-                    toggleSuggestedQuestions();
-                    break;
-                case 'reset_chat':
-                    reset_chat_and_offer_suggestions();
-                    break;
-                case 'indecision_start':
-                    addMessageToChat('assistant', 'Es completamente normal tener dudas sobre la donación. Es una decisión importante. ¿Qué te preocupa más: el proceso médico, hablar con tu familia, o algo más específico?');
-                    break;
-                default:
-                    console.warn("Unknown donor path action:", action);
-                    addMessageToChat('assistant', "Lo siento, no reconozco esa acción. ¿Puedes intentar de nuevo?");
-            }
+            // Ocultar completamente después de las animaciones
+            setTimeout(() => {
+                suggestedQuestionsContainer.classList.add('hidden');
+            }, buttons.length * 50 + 200);
+            
+            // Ejecutar acción después de un pequeño delay para naturalidad
+            setTimeout(() => {
+                switch(action) {
+                    case 'donor_path_step1':
+                    case 'donor_path_step2':
+                    case 'donor_path_step3':
+                    case 'donor_path_step4':
+                    case 'donor_path_step5':
+                        displayDonorPathStep(action.replace('donor_path_', ''));
+                        break;
+                    case 'donor_path_explain_muerte_encefalica':
+                        displayDonorPathStep('explain_muerte_encefalica');
+                        break;
+                    case 'donor_path_examples_family_talk':
+                        displayDonorPathStep('examples_family_talk');
+                        break;
+                    case 'donor_path_example_carta':
+                        displayDonorPathStep('example_carta');
+                        break;
+                    case 'donor_path_cierre':
+                        displayDonorPathStep('cierre');
+                        break;
+                    case 'share_whatsapp':
+                        if (buttonData.shareText) {
+                            addMessageToChat('assistant', '¡Perfecto! Te voy a ayudar a compartir tu decisión por WhatsApp. Se abrirá una nueva ventana.');
+                            setTimeout(() => {
+                                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(buttonData.shareText)}`;
+                                window.open(whatsappUrl, '_blank');
+                            }, 1000);
+                        }
+                        break;
+                    case 'suggest_questions':
+                        // Mostrar mensaje explicativo antes de las sugerencias
+                        addMessageToChat('assistant', 'Te voy a generar algunas preguntas que podrían interesarte:');
+                        setTimeout(async () => {
+                            await toggleSuggestedQuestions();
+                        }, 800);
+                        break;
+                    case 'reset_chat':
+                        addMessageToChat('assistant', 'Por supuesto, vamos a empezar de nuevo. ¡Estoy aquí para ayudarte!');
+                        setTimeout(() => {
+                            reset_chat_and_offer_suggestions();
+                        }, 1500);
+                        break;
+                    case 'indecision_start':
+                        addMessageToChat('assistant', 'Es completamente normal tener dudas sobre la donación. Es una decisión importante. ¿Qué te preocupa más: el proceso médico, hablar con tu familia, o algo más específico?');
+                        break;
+                    default:
+                        console.warn("Unknown donor path action:", action);
+                        addMessageToChat('assistant', "Lo siento, no reconozco esa acción. ¿Puedes intentar de nuevo?");
+                }
+            }, 400);
         }
 
-        function toggleSuggestedQuestions() {
+        async function toggleSuggestedQuestions() {
             const container = suggestedQuestionsContainer;
             if (container.classList.contains('hidden')) {
                 container.classList.remove('hidden');
                 container.innerHTML = '';
                 
-                // Seleccionar 4 preguntas aleatorias
-                const shuffled = [...suggestedQuestions].sort(() => 0.5 - Math.random());
-                const selected = shuffled.slice(0, 4);
+                // Mostrar indicador de carga
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'flex items-center justify-center py-4';
+                loadingDiv.innerHTML = `
+                    <div class="flex items-center space-x-2 text-blue-600">
+                        <div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span class="text-sm">Generando preguntas...</span>
+                    </div>
+                `;
+                container.appendChild(loadingDiv);
                 
-                selected.forEach(question => {
-                    const button = document.createElement('button');
-                    button.className = 'bg-blue-50 text-blue-700 px-3 py-2 rounded-full text-sm hover:bg-blue-100 transition-colors';
-                    button.textContent = question;
-                    button.addEventListener('click', () => {
-                        chatInput.value = question;
-                        chatForm.dispatchEvent(new Event('submit'));
-                        container.classList.add('hidden');
+                // Generar preguntas con IA
+                const questions = await generateSuggestedQuestions();
+                
+                // Limpiar el contenedor
+                container.innerHTML = '';
+                
+                if (questions && questions.length > 0) {
+                    questions.forEach((question, index) => {
+                        const button = document.createElement('button');
+                        button.className = 'bg-blue-50 text-blue-700 px-3 py-2 rounded-full text-sm hover:bg-blue-100 transition-colors opacity-0 transform translate-y-2';
+                        button.textContent = question;
+                        button.addEventListener('click', () => {
+                            // Simular que el usuario escribió la pregunta
+                            addMessageToChat('user', question);
+                            container.classList.add('hidden');
+                            // Enviar la pregunta a la IA
+                            getBotResponse(question);
+                        });
+                        container.appendChild(button);
+                        
+                        // Animación escalonada
+                        setTimeout(() => {
+                            button.classList.remove('opacity-0', 'translate-y-2');
+                        }, index * 150);
                     });
-                    container.appendChild(button);
-                });
+                } else {
+                    // Si falla la generación, mostrar mensaje de error
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'text-red-600 text-sm py-2';
+                    errorDiv.textContent = 'No se pudieron generar preguntas. Por favor, intenta de nuevo.';
+                    container.appendChild(errorDiv);
+                }
                 
                 suggestButtonText.textContent = 'Ocultar';
             } else {
@@ -694,7 +825,7 @@
 
         // Initialize Chat and Background
         document.addEventListener('DOMContentLoaded', () => {
-            addMessageToChat('assistant', 'Hola, soy VIDA. Estoy aquí para ofrecerte información clara y respetuosa sobre la donación de órganos y tejidos. ¿En qué puedo ayudarte hoy?');
+            addMessageToChat('assistant', '¡Hola! Soy VIDA, tu asistente para información sobre donación de órganos, tejidos y sangre. Estoy aquí para ayudarte de manera clara y empática. ¿En qué puedo apoyarte hoy?');
             chatInput.focus();
             initBackground();
             animateBackground();

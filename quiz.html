@@ -6,6 +6,11 @@
     <title>Quiz - VIDA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="icon" href="Vidalogo.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tone.js for audio effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <style>
         :root {
             --vida-primary-blue: #0D47A1;
@@ -16,8 +21,48 @@
             --vida-btn-green-hover: #45A049;
             --vida-text-dark: #1E293B;
             --vida-bg-footer: #F8FAFC;
+            --vida-text-secondary: #64748B;
+            --vida-quiz-correct: #22C55E;
+            --vida-quiz-incorrect: #EF4444;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --border-color: rgba(255, 255, 255, 0.3);
         }
-        
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f9ff;
+            background-image: 
+                radial-gradient(at 47% 33%, hsl(200.00, 80%, 85%) 0px, transparent 50%),
+                radial-gradient(at 9% 62%, hsl(215.00, 80%, 80%) 0px, transparent 50%),
+                radial-gradient(at 82% 65%, hsl(140.00, 80%, 80%) 0px, transparent 50%),
+                radial-gradient(at 24% 88%, hsl(20.00, 80%, 85%) 0px, transparent 50%),
+                radial-gradient(at 75% 8%, hsl(340.00, 80%, 85%) 0px, transparent 50%),
+                radial-gradient(at 56% 33%, hsl(260.00, 80%, 85%) 0px, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            background-color: var(--card-bg);
+            border-radius: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            animation: popIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
         .fade-in {
             opacity: 0;
             animation: fadeIn 0.6s ease-in-out forwards;
@@ -26,72 +71,100 @@
         @keyframes fadeIn {
             to { opacity: 1; }
         }
-        
-        .quiz-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .question-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        
+
         .answer-btn {
-            width: 100%;
+            transition: all 0.2s ease-in-out;
+            font-weight: 600;
+            border-radius: 0.75rem;
             padding: 1rem;
             margin: 0.5rem 0;
             border: 2px solid transparent;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
             cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
         
         .answer-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 4px 20px -5px rgba(0,0,0,0.1);
         }
-        
+
         .answer-btn.correct {
-            background: #4CAF50;
+            background-color: var(--vida-quiz-correct) !important;
             color: white;
-            border-color: #45A049;
+            border-color: var(--vida-quiz-correct) !important;
         }
         
         .answer-btn.incorrect {
-            background: #f44336;
+            background-color: var(--vida-quiz-incorrect) !important;
             color: white;
-            border-color: #d32f2f;
+            border-color: var(--vida-quiz-incorrect) !important;
         }
         
         .answer-btn.default {
-            background: #f8f9fa;
-            color: #1E293B;
-            border-color: #e9ecef;
+            background-color: rgba(255, 255, 255, 0.8);
+            color: var(--vida-text-dark);
+            border-color: rgba(255, 255, 255, 0.3);
         }
-        
+
+        .answer-btn:disabled {
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+
         .progress-bar {
-            height: 6px;
-            background: #e9ecef;
-            border-radius: 3px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
             overflow: hidden;
             margin-bottom: 2rem;
         }
-        
+
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--vida-primary-blue), var(--vida-accent-blue));
             transition: width 0.5s ease;
         }
+
+        #feedback-icon-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+
+        #feedback-icon-container.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.5);
+            animation: feedback-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes feedback-pop {
+            0% { transform: translate(-50%, -50%) scale(1.5); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="quiz-container">
+<body class="flex items-center justify-center min-h-screen p-4">
+    
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="quiz-container w-full max-w-3xl p-6 md:p-10 relative">
+        <div id="feedback-icon-container"></div>
+        
         <header class="text-center mb-8 fade-in">
             <img src="Vidalogo.png" alt="VIDA" class="mx-auto h-16 mb-4">
             <h1 class="text-3xl font-bold text-[var(--vida-primary-blue)] mb-2">
@@ -107,85 +180,95 @@
                 <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
             </div>
 
-            <div id="welcome-screen" class="question-card text-center">
+            <div id="welcome-screen" class="text-center">
+                <div class="w-20 h-20 mx-auto bg-gradient-to-br from-[var(--vida-primary-blue)] to-[var(--vida-secondary-blue)] rounded-2xl flex items-center justify-center shadow-lg mb-6">
+                    <svg class="h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                    </svg>
+                </div>
                 <h2 class="text-2xl font-bold mb-4">¡Bienvenido al Quiz!</h2>
                 <p class="text-gray-600 mb-6">
                     Responde preguntas de verdadero o falso para desmentir mitos 
                     y conocer más sobre la donación de órganos en México.
                 </p>
-                <button id="start-quiz" class="answer-btn correct">
+                <button id="start-quiz" class="answer-btn bg-[var(--vida-btn-green)] text-white hover:bg-[var(--vida-btn-green-hover)] transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-500/50">
                     🚀 Comenzar Quiz
                 </button>
             </div>
 
             <div id="quiz-screen" class="hidden">
-                <div class="question-card">
-                    <div class="flex justify-between items-center mb-4">
-                        <span id="question-counter" class="text-sm font-medium text-gray-500">
-                            Pregunta 1 de 5
-                        </span>
+                <div class="flex justify-between items-center mb-4">
+                    <span id="question-counter" class="text-sm font-medium text-gray-500">
+                        Pregunta 1 de 5
+                    </span>
+                    <div class="flex items-center gap-4">
                         <span id="score-display" class="text-sm font-medium text-[var(--vida-primary-blue)]">
                             Puntaje: 0/0
                         </span>
-                    </div>
-                    
-                    <h3 id="question-text" class="text-xl font-bold mb-6 text-[var(--vida-text-dark)]">
-                        <!-- Aquí aparecerá la pregunta -->
-                    </h3>
-                    
-                    <div class="space-y-3">
-                        <button id="btn-true" class="answer-btn default">
-                            ✅ Verdadero
-                        </button>
-                        <button id="btn-false" class="answer-btn default">
-                            ❌ Falso
+                        <button id="exit-quiz-btn" class="text-gray-400 hover:text-gray-600" title="Salir del Quiz">
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     </div>
-                    
-                    <div id="explanation" class="hidden mt-6 p-4 bg-blue-50 rounded-lg">
-                        <h4 class="font-bold mb-2">Explicación:</h4>
-                        <p id="explanation-text" class="text-gray-700"></p>
-                    </div>
-                    
-                    <button id="next-question" class="hidden mt-4 answer-btn default">
+                </div>
+                
+                <h3 id="question-text" class="text-2xl md:text-3xl font-bold text-slate-800 min-h-[140px] flex items-center justify-center text-center mb-6">
+                    <!-- Aquí aparecerá la pregunta -->
+                </h3>
+                
+                <div class="space-y-3">
+                    <button id="btn-true" class="answer-btn default w-full">
+                        ✅ Verdadero
+                    </button>
+                    <button id="btn-false" class="answer-btn default w-full">
+                        ❌ Falso
+                    </button>
+                </div>
+                
+                <div id="explanation" class="hidden mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 class="font-bold mb-2">Explicación:</h4>
+                    <p id="explanation-text" class="text-gray-700"></p>
+                </div>
+                
+                <div id="quiz-navigation" class="mt-6 text-center">
+                    <button id="next-question" class="hidden mt-4 answer-btn bg-[var(--vida-primary-blue)] text-white hover:opacity-90 transform hover:scale-105">
                         Siguiente pregunta →
                     </button>
                 </div>
             </div>
 
-            <div id="results-screen" class="hidden">
-                <div class="question-card text-center">
-                    <h2 class="text-2xl font-bold mb-4">¡Quiz Completado!</h2>
-                    <div class="text-6xl mb-4">🎉</div>
-                    <p id="final-score" class="text-xl mb-4"></p>
-                    <p class="text-gray-600 mb-6">
-                        Gracias por aprender sobre donación de órganos con VIDA.
-                    </p>
-                    <div class="space-y-3">
-                        <button id="restart-quiz" class="answer-btn correct">
-                            🔄 Reiniciar Quiz
-                        </button>
-                        <button id="back-to-chat" class="answer-btn default">
-                            💬 Volver al Chat
-                        </button>
-                    </div>
+            <div id="results-screen" class="hidden text-center">
+                <div class="w-24 h-24 mx-auto bg-gradient-to-br from-[var(--vida-btn-green)] to-[#6ee7b7] rounded-full flex items-center justify-center shadow-lg mb-6">
+                    <svg class="w-12 h-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold mb-4">¡Quiz Completado!</h2>
+                <div class="text-6xl mb-4">🎉</div>
+                <p id="final-score" class="text-5xl font-bold text-slate-700 mb-4"></p>
+                <p class="text-gray-600 mb-6">
+                    Cada duda resuelta es un paso más hacia una cultura de donación más consciente.
+                </p>
+                <div class="space-y-3">
+                    <button id="restart-quiz" class="answer-btn bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 transform hover:scale-105">
+                        🔄 Reiniciar Quiz
+                    </button>
+                    <button id="back-to-chat" class="answer-btn bg-[var(--vida-primary-blue)] text-white hover:opacity-90 transform hover:scale-105">
+                        ← Volver al Chat
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Estado del quiz
-        let currentQuestion = 0;
-        let score = 0;
-        let questions = [];
-        let totalQuestions = 5;
-
-        // Elementos del DOM
+        // --- DOM Elements ---
         const welcomeScreen = document.getElementById('welcome-screen');
         const quizScreen = document.getElementById('quiz-screen');
         const resultsScreen = document.getElementById('results-screen');
         const startQuizBtn = document.getElementById('start-quiz');
+        const exitQuizBtn = document.getElementById('exit-quiz-btn');
         const questionText = document.getElementById('question-text');
         const btnTrue = document.getElementById('btn-true');
         const btnFalse = document.getElementById('btn-false');
@@ -198,8 +281,41 @@
         const finalScore = document.getElementById('final-score');
         const restartQuizBtn = document.getElementById('restart-quiz');
         const backToChatBtn = document.getElementById('back-to-chat');
+        const feedbackIconContainer = document.getElementById('feedback-icon-container');
+        const confettiCanvas = document.getElementById('confetti-canvas');
 
-        // Preguntas de ejemplo (en producción estas vendrían de la API)
+        // --- State ---
+        let currentQuestion = 0;
+        let score = 0;
+        let questions = [];
+        let totalQuestions = 10;
+        let audioInitialized = false;
+
+        // --- Audio Synths ---
+        let correctSound, incorrectSound, clickSound;
+
+        function initializeAudio() {
+            if (audioInitialized) return;
+            try {
+                correctSound = new Tone.Synth({
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.01, decay: 0.2, sustain: 0.2, release: 0.2 }
+                }).toDestination();
+                incorrectSound = new Tone.Synth({
+                    oscillator: { type: 'square' },
+                    envelope: { attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.3 }
+                }).toDestination();
+                clickSound = new Tone.MembraneSynth({
+                    octaves: 4,
+                    pitchDecay: 0.1
+                }).toDestination();
+                audioInitialized = true;
+            } catch (error) {
+                console.log('Audio initialization failed:', error);
+            }
+        }
+
+        // --- Preguntas de ejemplo ---
         const sampleQuestions = [
             {
                 question: "Los donantes de órganos no pueden tener un funeral con ataúd abierto",
@@ -228,8 +344,39 @@
             }
         ];
 
-        // Event listeners
+        // --- Functions ---
+        function showFeedbackIcon(isCorrect) {
+            const icon = isCorrect ? 
+                '<svg class="w-24 h-24 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>' :
+                '<svg class="w-24 h-24 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>';
+            
+            feedbackIconContainer.innerHTML = icon;
+            feedbackIconContainer.classList.add('show');
+            setTimeout(() => {
+                feedbackIconContainer.classList.remove('show');
+            }, 500);
+        }
+
+        function animateScore(targetScore) {
+            let currentScore = 0;
+            const scoreElement = finalScore;
+            const totalQuestions = questions.length;
+            const duration = 1000;
+            const stepTime = Math.max(10, Math.floor(duration / (targetScore || 1)));
+
+            const timer = setInterval(() => {
+                scoreElement.innerHTML = currentScore + ' <span class="text-2xl font-medium text-slate-500">/ ' + totalQuestions + '</span>';
+                if (currentScore === targetScore) {
+                    clearInterval(timer);
+                } else {
+                    currentScore++;
+                }
+            }, stepTime);
+        }
+
+        // --- Event Listeners ---
         startQuizBtn.addEventListener('click', startQuiz);
+        exitQuizBtn.addEventListener('click', resetQuiz);
         btnTrue.addEventListener('click', () => answerQuestion(true));
         btnFalse.addEventListener('click', () => answerQuestion(false));
         nextQuestionBtn.addEventListener('click', nextQuestion);
@@ -239,6 +386,9 @@
         });
 
         function startQuiz() {
+            if (!audioInitialized) initializeAudio();
+            if (clickSound) clickSound.triggerAttackRelease("C2", "8n");
+            
             welcomeScreen.classList.add('hidden');
             quizScreen.classList.remove('hidden');
             
@@ -272,12 +422,12 @@
             nextQuestionBtn.classList.add('hidden');
             
             // Update counters
-            questionCounter.textContent = `Pregunta ${currentQuestion + 1} de ${questions.length}`;
-            scoreDisplay.textContent = `Puntaje: ${score}/${currentQuestion}`;
+            questionCounter.textContent = 'Pregunta ' + (currentQuestion + 1) + ' de ' + questions.length;
+            scoreDisplay.textContent = 'Puntaje: ' + score + '/' + currentQuestion;
             
             // Update progress bar
             const progress = ((currentQuestion) / questions.length) * 100;
-            progressFill.style.width = `${progress}%`;
+            progressFill.style.width = progress + '%';
         }
 
         function answerQuestion(userAnswer) {
@@ -287,6 +437,9 @@
             // Disable buttons
             btnTrue.disabled = true;
             btnFalse.disabled = true;
+            
+            // Show feedback icon
+            showFeedbackIcon(isCorrect);
             
             // Show correct answer
             if (question.isTrue) {
@@ -308,6 +461,9 @@
             // Update score
             if (isCorrect) {
                 score++;
+                if (correctSound) correctSound.triggerAttackRelease("C5", "8n");
+            } else {
+                if (incorrectSound) incorrectSound.triggerAttackRelease("C3", "8n");
             }
             
             // Show explanation
@@ -316,10 +472,11 @@
             nextQuestionBtn.classList.remove('hidden');
             
             // Update score display
-            scoreDisplay.textContent = `Puntaje: ${score}/${currentQuestion + 1}`;
+            scoreDisplay.textContent = 'Puntaje: ' + score + '/' + (currentQuestion + 1);
         }
 
         function nextQuestion() {
+            if (clickSound) clickSound.triggerAttackRelease("C2", "8n");
             currentQuestion++;
             loadQuestion();
         }
@@ -328,51 +485,86 @@
             quizScreen.classList.add('hidden');
             resultsScreen.classList.remove('hidden');
             
-            const percentage = Math.round((score / questions.length) * 100);
-            finalScore.textContent = `Tu puntuación: ${score}/${questions.length} (${percentage}%)`;
+            finalScore.innerHTML = '0 <span class="text-2xl font-medium text-slate-500">/ ' + questions.length + '</span>';
+            animateScore(score);
             
             // Complete progress bar
             progressFill.style.width = '100%';
+            
+            // Launch confetti for high scores
+            if (score >= Math.floor(questions.length * 0.8)) {
+                launchConfetti();
+            }
         }
 
         function restartQuiz() {
-            resultsScreen.classList.add('hidden');
-            welcomeScreen.classList.remove('hidden');
-            
-            currentQuestion = 0;
+            if (clickSound) clickSound.triggerAttackRelease("C2", "8n");
+            resetQuiz();
+        }
+
+        function resetQuiz() {
             score = 0;
+            currentQuestion = 0;
+            questions = [];
+            welcomeScreen.classList.remove('hidden');
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            explanation.classList.add('hidden');
+            nextQuestionBtn.classList.add('hidden');
             progressFill.style.width = '0%';
         }
 
-        // Generar preguntas desde la API (comentado para usar preguntas de ejemplo)
-        async function generateQuestions() {
-            try {
-                const response = await fetch('/api/openai', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        prompt: [
-                            { role: "system", content: "Eres VIDA, un asistente de donación de órganos. Genera 5 preguntas de verdadero/falso sobre mitos de donación de órganos en México. Devuelve un array JSON con objetos que tengan: question, isTrue, explanation." },
-                            { role: "user", content: "Genera 5 preguntas de verdadero/falso sobre donación de órganos" }
-                        ]
-                    })
-                });
+        // --- Confetti ---
+        const ctx = confettiCanvas.getContext('2d');
+        let particles = [];
+        const colors = ['#3B82F6', '#4FC3F7', '#10B981', '#FBBF24', '#F472B6'];
 
-                const result = await response.json();
-                if (result.choices && result.choices[0]) {
-                    const content = result.choices[0].message.content;
-                    try {
-                        questions = JSON.parse(content);
-                    } catch (e) {
-                        console.error('Error parsing questions:', e);
-                        questions = sampleQuestions;
-                    }
+        function launchConfetti() {
+            const particleCount = 200;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: -20,
+                    w: Math.random() * 8 + 5,
+                    h: Math.random() * 8 + 5,
+                    c: colors[Math.floor(Math.random() * colors.length)],
+                    s: Math.random() * 3 + 2,
+                    r: Math.random() * 360
+                });
+            }
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            particles.forEach((p, i) => {
+                p.y += p.s;
+                p.r += p.s / 2;
+                ctx.save();
+                ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
+                ctx.rotate(p.r * Math.PI / 180);
+                ctx.fillStyle = p.c;
+                ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                ctx.restore();
+
+                if (p.y > confettiCanvas.height) {
+                    particles.splice(i, 1);
                 }
-            } catch (error) {
-                console.error('Error generating questions:', error);
-                questions = sampleQuestions;
+            });
+            if (particles.length > 0) {
+                requestAnimationFrame(animateConfetti);
             }
         }
+
+        // --- Initialize ---
+        window.addEventListener('resize', () => {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+        });
+
+        // Initialize canvas
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
     </script>
 </body>
 </html>

@@ -259,6 +259,10 @@
         // --- State ---
         let chatHistory = [];
         let currentDonorPathStep = null;
+        let viewedExplanations = {
+            muerte_encefalica: false,
+            paro_cardiaco: false
+        };
 
         // --- System Prompt for OpenAI ---
         const systemPrompt = `
@@ -313,17 +317,25 @@
             },
             explain_muerte_encefalica: {
                 text: "La muerte encefálica es cuando el cerebro, que controla todo el cuerpo, deja de funcionar de forma total e irreversible. Esto se confirma con pruebas médicas rigurosas que demuestran que ya no hay actividad cerebral ni capacidad de respirar por sí mismo. Es el momento en que una persona es legal y médicamente declarada fallecida.",
-                buttons: [
-                    { text: "¿Qué es el paro cardíaco? ❤️", action: "donor_path_explain_paro_cardiaco" },
-                    { text: "Entendido, siguiente paso 👉", action: "donor_path_step2" }
-                ]
+                buttons: function() {
+                    const buttons = [];
+                    if (!viewedExplanations.paro_cardiaco) {
+                        buttons.push({ text: "¿Qué es el paro cardíaco? ❤️", action: "donor_path_explain_paro_cardiaco" });
+                    }
+                    buttons.push({ text: "Entendido, siguiente paso 👉", action: "donor_path_step2" });
+                    return buttons;
+                }
             },
             explain_paro_cardiaco: {
                 text: "El paro cardíaco es cuando el corazón deja de latir de forma definitiva y no puede ser revivido a pesar de las maniobras médicas. A diferencia de la muerte encefálica, aquí el corazón se detiene primero y luego el cerebro. En este caso, la donación debe realizarse muy rápidamente para que los órganos sigan siendo viables para trasplante.",
-                buttons: [
-                    { text: "¿Qué es la muerte encefálica? 🧠", action: "donor_path_explain_muerte_encefalica" },
-                    { text: "Entendido, siguiente paso 👉", action: "donor_path_step2" }
-                ]
+                buttons: function() {
+                    const buttons = [];
+                    if (!viewedExplanations.muerte_encefalica) {
+                        buttons.push({ text: "¿Qué es la muerte encefálica? 🧠", action: "donor_path_explain_muerte_encefalica" });
+                    }
+                    buttons.push({ text: "Entendido, siguiente paso 👉", action: "donor_path_step2" });
+                    return buttons;
+                }
             },
             step2: {
                 text: "Donar es una decisión personal, libre y voluntaria. Te invito a pensar: ¿Me gustaría ayudar a alguien más si ya no estoy aquí? ¿Cómo me sentiría si alguien que amo necesitara un órgano? No hay respuestas correctas. Lo importante es que lo pienses con el corazón. 💙",
@@ -502,7 +514,7 @@
             }
         }
         
-        async function getBotResponse(userMessage) {
+        async function getBotResponse(userMessage, isFromSuggestedQuestion = false) {
             showTypingIndicator(true); 
             chatInput.disabled = true; 
             chatForm.querySelector('button[type="submit"]').disabled = true; 
@@ -517,46 +529,56 @@
                 const result = await callOpenAI(messages);
                 let botResponseText = result.choices?.[0]?.message?.content || "Lo siento, hubo un problema. Por favor, intenta de nuevo.";
                 
-                // Detectar si hay un comando de módulo en la respuesta
-                const moduleMatch = botResponseText.match(/\{\s*"activarModulo"\s*:\s*"([^"]+)"\s*\}/);
-                if (moduleMatch) {
-                    const moduleName = moduleMatch[1];
-                    botResponseText = botResponseText.replace(moduleMatch[0], '').trim();
-                    
-                    // Agregar respuesta del bot (sin el JSON)
-                    addMessageToChat('assistant', botResponseText);
-                    
-                    // Activar el módulo apropiado
-                    if (moduleName === 'donorPath') {
-                        setTimeout(() => {
-                            displayDonorPathStep('introduction');
-                        }, 500); // Reducir a 500ms para que aparezca rápido
-                    } else if (moduleName === 'indecision') {
-                        setTimeout(() => {
-                            addMessageToChat('assistant', 'Es completamente normal tener dudas sobre la donación. Es una decisión importante. ¿Qué te preocupa más: el proceso médico, hablar con tu familia, o algo más específico?');
-                        }, 1500);
+                // Solo activar el camino del donador si NO es una pregunta sugerida
+                if (!isFromSuggestedQuestion) {
+                    // Detectar si hay un comando de módulo en la respuesta
+                    const moduleMatch = botResponseText.match(/\{\s*"activarModulo"\s*:\s*"([^"]+)"\s*\}/);
+                    if (moduleMatch) {
+                        const moduleName = moduleMatch[1];
+                        botResponseText = botResponseText.replace(moduleMatch[0], '').trim();
+                        
+                        // Agregar respuesta del bot (sin el JSON)
+                        addMessageToChat('assistant', botResponseText);
+                        
+                        // Activar el módulo apropiado
+                        if (moduleName === 'donorPath') {
+                            setTimeout(() => {
+                                displayDonorPathStep('introduction');
+                            }, 500); // Reducir a 500ms para que aparezca rápido
+                        } else if (moduleName === 'indecision') {
+                            setTimeout(() => {
+                                addMessageToChat('assistant', 'Es completamente normal tener dudas sobre la donación. Es una decisión importante. ¿Qué te preocupa más: el proceso médico, hablar con tu familia, o algo más específico?');
+                            }, 1500);
+                        }
+                    } else {
+                        // Si no hay módulo detectado, verificar manualmente si el usuario quiere ser donante
+                        const donorIntentions = [
+                            'quiero ser donante', 'me interesa donar', 'quiero ayudar', 'ser donante', 
+                            'donar organos', 'quiero donar', 'deseo ser donante', 'me gustaría donar',
+                            'pienso ser donante', 'creo que quiero ser donante', 'quisiera ser donante',
+                            'me interesa ser donante', 'quiero ser donador', 'deseo donar', 'me gustaría ser donante',
+                            'estoy interesado en donar', 'estoy pensando en ser donante', 'como ser donante',
+                            'como puedo ser donante', 'como me hago donante', 'quiero registrarme como donante'
+                        ];
+                        const userMessageLower = userMessage.toLowerCase();
+                        const hasDonorIntention = donorIntentions.some(intention => userMessageLower.includes(intention));
+                        
+                        if (hasDonorIntention && !currentDonorPathStep) {
+                            addMessageToChat('assistant', botResponseText);
+                            setTimeout(() => {
+                                displayDonorPathStep('introduction');
+                            }, 500); // Reducir a 500ms para que aparezca rápido
+                        } else {
+                            addMessageToChat('assistant', botResponseText);
+                        }
                     }
                 } else {
-                    // Si no hay módulo detectado, verificar manualmente si el usuario quiere ser donante
-                    const donorIntentions = [
-                        'quiero ser donante', 'me interesa donar', 'quiero ayudar', 'ser donante', 
-                        'donar organos', 'quiero donar', 'deseo ser donante', 'me gustaría donar',
-                        'pienso ser donante', 'creo que quiero ser donante', 'quisiera ser donante',
-                        'me interesa ser donante', 'quiero ser donador', 'deseo donar', 'me gustaría ser donante',
-                        'estoy interesado en donar', 'estoy pensando en ser donante', 'como ser donante',
-                        'como puedo ser donante', 'como me hago donante', 'quiero registrarme como donante'
-                    ];
-                    const userMessageLower = userMessage.toLowerCase();
-                    const hasDonorIntention = donorIntentions.some(intention => userMessageLower.includes(intention));
-                    
-                    if (hasDonorIntention && !currentDonorPathStep) {
-                        addMessageToChat('assistant', botResponseText);
-                        setTimeout(() => {
-                            displayDonorPathStep('introduction');
-                        }, 500); // Reducir a 500ms para que aparezca rápido
-                    } else {
-                        addMessageToChat('assistant', botResponseText);
+                    // Si es una pregunta sugerida, limpiar el JSON pero no activar módulos
+                    const moduleMatch = botResponseText.match(/\{\s*"activarModulo"\s*:\s*"([^"]+)"\s*\}/);
+                    if (moduleMatch) {
+                        botResponseText = botResponseText.replace(moduleMatch[0], '').trim();
                     }
+                    addMessageToChat('assistant', botResponseText);
                 }
             } catch (error) {
                 addMessageToChat('assistant', 'Hubo un problema de conexión. Por favor, verifica tu backend e inténtalo de nuevo.');
@@ -599,6 +621,11 @@
             suggestedQuestionsContainer.innerHTML = '';
             chatContainer.innerHTML = '';
             currentDonorPathStep = null;
+            // Resetear las explicaciones vistas
+            viewedExplanations = {
+                muerte_encefalica: false,
+                paro_cardiaco: false
+            };
             addMessageToChat('assistant', '¡Hola! Soy VIDA, tu asistente para información sobre donación de órganos, tejidos y sangre. Estoy aquí para ayudarte de manera clara y empática. ¿En qué puedo apoyarte hoy?');
         }
 
@@ -612,6 +639,13 @@
             }
             
             currentDonorPathStep = stepKey;
+            
+            // Marcar explicaciones como vistas
+            if (stepKey === 'explain_muerte_encefalica') {
+                viewedExplanations.muerte_encefalica = true;
+            } else if (stepKey === 'explain_paro_cardiaco') {
+                viewedExplanations.paro_cardiaco = true;
+            }
             
             // Para el paso de introducción, solo mostrar el botón después de 2 segundos (sin texto adicional)
             if (stepKey === 'introduction') {
@@ -628,16 +662,18 @@
                         addMessageToChat('assistant', stepContent.text);
                         
                         // Mostrar botones después de que aparezca el mensaje
-                        if (stepContent.buttons && stepContent.buttons.length > 0) {
+                        const buttonsToShow = typeof stepContent.buttons === 'function' ? stepContent.buttons() : stepContent.buttons;
+                        if (buttonsToShow && buttonsToShow.length > 0) {
                             setTimeout(() => {
-                                displayModuleButtons(stepContent.buttons, handleDonorPathAction);
+                                displayModuleButtons(buttonsToShow, handleDonorPathAction);
                             }, 800);
                         }
                     }, 300);
                 } else {
                     // Si no hay texto, mostrar botones directamente
-                    if (stepContent.buttons && stepContent.buttons.length > 0) {
-                        displayModuleButtons(stepContent.buttons, handleDonorPathAction);
+                    const buttonsToShow = typeof stepContent.buttons === 'function' ? stepContent.buttons() : stepContent.buttons;
+                    if (buttonsToShow && buttonsToShow.length > 0) {
+                        displayModuleButtons(buttonsToShow, handleDonorPathAction);
                     }
                 }
             }
@@ -752,8 +788,8 @@
                             // Simular que el usuario escribió la pregunta
                             addMessageToChat('user', question);
                             container.classList.add('hidden');
-                            // Enviar la pregunta a la IA
-                            getBotResponse(question);
+                            // Enviar la pregunta a la IA marcando que es de pregunta sugerida
+                            getBotResponse(question, true);
                         });
                         container.appendChild(button);
                         

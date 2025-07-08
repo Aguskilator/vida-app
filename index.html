@@ -277,19 +277,29 @@
         @media (max-width: 640px) {
             #feedback-btn {
                 /* Posicionar el botón justo encima del footer en móviles */
-                bottom: 65px !important; /* Altura del footer + margen */
+                bottom: 70px !important; /* Altura calculada del footer + margen */
                 /* Asegurar que no se mueva */
-                position: fixed;
+                position: fixed !important;
                 /* Suavizar las animaciones en móviles */
-                transform: translateZ(0);
+                transform: translateZ(0) !important;
                 will-change: transform;
                 /* Mejorar la estabilidad en móviles */
                 -webkit-backface-visibility: hidden;
                 backface-visibility: hidden;
+                /* Forzar que se mantenga fijo */
+                z-index: 999 !important;
+                /* Evitar que se mueva con el scroll */
+                transform-origin: center;
+                /* Desactivar transiciones problemáticas en móviles */
+                transition: transform 0.2s ease, box-shadow 0.2s ease !important;
             }
             
             #feedback-btn:hover {
-                transform: translateZ(0) scale(1.02);
+                transform: translateZ(0) scale(1.02) !important;
+            }
+            
+            #feedback-btn:active {
+                transform: translateZ(0) scale(0.98) !important;
             }
         }
 
@@ -907,7 +917,7 @@
         </footer>
     </div>
     
-    <button id="feedback-btn" class="fixed bottom-[65px] sm:bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-20 flex items-center gap-2 enhanced-button">
+    <button id="feedback-btn" class="fixed bottom-[70px] sm:bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-[999] flex items-center gap-2 enhanced-button">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.08-3.239A8.939 8.939 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.416 11.603a.75.75 0 00-.029.048l.029-.048zM5.022 13.013a.75.75 0 00.213.024l.028-.024z" clip-rule="evenodd" /></svg>
         Danos tu opinión
     </button>
@@ -2196,6 +2206,32 @@
             
             // Actualizar en cambios de viewport (incluyendo teclado)
             window.addEventListener('resize', setVH);
+            
+            // Posicionar botón de feedback correctamente en móviles
+            const positionFeedbackButton = () => {
+                const feedbackBtn = document.getElementById('feedback-btn');
+                const footer = document.querySelector('footer');
+                
+                if (feedbackBtn && footer && window.innerWidth <= 640) {
+                    // Obtener la altura del footer
+                    const footerHeight = footer.offsetHeight;
+                    // Agregar un margen de 10px
+                    const bottomPosition = footerHeight + 10;
+                    
+                    // Aplicar la posición solo en móviles
+                    feedbackBtn.style.bottom = `${bottomPosition}px`;
+                    console.log(`Feedback button positioned ${bottomPosition}px from bottom`);
+                }
+            };
+            
+            // Ejecutar inicialmente
+            positionFeedbackButton();
+            
+            // Actualizar en cambios de tamaño de ventana
+            window.addEventListener('resize', positionFeedbackButton);
+            
+            // Actualizar después de que las imágenes se carguen (puede afectar el footer)
+            window.addEventListener('load', positionFeedbackButton);
             window.addEventListener('orientationchange', () => {
                 setTimeout(setVH, 100);
             });

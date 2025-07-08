@@ -1301,31 +1301,9 @@
                     comments: fields.comments
                 });
                 
-                // Método 1: Intentar enviar usando fetch al proxy PHP
-                let success = false;
-                try {
-                    const response = await fetch('submit-feedback.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(fields)
-                    });
-                    
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.success) {
-                            success = true;
-                            console.log('Feedback enviado exitosamente via PHP proxy');
-                        }
-                    }
-                } catch (error) {
-                    console.log('Error con PHP proxy, intentando método iframe:', error);
-                }
-                
-                // Método 2: Si el PHP proxy falla, usar iframe (método de respaldo)
-                if (!success) {
-                    console.log('Usando método iframe como respaldo');
+                // Método 1: Enviar usando iframe (método directo)
+                {
+                    console.log('Enviando feedback usando método iframe');
                     
                     // URL actualizada con tu Google Form
                     const googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfVcPvKM2TK63V-uT6JbQtbHrrg_OujPu__5jiowpDavE4p0A/formResponse';
@@ -1390,7 +1368,6 @@
                             document.body.removeChild(tempForm);
                         }
                     }, 3000);
-                }
                 
                 // Mostrar mensaje de éxito
                 feedbackFormContainer.style.display = 'none';

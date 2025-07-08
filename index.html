@@ -136,8 +136,8 @@
         /* Banner hero principal */
         .vida-hero-banner {
             position: relative;
-            padding: 1rem 1rem;
-            border-radius: 1rem;
+            padding: 0.75rem 0.75rem;
+            border-radius: 0.75rem;
             background: linear-gradient(135deg, 
                 rgba(255, 255, 255, 0.95) 0%, 
                 rgba(255, 255, 255, 0.88) 50%, 
@@ -146,8 +146,8 @@
             -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 
-                0 8px 25px rgba(13, 27, 42, 0.10),
-                0 4px 12px rgba(255, 255, 255, 0.3),
+                0 6px 20px rgba(13, 27, 42, 0.08),
+                0 3px 10px rgba(255, 255, 255, 0.3),
                 inset 0 1px 0 rgba(255, 255, 255, 0.8);
             max-width: 100%;
             margin: 0 auto;
@@ -476,17 +476,17 @@
         <header class="w-full p-4 sm:p-6 bg-transparent fade-in-element" style="animation-delay: 0.2s;">
             <div class="container mx-auto flex justify-between items-center">
                 <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-14 lg:h-14 bg-[var(--vida-text-dark)] rounded-full flex items-center justify-center shadow-lg">
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 bg-[var(--vida-text-dark)] rounded-full flex items-center justify-center shadow-lg">
                         <!-- Heart Icon for VIDA logo -->
-                        <svg class="h-7 w-7 sm:h-8 sm:w-8 lg:h-8 lg:w-8 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        <svg class="h-4 w-4 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                     </div>
-                    <img src="Vidalogo.png" alt="VIDA Logo" class="h-8 w-auto sm:h-10 sm:w-auto lg:h-24 lg:w-auto object-contain max-w-[120px] sm:max-w-[140px] lg:max-w-[300px]" onerror="this.onerror=null;this.src='https://placehold.co/300x90/E3F2FD/0D47A1?text=VIDA';" />
+                    <img src="Vidalogo.png" alt="VIDA Logo" class="h-12 w-auto sm:h-10 sm:w-auto lg:h-24 lg:w-auto object-contain max-w-[180px] sm:max-w-[140px] lg:max-w-[300px]" onerror="this.onerror=null;this.src='https://placehold.co/300x90/E3F2FD/0D47A1?text=VIDA';" />
                 </div>
                 <div class="flex items-center space-x-2 sm:space-x-3">
                     <!-- Privacy button -->
-                    <button id="privacy-btn" class="text-[var(--vida-text-dark)] font-semibold py-1 px-2 sm:py-2 sm:px-4 text-xs sm:text-base rounded-lg transition hover:bg-blue-200/50">Aviso de Privacidad</button>
+                    <button id="privacy-btn" class="text-[var(--vida-text-dark)] font-semibold py-1 px-2 sm:py-2 sm:px-4 text-xs sm:text-sm rounded-lg transition hover:bg-blue-200/50">Aviso de Privacidad</button>
                     <!-- About button -->
-                    <button id="about-btn" class="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-base rounded-lg bg-[var(--vida-btn-green)] text-white font-semibold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] focus:ring-offset-2 enhanced-button">
+                    <button id="about-btn" class="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg bg-[var(--vida-btn-green)] text-white font-semibold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] focus:ring-offset-2 enhanced-button">
                         ¿Qué hace VIDA?
                     </button>
                 </div>
@@ -498,14 +498,14 @@
             <div class="lg:w-3/5 flex flex-col items-center lg:items-start space-y-4 sm:space-y-6">
                 <!-- Banner principal con diseño elegante -->
                 <div class="vida-hero-banner fade-in-element w-full" style="animation-delay: 0.3s;">
-                    <h2 class="vida-main-title text-lg sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-[var(--vida-text-dark)] fade-in-element leading-tight" style="animation-delay: 0.4s;">
+                    <h2 class="vida-main-title text-base sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-[var(--vida-text-dark)] fade-in-element leading-tight" style="animation-delay: 0.4s;">
                         Voz de Información y Donación Asistida
                     </h2>
-                    <div class="vida-main-subtitle text-xs sm:text-base md:text-lg lg:text-xl mt-3 sm:mt-5 fade-in-element" style="animation-delay: 0.6s;">
-                        <p class="subtitle-line-1 mb-1 sm:mb-3 text-center lg:text-left">
+                    <div class="vida-main-subtitle text-xs sm:text-base md:text-lg lg:text-xl mt-2 sm:mt-5 fade-in-element" style="animation-delay: 0.6s;">
+                        <p class="subtitle-line-1 mb-1 sm:mb-3 text-center lg:text-left text-xs sm:text-base">
                             <span class="font-semibold">Tu aliado informativo</span> en momentos críticos
                         </p>
-                        <p class="subtitle-line-2 text-center lg:text-left leading-relaxed">
+                        <p class="subtitle-line-2 text-center lg:text-left leading-relaxed text-xs sm:text-base">
                             Estoy aquí para ayudarte a tomar decisiones 
                             <span class="font-semibold">claras, humanas y fundamentadas</span>
                         </p>
@@ -514,16 +514,16 @@
                 
                 <!-- Botones de acción debajo del banner, centrados con respecto al banner -->
                 <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center self-center w-full max-w-2xl fade-in-element lg:justify-start lg:self-start" style="animation-delay: 0.8s;">
-                    <button id="start-chat-btn" class="btn-primary-enhanced bg-[var(--vida-btn-green)] text-white font-bold py-3 px-6 sm:py-4 sm:px-8 text-sm sm:text-base rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 enhanced-button flex items-center justify-center gap-2 w-full sm:w-auto">
-                        <svg class="h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <button id="start-chat-btn" class="btn-primary-enhanced bg-[var(--vida-btn-green)] text-white font-bold py-2 px-4 sm:py-4 sm:px-8 text-xs sm:text-base rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 enhanced-button flex items-center justify-center gap-2 w-full sm:w-auto">
+                        <svg class="h-3 w-3 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M4.913 2.658c2.075-.27 4.19-.408 6.337-.408 2.147 0 4.262.139 6.337.408 1.922.25 3.291 1.861 3.405 3.727a4.403 4.403 0 00-1.032-.211 50.89 50.89 0 00-8.42 0c-2.358.196-4.04 2.19-4.04 4.434v4.286a4.47 4.47 0 002.433 3.984L7.28 21.53A.75.75 0 016 21v-4.03a48.527 48.527 0 01-1.087-.128C2.905 16.58 1.5 14.833 1.5 12.862V6.638c0-1.97 1.405-3.718 3.413-3.979z"/>
                             <path d="M15.75 7.5c-1.376 0-2.739.057-4.086.169C10.124 7.797 9 9.103 9 10.609v4.285c0 1.507 1.128 2.814 2.67 2.94 1.243.102 2.5.157 3.768.165l2.782 2.781a.75.75 0 001.28-.53v-2.39l.33-.026c1.542-.125 2.67-1.433 2.67-2.940v-4.286c0-1.505-1.125-2.811-2.664-2.94A49.392 49.392 0 0015.75 7.5z"/>
                         </svg>
                         Iniciar conversación
                     </button>
                     <!-- New Quiz Module Button -->
-                    <button id="start-quiz-btn" class="btn-secondary-enhanced bg-[var(--vida-btn-feedback)] text-white font-bold py-3 px-6 sm:py-4 sm:px-8 text-sm sm:text-base rounded-full shadow-lg hover:bg-blue-400 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center gap-2 enhanced-button w-full sm:w-auto">
-                        <svg class="h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <button id="start-quiz-btn" class="btn-secondary-enhanced bg-[var(--vida-btn-feedback)] text-white font-bold py-2 px-4 sm:py-4 sm:px-8 text-xs sm:text-base rounded-full shadow-lg hover:bg-blue-400 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center gap-2 enhanced-button w-full sm:w-auto">
+                        <svg class="h-3 w-3 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
                         </svg>
                         ¿Qué tanto sabes sobre donar?
@@ -559,17 +559,17 @@
         Danos tu opinión
     </button>
     
-    <div id="about-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-        <div class="modal-card rounded-2xl shadow-xl max-w-lg w-full p-8 relative">
-            <button id="close-about-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+    <div id="about-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-3 sm:p-4 z-50">
+        <div class="modal-card rounded-lg sm:rounded-2xl shadow-xl max-w-xs sm:max-w-lg w-full p-3 sm:p-8 relative max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
+            <button id="close-about-modal-btn" class="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-800 z-10 bg-white rounded-full p-1 shadow-md">
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
-            <h3 class="text-2xl font-bold text-[var(--vida-text-dark)] mb-4">¿Qué hace VIDA?</h3>
-            <div class="text-slate-700 text-justify space-y-3" style="text-align: justify;">
+            <h3 class="text-base sm:text-2xl font-bold text-[var(--vida-text-dark)] mb-2 sm:mb-4 pr-8">¿Qué hace VIDA?</h3>
+            <div class="text-slate-700 text-justify space-y-2 sm:space-y-3 text-xs sm:text-base" style="text-align: justify;">
                 <p>VIDA es un asistente conversacional creado para brindar orientación empática, clara y confiable sobre la donación de órganos, tejidos y sangre en México.</p>
                 <p>Fue desarrollado como una herramienta informativa para acompañar a personas que tienen dudas, miedo o simplemente desean entender mejor cómo funciona la donación, ya sea como donadores voluntarios o como familiares que enfrentan una decisión en un momento difícil.</p>
                 <p>VIDA no sustituye atención médica ni asesoría profesional directa, pero está diseñada para ayudarte a:</p>
-                <ul class="list-disc pl-6 space-y-1">
+                <ul class="list-disc pl-3 sm:pl-6 space-y-1 text-xs sm:text-base">
                     <li>Entender qué órganos, tejidos y componentes sanguíneos se pueden donar.</li>
                     <li>Saber quién puede ser donador y en qué momentos.</li>
                     <li>Desmitificar ideas falsas sobre la donación.</li>
@@ -581,76 +581,76 @@
         </div>
     </div>
     
-    <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-        <div class="modal-card rounded-2xl shadow-xl max-w-lg w-full p-8 relative">
-            <button id="close-privacy-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+    <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-3 sm:p-4 z-50">
+        <div class="modal-card rounded-lg sm:rounded-2xl shadow-xl max-w-xs sm:max-w-lg w-full p-3 sm:p-8 relative max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
+            <button id="close-privacy-modal-btn" class="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-800 z-10 bg-white rounded-full p-1 shadow-md">
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
-            <h3 class="text-2xl font-bold text-[var(--vida-text-dark)] mb-4">Aviso de Privacidad – VIDA</h3>
-            <div class="text-slate-700 text-justify" style="text-align: justify;">
-                <p class="mb-3">VIDA (Voz de Información y Donación Asistida) es una herramienta informativa que opera sin recopilar datos personales sensibles. No se almacenan nombres, ubicaciones, correos electrónicos ni respuestas específicas de los usuarios. Las conversaciones no son monitoreadas ni utilizadas para fines comerciales o de perfilamiento.</p>
-                <p class="mb-3">El uso de esta plataforma es completamente anónimo y su único propósito es ofrecer orientación general sobre procesos de donación post mortem, con base en información pública y normativa mexicana vigente.</p>
-                <p class="mb-3">VIDA no sustituye asesoría médica, psicológica ni legal. Si requiere atención médica o desea formalizar su voluntad de donar, debe acudir a las instancias oficiales correspondientes (CENATRA, IMSS, ISSSTE, etc.).</p>
+            <h3 class="text-base sm:text-2xl font-bold text-[var(--vida-text-dark)] mb-2 sm:mb-4 pr-8">Aviso de Privacidad – VIDA</h3>
+            <div class="text-slate-700 text-justify text-xs sm:text-base" style="text-align: justify;">
+                <p class="mb-2 sm:mb-3">VIDA (Voz de Información y Donación Asistida) es una herramienta informativa que opera sin recopilar datos personales sensibles. No se almacenan nombres, ubicaciones, correos electrónicos ni respuestas específicas de los usuarios. Las conversaciones no son monitoreadas ni utilizadas para fines comerciales o de perfilamiento.</p>
+                <p class="mb-2 sm:mb-3">El uso de esta plataforma es completamente anónimo y su único propósito es ofrecer orientación general sobre procesos de donación post mortem, con base en información pública y normativa mexicana vigente.</p>
+                <p class="mb-2 sm:mb-3">VIDA no sustituye asesoría médica, psicológica ni legal. Si requiere atención médica o desea formalizar su voluntad de donar, debe acudir a las instancias oficiales correspondientes (CENATRA, IMSS, ISSSTE, etc.).</p>
                 <p>Para cualquier comentario, puede escribir al desarrollador del proyecto a través del formulario de contacto disponible.</p>
             </div>
         </div>
     </div>
     
-    <div id="feedback-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-        <div class="modal-card rounded-2xl shadow-xl max-w-lg w-full p-8 relative overflow-hidden">
-            <div id="feedback-form-container">
-                 <button id="close-feedback-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+    <div id="feedback-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-3 sm:p-4 z-50">
+        <div class="modal-card rounded-lg sm:rounded-2xl shadow-xl max-w-xs sm:max-w-lg w-full p-3 sm:p-8 relative overflow-hidden max-h-[85vh] sm:max-h-[90vh]">
+            <div id="feedback-form-container" class="overflow-y-auto max-h-full">
+                 <button id="close-feedback-modal-btn" class="absolute top-2 right-2 sm:top-4 sm:right-4 text-gray-500 hover:text-gray-800 z-10 bg-white rounded-full p-1 shadow-md">
                      <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                  </button>
-                <h3 class="text-2xl font-bold text-[var(--vida-text-dark)] mb-2">Encuesta anónima de satisfacción – VIDA</h3>
-                <p class="text-sm text-gray-500 mb-6">Responde en menos de 1 minuto:</p>
+                <h3 class="text-base sm:text-2xl font-bold text-[var(--vida-text-dark)] mb-1 sm:mb-2 pr-8">Encuesta anónima de satisfacción – VIDA</h3>
+                <p class="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">Responde en menos de 1 minuto:</p>
                 <form id="feedback-form">
-                    <div class="space-y-6">
+                    <div class="space-y-3 sm:space-y-6">
                         <div>
-                            <p class="font-semibold text-gray-700 mb-2">1. ¿La información que recibiste fue clara y útil?</p>
-                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group">
+                            <p class="font-semibold text-gray-700 mb-1 sm:mb-2 text-xs sm:text-base">1. ¿La información que recibiste fue clara y útil?</p>
+                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group text-xs sm:text-sm">
                                 <label><input type="radio" name="clarity" value="si" class="mr-2" required> Sí</label>
                                 <label><input type="radio" name="clarity" value="parcialmente" class="mr-2"> Parcialmente</label>
                                 <label><input type="radio" name="clarity" value="no" class="mr-2"> No</label>
                             </div>
                         </div>
                         <div>
-                            <p class="font-semibold text-gray-700 mb-2">2. ¿El lenguaje utilizado te pareció comprensible?</p>
-                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group">
+                            <p class="font-semibold text-gray-700 mb-1 sm:mb-2 text-xs sm:text-base">2. ¿El lenguaje utilizado te pareció comprensible?</p>
+                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group text-xs sm:text-sm">
                                 <label><input type="radio" name="language" value="si" class="mr-2" required> Sí</label>
                                 <label><input type="radio" name="language" value="regular" class="mr-2"> Regular</label>
                                 <label><input type="radio" name="language" value="dificil" class="mr-2"> Difícil de entender</label>
                             </div>
                         </div>
                          <div>
-                            <p class="font-semibold text-gray-700 mb-2">3. ¿Te ayudó a resolver tus dudas sobre donación?</p>
-                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group">
+                            <p class="font-semibold text-gray-700 mb-1 sm:mb-2 text-xs sm:text-base">3. ¿Te ayudó a resolver tus dudas sobre donación?</p>
+                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group text-xs sm:text-sm">
                                 <label><input type="radio" name="solved_doubts" value="si" class="mr-2" required> Sí completamente</label>
                                 <label><input type="radio" name="solved_doubts" value="algunas" class="mr-2"> Algunas</label>
                                 <label><input type="radio" name="solved_doubts" value="no" class="mr-2"> No</label>
                             </div>
                         </div>
                         <div>
-                            <p class="font-semibold text-gray-700 mb-2">4. ¿Recomendarías esta herramienta a otros usuarios?</p>
-                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group">
+                            <p class="font-semibold text-gray-700 mb-1 sm:mb-2 text-xs sm:text-base">4. ¿Recomendarías esta herramienta a otros usuarios?</p>
+                            <div class="flex flex-col sm:flex-row sm:gap-4 feedback-radio-group text-xs sm:text-sm">
                                 <label><input type="radio" name="recommend" value="si" class="mr-2" required> Sí</label>
                                 <label><input type="radio" name="recommend" value="no" class="mr-2"> No</label>
                             </div>
                         </div>
                         <div>
-                            <label for="comments" class="font-semibold text-gray-700 mb-2 block">Comentarios adicionales</label>
-                            <textarea id="comments" name="comments" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-feedback)]"></textarea>
+                            <label for="comments" class="font-semibold text-gray-700 mb-1 sm:mb-2 block text-xs sm:text-base">Comentarios adicionales</label>
+                            <textarea id="comments" name="comments" rows="2" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-feedback)] text-xs sm:text-sm"></textarea>
                         </div>
                     </div>
-                    <div class="mt-8 text-right">
-                        <button type="submit" class="bg-[var(--vida-btn-green)] text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors">Enviar respuesta</button>
+                    <div class="mt-4 sm:mt-8 text-right">
+                        <button type="submit" class="bg-[var(--vida-btn-green)] text-white font-bold py-2 px-4 sm:px-6 rounded-lg shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors text-xs sm:text-base">Enviar respuesta</button>
                     </div>
                 </form>
             </div>
              <div id="feedback-thanks" class="hidden text-center">
-                 <svg class="mx-auto h-16 w-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <h3 class="mt-4 text-2xl font-bold text-[var(--vida-text-dark)]">¡Gracias!</h3>
-                <p class="mt-2 text-gray-600">Tu opinión nos importa y nos ayuda a mejorar VIDA.</p>
+                 <svg class="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h3 class="mt-2 sm:mt-4 text-lg sm:text-2xl font-bold text-[var(--vida-text-dark)]">¡Gracias!</h3>
+                <p class="mt-1 sm:mt-2 text-gray-600 text-sm sm:text-base">Tu opinión nos importa y nos ayuda a mejorar VIDA.</p>
             </div>
         </div>
     </div>

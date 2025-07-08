@@ -1244,7 +1244,7 @@
             const mappings = {
                 'clarity': {
                     'si': 'Si',
-                    'parcialmente': 'Parcialmente',
+                    'parcialmente': 'Parcialmente', 
                     'no': 'No'
                 },
                 'language': {
@@ -1263,9 +1263,12 @@
                 }
             };
             
-            return mappings[fieldName] && mappings[fieldName][value] 
+            const mapped = mappings[fieldName] && mappings[fieldName][value] 
                 ? mappings[fieldName][value] 
                 : value;
+            
+            console.log(`Mapeo ${fieldName}: "${value}" → "${mapped}"`);
+            return mapped;
         }
 
         feedbackForm.addEventListener('submit', async (e) => {
@@ -1280,27 +1283,56 @@
             submitButton.textContent = 'Enviando...';
             
             try {
+                // Crear iframe oculto para enviar el formulario
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.name = 'hidden-form-iframe';
+                document.body.appendChild(iframe);
+                
                 // URL actualizada con tu Google Form
                 const googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfVcPvKM2TK63V-uT6JbQtbHrrg_OujPu__5jiowpDavE4p0A/formResponse';
                 
-                const params = new URLSearchParams({
-                    // Entry IDs actualizados de tu formulario con valores exactos
+                // Crear formulario temporal
+                const tempForm = document.createElement('form');
+                tempForm.action = googleFormUrl;
+                tempForm.method = 'POST';
+                tempForm.target = 'hidden-form-iframe';
+                
+                // Agregar campos al formulario temporal
+                const fields = {
                     'entry.1429993267': mapFormValue('clarity', formData.get('clarity')),
                     'entry.962169197': mapFormValue('language', formData.get('language')),
                     'entry.2266276': mapFormValue('solved_doubts', formData.get('solved_doubts')),
                     'entry.1344114409': mapFormValue('recommend', formData.get('recommend')),
                     'entry.287412987': formData.get('comments') || ''
+                };
+                
+                // Debug: ver qué valores estamos enviando
+                console.log('Valores enviados:', {
+                    clarity: formData.get('clarity') + ' → ' + mapFormValue('clarity', formData.get('clarity')),
+                    language: formData.get('language') + ' → ' + mapFormValue('language', formData.get('language')),
+                    solved_doubts: formData.get('solved_doubts') + ' → ' + mapFormValue('solved_doubts', formData.get('solved_doubts')),
+                    recommend: formData.get('recommend') + ' → ' + mapFormValue('recommend', formData.get('recommend')),
+                    comments: formData.get('comments')
                 });
                 
-                // Enviar datos a Google Form
-                await fetch(googleFormUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: params
+                Object.keys(fields).forEach(key => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = fields[key];
+                    tempForm.appendChild(input);
                 });
+                
+                // Agregar al DOM y enviar
+                document.body.appendChild(tempForm);
+                tempForm.submit();
+                
+                // Limpiar después de un momento
+                setTimeout(() => {
+                    document.body.removeChild(tempForm);
+                    document.body.removeChild(iframe);
+                }, 1000);
                 
                 // Mostrar mensaje de éxito
                 feedbackFormContainer.style.display = 'none';

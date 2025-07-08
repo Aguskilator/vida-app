@@ -961,15 +961,15 @@
         }
 
         // --- Donor Path Module Functions ---
-        function displayDonorPathStep(stepKey) {
+        async function displayDonorPathStep(stepKey) {
             const stepContent = donorPathModule[stepKey];
             if (!stepContent) {
                 console.error("Invalid donor path step:", stepKey);
-                addMessageToChat('bot', "Lo siento, hubo un problema. Por favor, intenta de nuevo.");
+                await addBotMessageWithTyping("Lo siento, hubo un problema. Por favor, intenta de nuevo.");
                 currentDonorPathStep = null;
                 return;
             }
-            addMessageToChat('bot', stepContent.text);
+            await addBotMessageWithTyping(stepContent.text);
             displayModuleButtons(stepContent.buttons, handleDonorPathAction);
         }
 
@@ -977,17 +977,17 @@
             addMessageToChat('user', buttonData.text || action);
             if (action.startsWith('donor_path_')) {
                 currentDonorPathStep = action.replace('donor_path_', '');
-                displayDonorPathStep(currentDonorPathStep);
+                await displayDonorPathStep(currentDonorPathStep);
             } else if (action === 'donor_path_initial') {
                 currentDonorPathStep = 'introduction';
-                displayDonorPathStep(currentDonorPathStep);
+                await displayDonorPathStep(currentDonorPathStep);
             } else if (action === 'open_cenatra_link' && buttonData.link) {
                 window.open(buttonData.link, '_blank');
-                addMessageToChat('bot', 'Se abrió la página oficial de registro en una nueva pestaña.');
+                await addBotMessageWithTyping('Se abrió la página oficial de registro en una nueva pestaña.');
             } else if (action === 'share_whatsapp' && buttonData.shareText) {
                 const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(buttonData.shareText)}`;
                 window.open(whatsappUrl, '_blank');
-                addMessageToChat('bot', 'Se abrió WhatsApp para que puedas compartir tu decisión.');
+                await addBotMessageWithTyping('Se abrió WhatsApp para que puedas compartir tu decisión.');
             } else if (action === 'reset_chat') {
                 reset_chat_and_offer_suggestions();
             } else if (action === 'suggest_questions') {
@@ -1237,19 +1237,45 @@
             await generateSuggestedQuestions();
         });
 
-        feedbackForm.addEventListener('submit', (e) => {
+        feedbackForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // This part requires a backend service (like Google Apps Script) to process the form.
-            // I'm leaving the visual feedback part.
+            
             const form = e.target;
             const submitButton = form.querySelector('button[type="submit"]');
+            const formData = new FormData(form);
+            
+            // Deshabilitar botón y mostrar estado de carga
             submitButton.disabled = true;
             submitButton.textContent = 'Enviando...';
-
-            // Simulate form submission
-            setTimeout(() => {
+            
+            try {
+                // URL actualizada con tu Google Form
+                const googleFormUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSfVcPvKM2TK63V-uT6JbQtbHrrg_OujPu__5jiowpDavE4p0A/formResponse';
+                
+                const params = new URLSearchParams({
+                    // Entry IDs actualizados de tu formulario
+                    'entry.1429993267': formData.get('clarity'),        // ¿La información fue clara y útil?
+                    'entry.962169197': formData.get('language'),        // ¿El lenguaje fue comprensible?
+                    'entry.2266276': formData.get('solved_doubts'),     // ¿Te ayudó a resolver tus dudas?
+                    'entry.1344114409': formData.get('recommend'),      // ¿Recomendarías esta herramienta?
+                    'entry.287412987': formData.get('comments')         // Comentarios adicionales
+                });
+                
+                // Enviar datos a Google Form
+                await fetch(googleFormUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: params
+                });
+                
+                // Mostrar mensaje de éxito
                 feedbackFormContainer.style.display = 'none';
                 feedbackThanks.classList.remove('hidden');
+                
+                // Restaurar formulario después de 2.5 segundos
                 setTimeout(() => {
                     feedbackThanks.classList.add('hidden');
                     feedbackFormContainer.style.display = '';
@@ -1258,7 +1284,17 @@
                     submitButton.disabled = false;
                     submitButton.textContent = 'Enviar respuesta';
                 }, 2500);
-            }, 500);
+                
+            } catch (error) {
+                console.error('Error enviando feedback:', error);
+                
+                // Mostrar mensaje de error
+                alert('Hubo un problema al enviar tu feedback. Por favor, intenta de nuevo.');
+                
+                // Restaurar botón
+                submitButton.disabled = false;
+                submitButton.textContent = 'Enviar respuesta';
+            }
         });
 
         // --- Event Listeners específicos para móviles ---
@@ -1384,9 +1420,9 @@
         // --- Removed: Automatic button display functions ---
         // La conversación ahora fluye naturalmente sin botones automáticos
         
-        function addInitialBotMessage() {
+        async function addInitialBotMessage() {
             if (chatHistory.length === 0) {
-                addMessageToChat('bot', 'Hola, soy VIDA. Estoy aquí para ofrecerte información clara y respetuosa sobre la donación de órganos y tejidos ¿En qué puedo ayudarte hoy?');
+                await addBotMessageWithTyping('Hola, soy VIDA. Estoy aquí para ofrecerte información clara y respetuosa sobre la donación de órganos y tejidos ¿En qué puedo ayudarte hoy?');
             }
         }
         
@@ -1446,6 +1482,19 @@
             } else {
                 if (typingIndicator) typingIndicator.remove();
             }
+        }
+        
+        // Función para agregar mensajes del bot con efecto de escritura
+        async function addBotMessageWithTyping(text, delay = 1500) {
+            // Mostrar indicador de escritura
+            showTypingIndicator(true);
+            
+            // Esperar el tiempo de delay para simular que está escribiendo
+            await new Promise(resolve => setTimeout(resolve, delay));
+            
+            // Ocultar indicador y mostrar mensaje
+            showTypingIndicator(false);
+            addMessageToChat('bot', text);
         }
         
         async function getBotResponse(prompt, specificSystemPrompt = null) {

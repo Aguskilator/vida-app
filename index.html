@@ -13,6 +13,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
+    <!-- three.js for interactive background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
     <!-- Custom Styles and Animations -->
     <style>
         /* New Color Palette and Font from the design specification */
@@ -38,26 +41,160 @@
 
         body {
             font-family: 'Roboto', sans-serif;
-            /* Nuevo fondo degradado para la página principal */
-            background: linear-gradient(135deg, #E3F2FD 0%, #B3E5FC 50%, #66BB6A 100%);
+            /* Fondo con degradado suave y tenue como el quiz */
+            background-color: #f0f9ff;
+            background-image: 
+                radial-gradient(at 47% 33%, hsl(200.00, 80%, 85%) 0px, transparent 50%),
+                radial-gradient(at 9% 62%, hsl(215.00, 80%, 80%) 0px, transparent 50%),
+                radial-gradient(at 82% 65%, hsl(140.00, 80%, 80%) 0px, transparent 50%),
+                radial-gradient(at 24% 88%, hsl(20.00, 80%, 85%) 0px, transparent 50%),
+                radial-gradient(at 75% 8%, hsl(340.00, 80%, 85%) 0px, transparent 50%),
+                radial-gradient(at 56% 33%, hsl(260.00, 80%, 85%) 0px, transparent 50%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+
+
+        /* Canvas para partículas interactivas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
         }
         /* Estilo especial para el título principal */
         .vida-main-title {
-            background: linear-gradient(90deg, #0D47A1 20%, #4FC3F7 60%, #66BB6A 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #0F1B3C;
             font-weight: 900;
             letter-spacing: 0.02em;
-            text-shadow: 0 2px 8px rgba(13,71,161,0.08);
+            /* Sombra y destello elegante */
+            text-shadow: 
+                0 0 20px rgba(255, 255, 255, 0.8),
+                0 0 40px rgba(255, 255, 255, 0.6),
+                0 2px 8px rgba(15, 27, 60, 0.4),
+                0 4px 16px rgba(15, 27, 60, 0.2);
+            filter: 
+                drop-shadow(0 0 15px rgba(255, 255, 255, 0.7))
+                drop-shadow(0 2px 8px rgba(15, 27, 60, 0.3));
+            /* Animación sutil de resplandor */
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            0% {
+                text-shadow: 
+                    0 0 20px rgba(255, 255, 255, 0.8),
+                    0 0 40px rgba(255, 255, 255, 0.6),
+                    0 2px 8px rgba(15, 27, 60, 0.4),
+                    0 4px 16px rgba(15, 27, 60, 0.2);
+            }
+            100% {
+                text-shadow: 
+                    0 0 25px rgba(255, 255, 255, 0.9),
+                    0 0 50px rgba(255, 255, 255, 0.7),
+                    0 2px 8px rgba(15, 27, 60, 0.5),
+                    0 4px 16px rgba(15, 27, 60, 0.3);
+            }
         }
         /* Subtítulo con color y formato mejorado */
         .vida-main-subtitle {
-            color: #1976D2;
+            color: #0D1B2A;
             font-size: 1.35rem;
             font-weight: 500;
             letter-spacing: 0.01em;
+            /* Sombra de texto para mejor contraste */
+            text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9), 0 2px 8px rgba(13, 27, 42, 0.25);
+            /* Añadir un resplandor sutil */
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.7));
+        }
+
+        /* Estilos específicos para cada línea del subtítulo */
+        .subtitle-line-1 {
+            font-size: 1.4rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .subtitle-line-2 {
+            font-size: 1.25rem;
+            font-weight: 400;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        .subtitle-line-1 .font-semibold,
+        .subtitle-line-2 .font-semibold {
+            font-weight: 700;
+            color: #1A237E;
+        }
+
+        /* Banner hero principal */
+        .vida-hero-banner {
+            position: relative;
+            padding: 2rem 2rem;
+            border-radius: 1.5rem;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.95) 0%, 
+                rgba(255, 255, 255, 0.88) 50%, 
+                rgba(255, 255, 255, 0.95) 100%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 
+                0 10px 35px rgba(13, 27, 42, 0.12),
+                0 5px 15px rgba(255, 255, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            max-width: 100%;
+            margin: 0 auto;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+        }
+
+        .vida-hero-banner:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 15px 45px rgba(13, 27, 42, 0.15),
+                0 8px 25px rgba(255, 255, 255, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        @media (min-width: 1024px) {
+            .vida-hero-banner {
+                max-width: 42rem;
+                margin: 0;
+                padding: 2.5rem 2.5rem;
+            }
+        }
+
+        .vida-hero-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 12px 40px rgba(26, 35, 126, 0.15),
+                0 6px 20px rgba(255, 255, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        }
+
+        /* Efecto decorativo en el banner */
+        .vida-hero-banner::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            background: linear-gradient(135deg, 
+                rgba(26, 35, 126, 0.1) 0%, 
+                rgba(13, 71, 161, 0.08) 25%, 
+                rgba(25, 118, 210, 0.06) 50%, 
+                rgba(13, 71, 161, 0.08) 75%, 
+                rgba(26, 35, 126, 0.1) 100%);
+            border-radius: 2rem;
+            z-index: -1;
         }
 
         /* Fade-in animation for a smooth load */
@@ -181,35 +318,55 @@
             background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 50%, #e3f2fd 100%);
         }
 
-        /* --- Robot Circle Styles --- */
+        /* Robot Circle Styles mejorados con glassmorphism */
         .robot-circle-bg {
-            width: 380px;
-            height: 380px;
-            min-width: 260px;
-            min-height: 260px;
-            max-width: 420px;
-            max-height: 420px;
+            width: 420px;
+            height: 420px;
+            min-width: 320px;
+            min-height: 320px;
+            max-width: 450px;
+            max-height: 450px;
             border-radius: 50%;
-            background: radial-gradient(circle at 60% 40%, #ffffff 60%, #b3e5fc 100%, #66bb6a 120%);
-            box-shadow: 0 8px 32px 0 rgba(13,71,161,0.10), 0 2px 8px 0 rgba(76,175,80,0.08);
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(255, 255, 255, 0.75) 50%, 
+                rgba(255, 255, 255, 0.9) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 
+                0 15px 45px rgba(13, 27, 42, 0.12), 
+                0 8px 25px rgba(255, 255, 255, 0.3),
+                inset 0 2px 0 rgba(255, 255, 255, 0.8);
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto;
-            border: 6px solid #e3f2fd;
             position: relative;
             z-index: 1;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: breathe 4s ease-in-out infinite;
         }
+
+        .robot-circle-bg:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: 
+                0 20px 55px rgba(13, 27, 42, 0.15), 
+                0 10px 30px rgba(255, 255, 255, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.9);
+        }
+
         @media (max-width: 640px) {
             .robot-circle-bg {
-                width: 220px;
-                height: 220px;
-                min-width: 180px;
-                min-height: 180px;
-                max-width: 260px;
-                max-height: 260px;
+                width: 300px;
+                height: 300px;
+                min-width: 260px;
+                min-height: 260px;
+                max-width: 320px;
+                max-height: 320px;
             }
         }
+
         .robot-img-main {
             width: 115%;
             height: 115%;
@@ -217,10 +374,89 @@
             display: block;
             margin: 0 auto;
             filter: drop-shadow(0 4px 16px rgba(76,175,80,0.10));
+            transition: all 0.4s ease;
+        }
+
+        /* Animación mejorada de respiración del robot */
+        @keyframes enhancedBreathing {
+            0% { 
+                transform: scale(1) rotate(0deg); 
+                filter: drop-shadow(0 4px 16px rgba(76,175,80,0.10));
+            }
+            50% { 
+                transform: scale(1.02) rotate(0.5deg); 
+                filter: drop-shadow(0 6px 24px rgba(76,175,80,0.15));
+            }
+            100% { 
+                transform: scale(1) rotate(0deg); 
+                filter: drop-shadow(0 4px 16px rgba(76,175,80,0.10));
+            }
+        }
+
+        #main-robot-container svg,
+        #main-robot-container img {
+            animation: enhancedBreathing 4s ease-in-out infinite;
+        }
+
+        /* Efectos de hover mejorados para botones */
+        .enhanced-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .enhanced-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .enhanced-button:hover::before {
+            left: 100%;
+        }
+
+        .enhanced-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+        }
+
+        /* Botones premium mejorados */
+        .btn-primary-enhanced {
+            background: linear-gradient(135deg, #4CAF50 0%, #45A049 100%);
+            border: none;
+            min-width: 220px;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .btn-secondary-enhanced {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            border: none;
+            min-width: 220px;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        /* Glassmorphism para cards/modales */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
         }
     </style>
 </head>
 <body class="text-slate-800 antialiased">
+    <canvas id="bg-canvas"></canvas>
 
     <!-- Welcome Screen -->
     <div id="welcome-screen" class="min-h-screen flex flex-col">
@@ -238,7 +474,7 @@
                     <!-- Privacy button -->
                     <button id="privacy-btn" class="text-[var(--vida-text-dark)] font-semibold py-2 px-4 rounded-lg transition hover:bg-blue-200/50">Aviso de Privacidad</button>
                     <!-- About button -->
-                    <button id="about-btn" class="px-4 py-2 rounded-lg bg-[var(--vida-btn-green)] text-white font-semibold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] focus:ring-offset-2">
+                    <button id="about-btn" class="px-4 py-2 rounded-lg bg-[var(--vida-btn-green)] text-white font-semibold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] focus:ring-offset-2 enhanced-button">
                         ¿Qué hace VIDA?
                     </button>
                 </div>
@@ -246,28 +482,45 @@
         </header>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col lg:flex-row items-center justify-center container mx-auto p-6 text-center lg:text-left gap-8">
-            <div class="lg:w-full flex flex-col items-center lg:items-start">
-                <h2 class="vida-main-title text-3xl md:text-4xl lg:text-5xl font-bold text-[var(--vida-text-dark)] max-w-xl fade-in-element" style="animation-delay: 0.4s;">
-                    Voz de Información y Donación Asistida
-                </h2>
-                <p class="vida-main-subtitle text-lg md:text-xl text-slate-600 mt-4 max-w-xl fade-in-element" style="animation-delay: 0.6s; text-align: justify;">
-                    Tu aliado informativo en momentos críticos.<br>
-                    <span class="block mt-1">Estoy aquí para ayudarte a tomar decisiones claras, humanas y fundamentadas.</span>
-                </p>
-                <div class="mt-12 flex flex-col sm:flex-row gap-4 fade-in-element" style="animation-delay: 0.8s;">
-                    <button id="start-chat-btn" class="bg-[var(--vida-btn-green)] text-white font-bold py-4 px-8 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300">
+        <main class="flex-1 flex flex-col lg:flex-row items-center justify-center container mx-auto px-4 py-8 text-center lg:text-left gap-8 lg:gap-12">
+            <div class="lg:w-3/5 flex flex-col items-center lg:items-start space-y-6">
+                <!-- Banner principal con diseño elegante -->
+                <div class="vida-hero-banner fade-in-element w-full" style="animation-delay: 0.3s;">
+                    <h2 class="vida-main-title text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-[var(--vida-text-dark)] fade-in-element" style="animation-delay: 0.4s;">
+                        Voz de Información y Donación Asistida
+                    </h2>
+                    <div class="vida-main-subtitle text-base md:text-lg lg:text-xl mt-5 fade-in-element" style="animation-delay: 0.6s;">
+                        <p class="subtitle-line-1 mb-3 text-center lg:text-left">
+                            <span class="font-semibold">Tu aliado informativo</span> en momentos críticos
+                        </p>
+                        <p class="subtitle-line-2 text-center lg:text-left leading-relaxed">
+                            Estoy aquí para ayudarte a tomar decisiones 
+                            <span class="font-semibold">claras, humanas y fundamentadas</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Botones de acción debajo del banner, centrados con respecto al banner -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center self-center w-full max-w-2xl fade-in-element lg:justify-start lg:self-start" style="animation-delay: 0.8s;">
+                    <button id="start-chat-btn" class="btn-primary-enhanced bg-[var(--vida-btn-green)] text-white font-bold py-4 px-8 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-300 enhanced-button flex items-center justify-center gap-2">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M4.913 2.658c2.075-.27 4.19-.408 6.337-.408 2.147 0 4.262.139 6.337.408 1.922.25 3.291 1.861 3.405 3.727a4.403 4.403 0 00-1.032-.211 50.89 50.89 0 00-8.42 0c-2.358.196-4.04 2.19-4.04 4.434v4.286a4.47 4.47 0 002.433 3.984L7.28 21.53A.75.75 0 016 21v-4.03a48.527 48.527 0 01-1.087-.128C2.905 16.58 1.5 14.833 1.5 12.862V6.638c0-1.97 1.405-3.718 3.413-3.979z"/>
+                            <path d="M15.75 7.5c-1.376 0-2.739.057-4.086.169C10.124 7.797 9 9.103 9 10.609v4.285c0 1.507 1.128 2.814 2.67 2.94 1.243.102 2.5.157 3.768.165l2.782 2.781a.75.75 0 001.28-.53v-2.39l.33-.026c1.542-.125 2.67-1.433 2.67-2.940v-4.286c0-1.505-1.125-2.811-2.664-2.94A49.392 49.392 0 0015.75 7.5z"/>
+                        </svg>
                         Iniciar conversación
                     </button>
                     <!-- New Quiz Module Button -->
-                    <button id="start-quiz-btn" class="bg-[var(--vida-btn-feedback)] text-white font-bold py-4 px-8 rounded-full shadow-lg hover:bg-blue-400 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center gap-2">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                    <button id="start-quiz-btn" class="btn-secondary-enhanced bg-[var(--vida-btn-feedback)] text-white font-bold py-4 px-8 rounded-full shadow-lg hover:bg-blue-400 transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 flex items-center justify-center gap-2 enhanced-button">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                        </svg>
                         ¿Qué tanto sabes sobre donar?
                     </button>
                 </div>
             </div>
-            <!-- Robot Image for the main page, now inside a styled circle -->
-            <div id="main-robot-container" class="lg:w-1/2 flex items-center justify-center lg:justify-start mt-12 lg:mt-0 lg:ml-[-320px] fade-in-element" style="animation-delay: 1s;">
+            
+            <!-- Robot Image mejorado -->
+            <div id="main-robot-container" class="lg:w-2/5 flex items-start justify-start mt-4 lg:mt-[-2rem] lg:ml-[-3rem] fade-in-element" style="animation-delay: 1s;">
                 <div class="robot-circle-bg">
                     <img src="robot.png" alt="Robot VIDA" class="robot-img-main" onerror="this.onerror=null;this.src='https://placehold.co/437x437/FFFFFF/FFFFFF?text=Robot';" />
                 </div>
@@ -289,13 +542,13 @@
         </footer>
     </div>
     
-    <button id="feedback-btn" class="fixed bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-20 flex items-center gap-2">
+    <button id="feedback-btn" class="fixed bottom-5 left-5 bg-[var(--vida-btn-feedback)] text-white font-semibold py-2 px-4 rounded-full shadow-lg hover:scale-105 transition-transform z-20 flex items-center gap-2 enhanced-button">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.08-3.239A8.939 8.939 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.416 11.603a.75.75 0 00-.029.048l.029-.048zM5.022 13.013a.75.75 0 00.213.024l.028-.024z" clip-rule="evenodd" /></svg>
         Danos tu opinión
     </button>
     
     <div id="about-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-8 relative">
+        <div class="glass-card rounded-2xl shadow-xl max-w-lg w-full p-8 relative">
             <button id="close-about-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -317,7 +570,7 @@
     </div>
     
     <div id="privacy-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-8 relative">
+        <div class="glass-card rounded-2xl shadow-xl max-w-lg w-full p-8 relative">
             <button id="close-privacy-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -332,7 +585,7 @@
     </div>
     
     <div id="feedback-modal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-8 relative overflow-hidden">
+        <div class="glass-card rounded-2xl shadow-xl max-w-lg w-full p-8 relative overflow-hidden">
             <div id="feedback-form-container">
                  <button id="close-feedback-modal-btn" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800">
                      <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -1267,6 +1520,86 @@
             };
             suggestedQuestionsContainer.appendChild(askAnotherQuestionBtn);
         }
+
+        // --- Interactive Background with three.js ---
+        let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
+
+        function initBackground() {
+            const canvas = document.getElementById('bg-canvas');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            const particleCount = 300;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const color = new THREE.Color();
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
+                
+                // Colores que combinen con el tema médico
+                const hue = 0.5 + Math.random() * 0.3; // Azules y verdes
+                color.setHSL(hue, 0.6, 0.6 + Math.random() * 0.2);
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.03,
+                vertexColors: true,
+                blending: THREE.AdditiveBlending,
+                transparent: true,
+                opacity: 0.6
+            });
+
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            camera.position.z = 8;
+
+            document.addEventListener('mousemove', onMouseMove, false);
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function onMouseMove(event) {
+            mouseX = (event.clientX - window.innerWidth / 2) / 1000;
+            mouseY = (event.clientY - window.innerHeight / 2) / 1000;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animateBackground() {
+            requestAnimationFrame(animateBackground);
+            const time = Date.now() * 0.0001;
+            
+            camera.position.x += (mouseX - camera.position.x) * 0.03;
+            camera.position.y += (-mouseY - camera.position.y) * 0.03;
+            camera.lookAt(scene.position);
+
+            particles.rotation.x = time * 0.1;
+            particles.rotation.y = time * 0.15;
+            
+            renderer.render(scene, camera);
+        }
+
+        // Initialize background when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initBackground();
+            animateBackground();
+        });
 
     </script>
 </body>

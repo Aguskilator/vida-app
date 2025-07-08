@@ -486,15 +486,15 @@
         
         /* Mejoras para el chat en móviles */
         @media (max-width: 640px) {
-            html, body {
-                /* Prevenir el scroll del body cuando el chat está abierto */
-                overflow: hidden;
-                position: fixed;
-                width: 100%;
-                height: 100%;
+            /* Solo prevenir el scroll cuando el chat está abierto */
+            body.chat-open {
+                overflow: hidden !important;
+                position: fixed !important;
+                width: 100% !important;
+                height: 100% !important;
             }
             
-            body.chat-open {
+            html.chat-open {
                 overflow: hidden !important;
                 position: fixed !important;
                 width: 100% !important;
@@ -1147,8 +1147,7 @@
             // Agregar clase para prevenir scroll del body en móviles
             if (window.innerWidth <= 640) {
                 document.body.classList.add('chat-open');
-                document.documentElement.style.overflow = 'hidden';
-                document.body.style.overflow = 'hidden';
+                document.documentElement.classList.add('chat-open');
             }
             
             // Agregar listener para manejar el cambio de orientación
@@ -1166,8 +1165,7 @@
             
             // Restaurar el scroll del body
             document.body.classList.remove('chat-open');
-            document.documentElement.style.overflow = '';
-            document.body.style.overflow = '';
+            document.documentElement.classList.remove('chat-open');
             
             // Remover listeners
             window.removeEventListener('orientationchange', handleOrientationChange);

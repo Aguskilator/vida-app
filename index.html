@@ -300,6 +300,120 @@
             }
         }
 
+        /* Header Buttons Styles */
+        .header-btn {
+            position: relative;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header-btn:active {
+            transform: translateZ(0) scale(0.95);
+            transition: all 0.1s ease;
+        }
+
+        /* Privacy Button Specific Styles */
+        .privacy-btn {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .privacy-btn:hover {
+            background: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(219, 234, 254, 0.95));
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateZ(0) translateY(-1px) scale(1.02);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .privacy-btn:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+        }
+
+        /* About Button Specific Styles */
+        .about-btn {
+            background: linear-gradient(135deg, var(--vida-btn-green), var(--vida-btn-green-hover));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .about-btn:hover {
+            background: linear-gradient(135deg, var(--vida-btn-green-hover), #388E3C);
+            transform: translateZ(0) translateY(-1px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .about-btn:focus {
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.5);
+        }
+
+        /* Enhanced animations for header buttons */
+        @keyframes headerButtonPulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        @keyframes headerButtonPulseGreen {
+            0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+
+        .privacy-btn:active {
+            animation: headerButtonPulse 0.6s ease-out;
+        }
+
+        .about-btn:active {
+            animation: headerButtonPulseGreen 0.6s ease-out;
+        }
+
+        /* Mobile optimizations for header buttons */
+        @media (max-width: 640px) {
+            .header-btn {
+                min-height: 32px;
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+            
+            .header-btn:hover {
+                transform: translateZ(0) scale(1.01);
+            }
+            
+            .privacy-btn:hover {
+                transform: translateZ(0) scale(1.01);
+                box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+            }
+            
+            .about-btn:hover {
+                transform: translateZ(0) scale(1.01);
+                box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+            }
+        }
+
+        /* Extra small screens adjustments */
+        @media (max-width: 480px) {
+            .header-btn {
+                font-size: 10px;
+                padding: 5px 10px;
+                min-height: 28px;
+            }
+            
+            .header-btn svg {
+                width: 12px;
+                height: 12px;
+            }
+        }
+
+        /* Show full text on larger screens */
+        @media (min-width: 480px) {
+            .xs\:inline {
+                display: inline;
+            }
+        }
+
         /* Fade-in animation for a smooth load */
         .fade-in-element {
             opacity: 0;
@@ -706,13 +820,29 @@
                             </svg>
                         </a>
                     </div>
-                    <!-- Privacy button -->
-                    <button id="privacy-btn" class="text-[var(--vida-text-dark)] font-semibold py-1 px-2 sm:py-2 sm:px-4 text-xs sm:text-sm rounded-lg transition hover:bg-blue-200/50">Aviso de Privacidad</button>
-                    <!-- About button -->
-                    <button id="about-btn" class="px-2 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-lg bg-[var(--vida-btn-green)] text-white font-semibold shadow-md hover:bg-[var(--vida-btn-green-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] focus:ring-offset-2 enhanced-button">
-                        ¿Qué hace VIDA?
-                    </button>
-                </div>
+                    <!-- Header Action Buttons -->
+                    <div class="flex items-center space-x-1.5 sm:space-x-3">
+                        <!-- Privacy button -->
+                        <button id="privacy-btn" class="header-btn privacy-btn group relative overflow-hidden bg-white/90 backdrop-blur-sm text-[var(--vida-text-dark)] font-semibold py-1.5 px-3 sm:py-2 sm:px-4 text-xs sm:text-sm rounded-xl border border-blue-200/50 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02] hover:bg-blue-50/90 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2">
+                            <span class="relative z-10 flex items-center gap-1.5">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="hidden xs:inline">Aviso de </span>Privacidad
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-blue-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                        </button>
+                        <!-- About button -->
+                        <button id="about-btn" class="header-btn about-btn group relative overflow-hidden bg-gradient-to-r from-[var(--vida-btn-green)] to-[var(--vida-btn-green-hover)] text-white font-bold py-1.5 px-3 sm:py-2 sm:px-4 text-xs sm:text-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-[var(--vida-btn-green)] focus:ring-offset-2 enhanced-button">
+                            <span class="relative z-10 flex items-center gap-1.5">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                                <span class="hidden xs:inline">¿Qué hace </span>VIDA<span class="hidden xs:inline">?</span>
+                            </span>
+                            <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                        </button>
+                    </div>
             </div>
         </header>
 

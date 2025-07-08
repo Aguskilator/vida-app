@@ -922,6 +922,9 @@
             if (action.startsWith('donor_path_')) {
                 currentDonorPathStep = action.replace('donor_path_', '');
                 displayDonorPathStep(currentDonorPathStep);
+            } else if (action === 'donor_path_initial') {
+                currentDonorPathStep = 'introduction';
+                displayDonorPathStep(currentDonorPathStep);
             } else if (action === 'open_cenatra_link' && buttonData.link) {
                 window.open(buttonData.link, '_blank');
                 addMessageToChat('bot', 'Se abrió la página oficial de registro en una nueva pestaña.');
@@ -1294,16 +1297,33 @@
             suggestedQuestionsContainer.classList.add('hidden');
             suggestedQuestionsContainer.innerHTML = '';
 
+            // 2.1. Detección directa de frases clave - pero ahora con respuesta natural primero
+            const userMessageLower = userMessage.toLowerCase();
+            if (userMessageLower.includes('quiero ser donante') || 
+                userMessageLower.includes('como puedo donar') || 
+                userMessageLower.includes('me interesa donar') || 
+                userMessageLower.includes('mi camino como donador') || 
+                userMessageLower.includes('quiero registrarme como donante') ||
+                userMessageLower.includes('camino como donante') ||
+                userMessageLower.includes('ser donante')) {
+                
+                // Responder primero de manera natural con IA
+                await handleDonorIntentWithAI(userMessage);
+                return;
+            }
+
             // 3. Detectar contexto emocional y situacional
             const contextPrompt = `
             Analiza el siguiente mensaje del usuario y determina el contexto emocional y situacional.
             Identifica si el usuario:
             - Está en duelo o perdió a alguien recientemente
-            - Quiere ser donante (camino personal del donante)
-            - Está considerando donación familiar (de un ser querido)
+            - Quiere ser donante (expresa interés directo en convertirse en donante de órganos) - frases como "quiero ser donante", "como puedo donar", "me interesa donar", "mi camino como donador", "quiero registrarme como donante"
+            - Está considerando donación familiar (de un ser querido que falleció o está por fallecer)
             - Tiene dudas o indecisión sobre donación
-            - Está pidiendo información general
-            - Está fuera del tema de donación
+            - Está pidiendo información general sobre donación
+            - Está fuera del tema de donación completamente
+            
+            IMPORTANTE: Solo marca "donor_path" si el usuario expresa claramente que QUIERE ser donante, no solo si pregunta información general.
             
             Mensaje del usuario: "${userMessage}"
             
@@ -1367,21 +1387,43 @@
                 // 5. Obtener respuesta de IA personalizada
                 const botResponseText = await getBotResponse(userMessage, specificSystemPrompt);
 
-                // 6. Buscar si la IA sugiere activar un módulo especial
+                // 6. Activar módulo específico basado en contexto detectado - pero de manera natural
+                if (detectedContext) {
+                    switch (detectedContext.contexto) {
+                        case 'donor_path':
+                            // No activar directamente, sino responder naturalmente primero
+                            await handleDonorIntentWithAI(userMessage);
+                            return;
+                        case 'grief':
+                            currentGriefStep = 'initial';
+                            displayGriefStep(currentGriefStep);
+                            return;
+                        case 'family_donation':
+                            currentFamilyDonationStep = 'initial';
+                            displayFamilyDonationStep(currentFamilyDonationStep);
+                            return;
+                        case 'indecision':
+                            currentIndecisionStep = 'initial';
+                            displayIndecisionStep(currentIndecisionStep);
+                            return;
+                    }
+                }
+
+                // 7. Buscar si la IA sugiere activar un módulo especial en la respuesta
                 const moduloObj = extractFirstJSON(botResponseText);
                 if (moduloObj && moduloObj.activarModulo) {
                     switch (moduloObj.activarModulo) {
                         case 'donorPath':
-                            currentDonorPathStep = 'ai_guided';
-                            await handleDonorPathWithAI(userMessage);
+                            currentDonorPathStep = 'introduction';
+                            displayDonorPathStep(currentDonorPathStep);
                             break;
                         case 'grief':
-                            currentGriefStep = 'ai_guided';
-                            await handleGriefWithAI(userMessage);
+                            currentGriefStep = 'initial';
+                            displayGriefStep(currentGriefStep);
                             break;
                         case 'familyDonation':
-                            currentFamilyDonationStep = 'ai_guided';
-                            await handleFamilyDonationWithAI(userMessage);
+                            currentFamilyDonationStep = 'initial';
+                            displayFamilyDonationStep(currentFamilyDonationStep);
                             break;
                         case 'quiz':
                             startQuiz();
@@ -1397,6 +1439,127 @@
         });
 
         // --- AI-Enhanced Module Functions ---
+        async function handleDonorIntentWithAI(userMessage) {
+            const donorIntentPrompt = `
+            El usuario acaba de expresar interés en ser donante de órganos. Su mensaje fue: "${userMessage}"
+            
+            Como VIDA, responde de manera cálida y natural a su interés. Tu respuesta debe:
+            - Reconocer y validar su decisión generosa sin presionar
+            - Expresar apoyo y comprensión por su interés
+            - Ser empática y motivadora pero no robótica
+            - Usar un tono conversacional como si hablaras con un amigo
+            - Hacer que se sienta acompañado en esta decisión importante
+            - Terminar sugiriendo naturalmente que puedes guiarlo paso a paso
+            
+            No menciones módulos ni sistemas. Habla como una persona real que entiende la importancia de su decisión.
+            `;
+
+            const naturalResponse = await getBotResponse(donorIntentPrompt, systemPrompt + "\n\nResponde de forma completamente natural y humana, como si fueras un amigo comprensivo que lo está apoyando en esta decisión.");
+            
+            // Después de la respuesta natural, ofrecer opciones para continuar
+            setTimeout(() => {
+                showDonorIntentOptions();
+            }, 1500);
+        }
+
+        function showDonorIntentOptions() {
+            const options = [
+                { text: "Sí, me gustaría que me guíes paso a paso", action: "start_donor_path" },
+                { text: "Tengo algunas dudas primero", action: "donor_questions_first" },
+                { text: "¿Qué implica realmente ser donante?", action: "donor_basic_info" },
+                { text: "Me da un poco de miedo, ¿es normal?", action: "donor_fears_normal" }
+            ];
+
+            displayModuleButtons(options, handleDonorIntentAction);
+        }
+
+        async function handleDonorIntentAction(action, buttonData = {}) {
+            addMessageToChat('user', buttonData.text || action);
+            
+            let promptForAI = "";
+            
+            switch (action) {
+                case 'start_donor_path':
+                    // Ahora sí iniciar el módulo formal
+                    currentDonorPathStep = 'introduction';
+                    displayDonorPathStep(currentDonorPathStep);
+                    return;
+                case 'donor_questions_first':
+                    promptForAI = "El usuario tiene dudas antes de empezar su camino como donante. Respóndele con empatía que es completamente normal tener preguntas, y que estás aquí para resolverlas todas. Pregúntale qué es lo que más le preocupa o qué le gustaría saber primero.";
+                    break;
+                case 'donor_basic_info':
+                    promptForAI = "El usuario quiere entender qué implica ser donante. Explícale de forma sencilla y cálida qué significa ser donante de órganos, cuándo puede ocurrir la donación, y el impacto positivo que tiene. Mantén un tono alentador pero informativo.";
+                    break;
+                case 'donor_fears_normal':
+                    promptForAI = "El usuario expresa que tiene miedo sobre ser donante. Valida completamente sus sentimientos - es absolutamente normal sentir miedo o incertidumbre sobre estos temas. Explícale que muchas personas sienten lo mismo y que hablarlo ayuda a aclarar las dudas. Ofrécele abordar sus miedos específicos.";
+                    break;
+            }
+            
+            if (promptForAI) {
+                await getBotResponse(promptForAI, systemPrompt + "\n\nResponde con máxima empatía y naturalidad. El usuario está en un proceso de reflexión importante y necesita sentirse acompañado y comprendido.");
+                
+                // Después de responder, ofrecer opciones para continuar
+                setTimeout(() => {
+                    showFollowUpDonorOptions(action);
+                }, 1000);
+            }
+        }
+
+        function showFollowUpDonorOptions(previousAction) {
+            let options = [];
+            
+            // Opciones específicas según la acción anterior
+            if (previousAction === 'donor_questions_first' || previousAction === 'donor_basic_info') {
+                options = [
+                    { text: "Ahora sí, quiero empezar mi camino como donante", action: "start_donor_path" },
+                    { text: "¿Cómo hablo con mi familia sobre esto?", action: "donor_family_talk_ai" },
+                    { text: "¿Qué mitos existen sobre la donación?", action: "start_quiz" },
+                    { text: "Tengo más preguntas", action: "suggest_questions" }
+                ];
+            } else if (previousAction === 'donor_fears_normal') {
+                options = [
+                    { text: "¿Cómo puedo superar estos miedos?", action: "donor_overcome_fears" },
+                    { text: "Quiero conocer historias de otros donantes", action: "donor_stories" },
+                    { text: "Empezar mi camino paso a paso", action: "start_donor_path" },
+                    { text: "Hacer el quiz sobre mitos", action: "start_quiz" }
+                ];
+            }
+            
+            displayModuleButtons(options, handleFollowUpDonorAction);
+        }
+
+        async function handleFollowUpDonorAction(action, buttonData = {}) {
+            addMessageToChat('user', buttonData.text || action);
+            
+            let promptForAI = "";
+            
+            switch (action) {
+                case 'start_donor_path':
+                    currentDonorPathStep = 'introduction';
+                    displayDonorPathStep(currentDonorPathStep);
+                    return;
+                case 'donor_family_talk_ai':
+                    promptForAI = "El usuario quiere saber cómo hablar con su familia sobre ser donante. Dale consejos prácticos y empáticos sobre cómo abordar este tema tan importante con los seres queridos. Incluye ejemplos de frases y enfoques que han funcionado para otras personas.";
+                    break;
+                case 'donor_overcome_fears':
+                    promptForAI = "El usuario quiere superar sus miedos sobre ser donante. Ofrécele estrategias concretas y comprensivas para manejar estos sentimientos. Explícale que la información y el conocimiento suelen ayudar a reducir los miedos.";
+                    break;
+                case 'donor_stories':
+                    promptForAI = "El usuario quiere conocer historias de donantes. Comparte de manera inspiradora cómo la donación ha impactado positivamente vidas, tanto de receptores como de familias donantes. Mantén un tono esperanzador y humano.";
+                    break;
+                case 'start_quiz':
+                    startQuiz();
+                    return;
+                case 'suggest_questions':
+                    await generateSuggestedQuestions();
+                    return;
+            }
+            
+            if (promptForAI) {
+                await getBotResponse(promptForAI, systemPrompt + "\n\nMantienes una conversación natural y empática. El usuario está explorando ser donante y necesita sentirse apoyado y comprendido en cada paso.");
+            }
+        }
+
         async function handleDonorPathWithAI(userMessage) {
             const donorPathPrompt = `
             El usuario quiere ser donante de órganos. Su mensaje fue: "${userMessage}"

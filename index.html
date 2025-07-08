@@ -2268,6 +2268,9 @@
                 const footer = document.querySelector('footer');
                 
                 if (feedbackBtn && footer) {
+                    // Prevenir scroll automático
+                    const scrollY = window.scrollY;
+                    
                     if (window.innerWidth <= 640) {
                         // Solo en móviles - FORZAR posición fija
                         // Obtener la altura del footer
@@ -2287,6 +2290,9 @@
                         feedbackBtn.style.backfaceVisibility = 'hidden';
                         feedbackBtn.style.webkitBackfaceVisibility = 'hidden';
                         
+                        // Restaurar posición de scroll para evitar saltos
+                        window.scrollTo(0, scrollY);
+                        
                         console.log(`Mobile: Feedback button FIXED at ${bottomPosition}px from bottom`);
                     } else {
                         // En desktop, resetear a la posición original
@@ -2303,11 +2309,20 @@
                 }
             };
             
+            // Asegurar que la página inicie centrada
+            const ensurePageCentered = () => {
+                if (window.scrollY !== 0) {
+                    window.scrollTo(0, 0);
+                }
+            };
+            
             // Ejecutar inicialmente
+            ensurePageCentered();
             positionFeedbackButton();
             
             // Forzar posición fija después de la animación inicial
             setTimeout(() => {
+                ensurePageCentered();
                 positionFeedbackButton();
                 const feedbackBtn = document.getElementById('feedback-btn');
                 if (feedbackBtn && window.innerWidth <= 640) {

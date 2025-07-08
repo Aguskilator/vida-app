@@ -3,617 +3,376 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Módulo de Quiz - VIDA</title>
+    <title>Quiz - VIDA</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="Vidalogo.png" type="image/png">
     <style>
         :root {
-            --vida-text-dark: #0D47A1;
-            --vida-btn-green: #66BB6A;
-            --vida-btn-green-hover: #43A047;
-            --vida-text-secondary: #757575;
-            --vida-btn-feedback: #4FC3F7;
-            --vida-quiz-btn-correct: #4CAF50;
-            --vida-quiz-btn-incorrect: #F44336;
+            --vida-primary-blue: #0D47A1;
+            --vida-secondary-blue: #1565C0;
+            --vida-accent-blue: #1976D2;
+            --vida-light-blue: #E3F2FD;
+            --vida-btn-green: #4CAF50;
+            --vida-btn-green-hover: #45A049;
+            --vida-text-dark: #1E293B;
+            --vida-bg-footer: #F8FAFC;
         }
-
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2f1 100%);
-        }
-
-        .quiz-card {
-            background-color: white;
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            transition: transform 0.3s ease;
-        }
-        .quiz-card:hover {
-            transform: translateY(-5px);
-        }
-        .quiz-answer-btn {
-            transition: all 0.2s ease-in-out;
-        }
-        .quiz-answer-btn:hover {
-            transform: scale(1.03);
-        }
-        .quiz-answer-btn.correct {
-            background-color: var(--vida-quiz-btn-correct) !important;
-            color: white;
-            border-color: var(--vida-quiz-btn-correct) !important;
-        }
-        .quiz-answer-btn.incorrect {
-            background-color: var(--vida-quiz-btn-incorrect) !important;
-            color: white;
-            border-color: var(--vida-quiz-btn-incorrect) !important;
-        }
-        .quiz-answer-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-        #quiz-feedback {
-            max-height: 0;
+        
+        .fade-in {
             opacity: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease-out, opacity 0.5s ease-out, margin-top 0.5s ease-out;
+            animation: fadeIn 0.6s ease-in-out forwards;
         }
-        #quiz-feedback.visible {
-            max-height: 200px;
-            opacity: 1;
-            margin-top: 1rem;
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .question-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .answer-btn {
+            width: 100%;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border: 2px solid transparent;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .answer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .answer-btn.correct {
+            background: #4CAF50;
+            color: white;
+            border-color: #45A049;
+        }
+        
+        .answer-btn.incorrect {
+            background: #f44336;
+            color: white;
+            border-color: #d32f2f;
+        }
+        
+        .answer-btn.default {
+            background: #f8f9fa;
+            color: #1E293B;
+            border-color: #e9ecef;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--vida-primary-blue), var(--vida-accent-blue));
+            transition: width 0.5s ease;
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
-
-    <!-- QUIZ SCREEN -->
-    <div id="quiz-screen" class="w-full">
-        <header class="w-full max-w-3xl mx-auto flex justify-between items-center mb-8">
-            <div class="flex items-center space-x-2">
-                <div class="w-10 h-10 bg-[var(--vida-text-dark)] rounded-full flex items-center justify-center shadow">
-                    <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-3.87 0-7 3.13-7 7 0 3.73 2.7 6.84 6.3 7.64V22h1.4c.26 0 .5-.11.6-.33.15-.36-.04-.77-.4-.92L11.5 20h1v-1.12c3.6-1.12 6.3-4.23 6.3-7.64 0-3.87-3.13-7-7-7zm0 13c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
-                </div>
-                <h2 class="text-2xl font-bold text-[var(--vida-text-dark)]">Desmitificador Express</h2>
-            </div>
-            <button id="exit-quiz-btn" class="text-gray-500 hover:bg-gray-200 p-2 rounded-full" title="Salir del Quiz">
-                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-            </button>
+<body class="bg-gray-50 min-h-screen">
+    <div class="quiz-container">
+        <header class="text-center mb-8 fade-in">
+            <img src="Vidalogo.png" alt="VIDA" class="mx-auto h-16 mb-4">
+            <h1 class="text-3xl font-bold text-[var(--vida-primary-blue)] mb-2">
+                Desmitificador Express
+            </h1>
+            <p class="text-gray-600">
+                Pon a prueba tus conocimientos sobre donación de órganos
+            </p>
         </header>
 
-        <main id="quiz-main-content" class="w-full max-w-3xl mx-auto">
-            <!-- Vista Inicial del Quiz -->
-            <div id="quiz-start-view" class="text-center p-8 bg-white rounded-2xl shadow-lg">
-                <h3 class="text-3xl font-bold text-[var(--vida-text-dark)]">Pon a prueba tus conocimientos</h3>
-                <p class="mt-4 text-lg text-slate-600">Te haré 10 preguntas de verdadero o falso para desmentir los mitos más comunes sobre la donación.</p>
-                <p class="mt-2 text-md text-slate-500">El quiz se divide en 2 rondas de 5 preguntas cada una.</p>
-                <button id="begin-quiz-btn" class="mt-8 bg-[var(--vida-btn-green)] text-white font-bold py-4 px-10 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105">
-                    ¡Estoy listo!
+        <div id="quiz-content" class="fade-in">
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+            </div>
+
+            <div id="welcome-screen" class="question-card text-center">
+                <h2 class="text-2xl font-bold mb-4">¡Bienvenido al Quiz!</h2>
+                <p class="text-gray-600 mb-6">
+                    Responde preguntas de verdadero o falso para desmentir mitos 
+                    y conocer más sobre la donación de órganos en México.
+                </p>
+                <button id="start-quiz" class="answer-btn correct">
+                    🚀 Comenzar Quiz
                 </button>
             </div>
 
-            <!-- Vista del Quiz Activo -->
-            <div id="quiz-active-view" class="hidden">
-                <div class="quiz-card p-6 md:p-8 w-full">
+            <div id="quiz-screen" class="hidden">
+                <div class="question-card">
                     <div class="flex justify-between items-center mb-4">
-                        <div id="quiz-progress" class="font-semibold text-[var(--vida-text-secondary)]"></div>
-                        <div id="quiz-round-info" class="font-semibold text-[var(--vida-text-dark)]"></div>
+                        <span id="question-counter" class="text-sm font-medium text-gray-500">
+                            Pregunta 1 de 5
+                        </span>
+                        <span id="score-display" class="text-sm font-medium text-[var(--vida-primary-blue)]">
+                            Puntaje: 0/0
+                        </span>
                     </div>
-                    <p id="quiz-question" class="text-2xl md:text-3xl font-medium text-slate-800 min-h-[100px] flex items-center justify-center text-center"></p>
-                    <div id="quiz-answer-buttons" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-                    <div id="quiz-feedback" class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p id="quiz-feedback-text" class="text-center text-slate-700"></p>
+                    
+                    <h3 id="question-text" class="text-xl font-bold mb-6 text-[var(--vida-text-dark)]">
+                        <!-- Aquí aparecerá la pregunta -->
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <button id="btn-true" class="answer-btn default">
+                            ✅ Verdadero
+                        </button>
+                        <button id="btn-false" class="answer-btn default">
+                            ❌ Falso
+                        </button>
                     </div>
+                    
+                    <div id="explanation" class="hidden mt-6 p-4 bg-blue-50 rounded-lg">
+                        <h4 class="font-bold mb-2">Explicación:</h4>
+                        <p id="explanation-text" class="text-gray-700"></p>
+                    </div>
+                    
+                    <button id="next-question" class="hidden mt-4 answer-btn default">
+                        Siguiente pregunta →
+                    </button>
                 </div>
-                <div id="quiz-navigation" class="mt-6 text-center"></div>
             </div>
 
-            <!-- Vista de Resultados Parciales -->
-            <div id="quiz-partial-results-view" class="hidden text-center p-8 bg-white rounded-2xl shadow-lg">
-                <h3 class="text-3xl font-bold text-[var(--vida-text-dark)]">¡Ronda completada!</h3>
-                <div id="partial-results-content" class="mt-6">
-                    <p id="round-score-text" class="text-2xl text-slate-600 mb-4"></p>
-                    <p id="total-progress-text" class="text-lg text-slate-500 mb-4"></p>
-                    <div id="round-feedback" class="text-lg text-slate-700 mb-6"></div>
-                </div>
-                <div class="mt-8">
-                    <button id="continue-quiz-btn" class="bg-[var(--vida-btn-green)] text-white font-bold py-4 px-10 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all transform hover:scale-105">
-                        Continuar con la siguiente ronda
-                    </button>
+            <div id="results-screen" class="hidden">
+                <div class="question-card text-center">
+                    <h2 class="text-2xl font-bold mb-4">¡Quiz Completado!</h2>
+                    <div class="text-6xl mb-4">🎉</div>
+                    <p id="final-score" class="text-xl mb-4"></p>
+                    <p class="text-gray-600 mb-6">
+                        Gracias por aprender sobre donación de órganos con VIDA.
+                    </p>
+                    <div class="space-y-3">
+                        <button id="restart-quiz" class="answer-btn correct">
+                            🔄 Reiniciar Quiz
+                        </button>
+                        <button id="back-to-chat" class="answer-btn default">
+                            💬 Volver al Chat
+                        </button>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Vista de Resultados Finales del Quiz -->
-            <div id="quiz-results-view" class="hidden text-center p-8 bg-white rounded-2xl shadow-lg">
-                 <h3 class="text-3xl font-bold text-[var(--vida-text-dark)]">¡Quiz completado!</h3>
-                 <div class="mt-6">
-                     <p id="quiz-score-text" class="text-2xl text-slate-600 mb-4"></p>
-                     <div id="final-feedback" class="text-lg text-slate-700 mb-6"></div>
-                     <p class="text-lg text-slate-500">Cada duda resuelta es un paso más hacia una cultura de donación más consciente.</p>
-                 </div>
-                 <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-                     <button id="restart-quiz-btn" class="bg-[var(--vida-btn-feedback)] text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-blue-400 transition-all transform hover:scale-105">
-                        Jugar de nuevo
-                    </button>
-                    <button id="return-home-btn" class="bg-gray-200 text-gray-800 font-bold py-3 px-8 rounded-full shadow-lg hover:bg-gray-300 transition-all transform hover:scale-105">
-                        Volver al inicio
-                    </button>
-                 </div>
-            </div>
-        </main>
+        </div>
     </div>
 
     <script>
-        // --- DOM Elements ---
+        // Estado del quiz
+        let currentQuestion = 0;
+        let score = 0;
+        let questions = [];
+        let totalQuestions = 5;
+
+        // Elementos del DOM
+        const welcomeScreen = document.getElementById('welcome-screen');
         const quizScreen = document.getElementById('quiz-screen');
-        const exitQuizBtn = document.getElementById('exit-quiz-btn');
-        const quizStartView = document.getElementById('quiz-start-view');
-        const quizActiveView = document.getElementById('quiz-active-view');
-        const quizPartialResultsView = document.getElementById('quiz-partial-results-view');
-        const quizResultsView = document.getElementById('quiz-results-view');
-        const beginQuizBtn = document.getElementById('begin-quiz-btn');
-        const quizProgress = document.getElementById('quiz-progress');
-        const quizRoundInfo = document.getElementById('quiz-round-info');
-        const quizQuestion = document.getElementById('quiz-question');
-        const quizAnswerButtons = document.getElementById('quiz-answer-buttons');
-        const quizFeedback = document.getElementById('quiz-feedback');
-        const quizFeedbackText = document.getElementById('quiz-feedback-text');
-        const quizNavigation = document.getElementById('quiz-navigation');
-        const quizScoreText = document.getElementById('quiz-score-text');
-        const roundScoreText = document.getElementById('round-score-text');
-        const totalProgressText = document.getElementById('total-progress-text');
-        const roundFeedback = document.getElementById('round-feedback');
-        const finalFeedback = document.getElementById('final-feedback');
-        const restartQuizBtn = document.getElementById('restart-quiz-btn');
-        const returnHomeBtn = document.getElementById('return-home-btn');
-        const continueQuizBtn = document.getElementById('continue-quiz-btn');
+        const resultsScreen = document.getElementById('results-screen');
+        const startQuizBtn = document.getElementById('start-quiz');
+        const questionText = document.getElementById('question-text');
+        const btnTrue = document.getElementById('btn-true');
+        const btnFalse = document.getElementById('btn-false');
+        const explanation = document.getElementById('explanation');
+        const explanationText = document.getElementById('explanation-text');
+        const nextQuestionBtn = document.getElementById('next-question');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const progressFill = document.getElementById('progress-fill');
+        const finalScore = document.getElementById('final-score');
+        const restartQuizBtn = document.getElementById('restart-quiz');
+        const backToChatBtn = document.getElementById('back-to-chat');
 
-        // --- State ---
-        let currentQuizQuestionIndex = 0;
-        let currentRound = 1;
-        let quizQuestions = [];
-        let quizScore = 0;
-        let roundScores = [];
-        const QUESTIONS_PER_ROUND = 5;
-        const TOTAL_QUESTIONS = 10; // Cambiado a 10 preguntas
-        const TOTAL_ROUNDS = 2;     // Cambiado a 2 rondas
-
-        // --- API Call Function ---
-        async function callOpenAI(messages) {
-            try {
-                console.log('Calling OpenAI API with messages:', messages);
-                
-                // Use the same format as the working chat in index.html
-                const payload = {
-                    prompt: messages
-                };
-                
-                console.log('Sending payload:', payload);
-                
-                const response = await fetch('/api/openai', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                console.log('Response status:', response.status);
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('API Error:', errorText);
-                    throw new Error(`API request failed with status ${response.status}: ${errorText}`);
-                }
-                
-                const result = await response.json();
-                console.log('API Response:', result);
-                return result;
-            } catch (error) {
-                console.error("Error calling OpenAI backend:", error);
-                throw error;
-            }
-        }
-
-        // --- QUIZ FUNCTIONS ---
-        
-        // Preguntas de respaldo en caso de fallo de la API
-        const fallbackQuestions = [
+        // Preguntas de ejemplo (en producción estas vendrían de la API)
+        const sampleQuestions = [
             {
-                question: "Si soy donante, recibiré peor atención médica en los hospitales",
+                question: "Los donantes de órganos no pueden tener un funeral con ataúd abierto",
                 isTrue: false,
-                explanation: "Falso. Los médicos tienen la obligación de brindar la mejor atención médica posible sin importar si eres donante o no. El personal que atiende emergencias es diferente al que coordina donaciones."
-            },
-            {
-                question: "La donación de órganos desfigura el cuerpo y no permite un funeral con ataúd abierto",
-                isTrue: false,
-                explanation: "Falso. Los procedimientos de extracción se realizan con técnicas quirúrgicas que respetan la apariencia física. El cuerpo puede ser preparado normalmente para el funeral."
+                explanation: "Falso. Después de la donación, el cuerpo se trata con respeto y se reconstituye para que la familia pueda tener un funeral normal, incluyendo ataúd abierto si así lo desean."
             },
             {
                 question: "Solo las personas jóvenes pueden ser donantes de órganos",
                 isTrue: false,
-                explanation: "Falso. No hay límite de edad para ser donante. La viabilidad de los órganos se evalúa caso por caso, y personas mayores han sido donantes exitosos."
+                explanation: "Falso. No existe límite de edad para ser donante. Se evalúa la viabilidad de cada órgano individualmente, y personas mayores pueden donar córneas, tejidos y algunos órganos."
             },
             {
-                question: "Las religiones prohíben la donación de órganos",
+                question: "La muerte encefálica es lo mismo que estar en coma",
                 isTrue: false,
-                explanation: "Falso. La mayoría de las religiones apoyan la donación como un acto de generosidad y amor al prójimo. El Vaticano, el Islam y el Judaísmo la consideran permitida y altruista."
+                explanation: "Falso. La muerte encefálica es la pérdida total e irreversible de todas las funciones cerebrales, mientras que el coma es un estado de inconsciencia del cual la persona puede recuperarse."
             },
             {
-                question: "La muerte cerebral es lo mismo que estar en coma",
-                isTrue: false,
-                explanation: "Falso. La muerte cerebral es la pérdida irreversible de todas las funciones cerebrales, mientras que el coma es un estado de inconsciencia del cual se puede recuperar."
-            },
-            {
-                question: "Los ricos tienen prioridad para recibir órganos trasplantados",
-                isTrue: false,
-                explanation: "Falso. La asignación de órganos se basa en criterios médicos como compatibilidad, urgencia y tiempo en lista de espera, no en estatus económico."
-            },
-            {
-                question: "Puedo cambiar de opinión sobre ser donante en cualquier momento",
+                question: "En México, la familia debe autorizar la donación aunque la persona haya manifestado su voluntad",
                 isTrue: true,
-                explanation: "Verdadero. Puedes modificar tu decisión de ser donante en cualquier momento, ya sea registrándote o eliminando tu registro de donante."
+                explanation: "Verdadero. Según la ley mexicana, aunque una persona haya expresado su voluntad de donar, la familia debe dar su autorización en el hospital para proceder con la donación."
             },
             {
-                question: "La familia debe pagar los costos de la donación de órganos",
+                question: "Los órganos donados se asignan por orden de llegada",
                 isTrue: false,
-                explanation: "Falso. Todos los gastos relacionados con la donación de órganos son cubiertos por el sistema de salud, no por la familia del donante."
-            },
-            {
-                question: "Se pueden vender órganos legalmente en México",
-                isTrue: false,
-                explanation: "Falso. La venta de órganos está estrictamente prohibida en México. La donación debe ser altruista y sin fines de lucro."
-            },
-            {
-                question: "Un donante puede salvar hasta 8 vidas",
-                isTrue: true,
-                explanation: "Verdadero. Un solo donante puede donar corazón, hígado, riñones, pulmones, páncreas, intestinos y tejidos como córneas, beneficiando hasta 8 personas o más."
-            },
-            {
-                question: "Los órganos donados tienen fecha de caducidad muy corta",
-                isTrue: true,
-                explanation: "Verdadero. Los órganos deben trasplantarse rápidamente: el corazón en 4-6 horas, el hígado en 12-24 horas, los riñones hasta 72 horas."
-            },
-            {
-                question: "México tiene uno de los índices más bajos de donación en América Latina",
-                isTrue: true,
-                explanation: "Verdadero. México tiene aproximadamente 3-4 donantes por millón de habitantes, muy por debajo del promedio regional y mundial."
-            },
-            {
-                question: "Solo se pueden donar órganos después de muerte cerebral",
-                isTrue: false,
-                explanation: "Falso. También se puede donar después de paro cardíaco en condiciones controladas, aunque las opciones de órganos viables son más limitadas."
-            },
-            {
-                question: "Los testigos de Jehová no pueden ser donantes por sus creencias",
-                isTrue: false,
-                explanation: "Falso. Aunque tienen restricciones sobre transfusiones de sangre, muchos testigos de Jehová pueden ser donantes de órganos sólidos."
-            },
-            {
-                question: "La donación de córneas puede realizarse varias horas después del fallecimiento",
-                isTrue: true,
-                explanation: "Verdadero. Las córneas pueden extraerse hasta 12 horas después del fallecimiento, a diferencia de otros órganos que requieren extracción inmediata."
-            },
-            {
-                question: "Un alcohólico no puede donar su hígado",
-                isTrue: false,
-                explanation: "Falso. Cada caso se evalúa individualmente. Algunos órganos de personas con historial de alcoholismo pueden ser viables para trasplante."
-            },
-            {
-                question: "El CENATRA es el organismo que coordina las donaciones en México",
-                isTrue: true,
-                explanation: "Verdadero. El Centro Nacional de Trasplantes (CENATRA) es la institución responsable de coordinar el sistema nacional de donación y trasplantes."
-            },
-            {
-                question: "Se necesita autorización familiar para donar, aunque esté registrado como donante",
-                isTrue: true,
-                explanation: "Verdadero. En México, aunque estés registrado como donante, se requiere el consentimiento familiar para proceder con la donación."
-            },
-            {
-                question: "Los órganos donados pueden rechazarse por el cuerpo receptor",
-                isTrue: true,
-                explanation: "Verdadero. El rechazo es un riesgo real que requiere medicamentos inmunosupresores de por vida para prevenirlo."
-            },
-            {
-                question: "Una persona diabética no puede ser donante de ningún órgano",
-                isTrue: false,
-                explanation: "Falso. Dependiendo del tipo y control de la diabetes, algunos órganos como riñones o córneas pueden ser viables para donación."
+                explanation: "Falso. Los órganos se asignan según criterios médicos estrictos: compatibilidad, gravedad del caso, tiempo en lista de espera y proximidad geográfica, no por orden de llegada."
             }
         ];
 
-        function resetQuiz() {
-            quizScore = 0;
-            currentQuizQuestionIndex = 0;
-            currentRound = 1;
-            quizQuestions = [];
-            roundScores = [];
-            clearQuizInterface();
-            quizStartView.classList.remove('hidden');
-            quizActiveView.classList.add('hidden');
-            quizPartialResultsView.classList.add('hidden');
-            quizResultsView.classList.add('hidden');
-        }
-
-        function clearQuizInterface() {
-            // Limpiar completamente la interfaz del quiz
-            quizAnswerButtons.innerHTML = '';
-            quizNavigation.innerHTML = '';
-            quizFeedback.classList.remove('visible');
-            quizFeedbackText.textContent = '';
-            quizProgress.textContent = '';
-            quizRoundInfo.textContent = '';
-        }
-
-        beginQuizBtn.addEventListener('click', async () => {
-            quizStartView.classList.add('hidden');
-            quizActiveView.classList.remove('hidden');
-            
-            // Limpiar interfaz al comenzar
-            clearQuizInterface();
-            
-            quizQuestion.textContent = 'Generando preguntas para la ronda 1...';
-            await generateQuizQuestions();
+        // Event listeners
+        startQuizBtn.addEventListener('click', startQuiz);
+        btnTrue.addEventListener('click', () => answerQuestion(true));
+        btnFalse.addEventListener('click', () => answerQuestion(false));
+        nextQuestionBtn.addEventListener('click', nextQuestion);
+        restartQuizBtn.addEventListener('click', restartQuiz);
+        backToChatBtn.addEventListener('click', () => {
+            window.location.href = 'index.html';
         });
 
-        continueQuizBtn.addEventListener('click', async () => {
-            quizPartialResultsView.classList.add('hidden');
-            quizActiveView.classList.remove('hidden');
+        function startQuiz() {
+            welcomeScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
             
-            // Limpiar completamente la interfaz antes de generar nuevas preguntas
-            clearQuizInterface();
+            // Usar preguntas de ejemplo
+            questions = [...sampleQuestions];
+            currentQuestion = 0;
+            score = 0;
             
-            quizQuestion.textContent = `Generando preguntas para la ronda ${currentRound}...`;
-            await generateQuizQuestions();
-        });
-
-        restartQuizBtn.addEventListener('click', resetQuiz);
-        exitQuizBtn.addEventListener('click', () => {
-             // Cerrar ventana si se abrió como popup, o redirigir si se abrió como página
-             if (window.opener) {
-                 window.close();
-             } else {
-                 window.location.href = 'index.html';
-             }
-        });
-         returnHomeBtn.addEventListener('click', () => {
-             // Cerrar ventana si se abrió como popup, o redirigir si se abrió como página
-             if (window.opener) {
-                 window.close();
-             } else {
-                 window.location.href = 'index.html';
-             }
-        });
-
-        async function generateQuizQuestions() {
-            const quizGenerationPrompt = `
-                Eres VIDA, un asistente de donación de órganos en México.
-                Tu tarea es generar 5 preguntas únicas de VERDADERO o FALSO sobre mitos y realidades comunes acerca de la donación de órganos y tejidos después de que una persona ha fallecido en México.
-                Devuelve la respuesta como un array JSON de 5 objetos con las propiedades: "question" (string), "isTrue" (boolean), "explanation" (string).
-                Las explicaciones deben ser breves, claras y fundamentadas en información oficial (Ley General de Salud, CENATRA). No uses asteriscos.
-                Varía la dificultad de las preguntas para que sea educativo y desafiante. 
-                Asegúrate de que las preguntas sean diferentes cada vez y cubran diversos aspectos de la donación.
-            `;
-            
-            const messages = [
-                { role: "system", content: "Responde únicamente con un array JSON válido de 5 objetos." },
-                { role: "user", content: quizGenerationPrompt }
-            ];
-
-            try {
-                console.log(`Generating quiz questions for round ${currentRound}...`);
-                const result = await callOpenAI(messages);
-                
-                if (result.choices?.[0]?.message?.content) {
-                    console.log('Raw API response:', result.choices[0].message.content);
-                    
-                    // Intentar parsear el JSON
-                    try {
-                        const newQuestions = JSON.parse(result.choices[0].message.content);
-                        console.log('Parsed questions:', newQuestions);
-                        
-                        if (newQuestions.length > 0) {
-                            // Agregar las nuevas preguntas al array existente
-                            quizQuestions = quizQuestions.concat(newQuestions);
-                            
-                            // Limpiar interfaz antes de mostrar la primera pregunta
-                            clearQuizInterface();
-                            
-                            displayQuizQuestion();
-                        } else {
-                            throw new Error("Generated question array is empty.");
-                        }
-                    } catch (parseError) {
-                        console.error("JSON Parse Error:", parseError);
-                        console.log("Content that failed to parse:", result.choices[0].message.content);
-                        throw new Error("Invalid JSON format from API");
-                    }
-                } else {
-                     console.error("Empty or invalid response structure:", result);
-                     throw new Error("Empty response from API for quiz questions.");
-                }
-            } catch (error) {
-                console.error("Error generating quiz questions:", error);
-                console.log("Using fallback questions...");
-                
-                // Usar preguntas de respaldo si falla la IA
-                useFallbackQuestions();
-            }
-        }
-        
-        function useFallbackQuestions() {
-            console.log("Using fallback questions for round", currentRound);
-            
-            // Calcular qué preguntas usar para esta ronda
-            const startIndex = (currentRound - 1) * QUESTIONS_PER_ROUND;
-            const endIndex = startIndex + QUESTIONS_PER_ROUND;
-            
-            // Mezclar las preguntas de respaldo y tomar las que corresponden a esta ronda
-            const shuffledFallback = [...fallbackQuestions].sort(() => Math.random() - 0.5);
-            const roundQuestions = shuffledFallback.slice(startIndex, endIndex);
-            
-            // Si no hay suficientes preguntas en fallback, repetir algunas
-            while (roundQuestions.length < QUESTIONS_PER_ROUND && shuffledFallback.length > 0) {
-                const additionalQuestions = shuffledFallback.slice(0, QUESTIONS_PER_ROUND - roundQuestions.length);
-                roundQuestions.push(...additionalQuestions);
-            }
-            
-            // Agregar las preguntas de respaldo al array principal
-            quizQuestions = quizQuestions.concat(roundQuestions);
-            
-            // Limpiar interfaz antes de mostrar mensaje de fallback
-            clearQuizInterface();
-            
-            quizQuestion.innerHTML = `
-                <div class="text-center">
-                    <p class="text-yellow-600 mb-4">⚠️ Conexión limitada</p>
-                    <p class="text-slate-600 mb-4">Usando preguntas predefinidas para continuar el quiz.</p>
-                </div>
-            `;
-            
-            // Mostrar la primera pregunta después de un breve delay
-            setTimeout(() => {
-                displayQuizQuestion();
-            }, 2000);
+            loadQuestion();
         }
 
-        function displayQuizQuestion() {
-            if (currentQuizQuestionIndex >= quizQuestions.length) {
-                endQuiz();
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                showResults();
                 return;
             }
 
-            const questionData = quizQuestions[currentQuizQuestionIndex];
-            const questionInRound = (currentQuizQuestionIndex % QUESTIONS_PER_ROUND) + 1;
+            const question = questions[currentQuestion];
+            questionText.textContent = question.question;
             
-            quizProgress.textContent = `Pregunta ${questionInRound} de ${QUESTIONS_PER_ROUND}`;
-            quizRoundInfo.textContent = `Ronda ${currentRound} de ${TOTAL_ROUNDS}`;
-            quizQuestion.textContent = questionData.question;
+            // Reset buttons
+            btnTrue.classList.remove('correct', 'incorrect');
+            btnTrue.classList.add('default');
+            btnFalse.classList.remove('correct', 'incorrect');
+            btnFalse.classList.add('default');
+            btnTrue.disabled = false;
+            btnFalse.disabled = false;
             
-            quizAnswerButtons.innerHTML = '';
-            quizFeedback.classList.remove('visible');
-            quizNavigation.innerHTML = '';
-
-            const trueBtn = document.createElement('button');
-            trueBtn.textContent = "✅ Verdadero";
-            trueBtn.className = 'quiz-answer-btn w-full text-lg font-bold p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100';
-            trueBtn.onclick = () => handleQuizAnswer(true, questionData, trueBtn, falseBtn);
+            // Hide explanation and next button
+            explanation.classList.add('hidden');
+            nextQuestionBtn.classList.add('hidden');
             
-            const falseBtn = document.createElement('button');
-            falseBtn.textContent = "❌ Falso";
-            falseBtn.className = 'quiz-answer-btn w-full text-lg font-bold p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100';
-            falseBtn.onclick = () => handleQuizAnswer(false, questionData, falseBtn, trueBtn);
-
-            quizAnswerButtons.appendChild(trueBtn);
-            quizAnswerButtons.appendChild(falseBtn);
+            // Update counters
+            questionCounter.textContent = `Pregunta ${currentQuestion + 1} de ${questions.length}`;
+            scoreDisplay.textContent = `Puntaje: ${score}/${currentQuestion}`;
+            
+            // Update progress bar
+            const progress = ((currentQuestion) / questions.length) * 100;
+            progressFill.style.width = `${progress}%`;
         }
 
-        function handleQuizAnswer(userAnswer, questionData, selectedBtn, otherBtn) {
-            selectedBtn.disabled = true;
-            otherBtn.disabled = true;
-
-            const isCorrect = (userAnswer === questionData.isTrue);
+        function answerQuestion(userAnswer) {
+            const question = questions[currentQuestion];
+            const isCorrect = userAnswer === question.isTrue;
             
-            if (isCorrect) {
-                quizScore++;
-                selectedBtn.classList.add('correct');
+            // Disable buttons
+            btnTrue.disabled = true;
+            btnFalse.disabled = true;
+            
+            // Show correct answer
+            if (question.isTrue) {
+                btnTrue.classList.remove('default');
+                btnTrue.classList.add('correct');
+                if (!isCorrect) {
+                    btnFalse.classList.remove('default');
+                    btnFalse.classList.add('incorrect');
+                }
             } else {
-                selectedBtn.classList.add('incorrect');
-                if (questionData.isTrue) {
-                    otherBtn.classList.add('correct');
-                } else {
-                    otherBtn.classList.add('correct');
+                btnFalse.classList.remove('default');
+                btnFalse.classList.add('correct');
+                if (!isCorrect) {
+                    btnTrue.classList.remove('default');
+                    btnTrue.classList.add('incorrect');
                 }
             }
             
-            quizFeedbackText.textContent = questionData.explanation;
-            quizFeedback.classList.add('visible');
-
-            const nextButton = document.createElement('button');
-            const questionInRound = (currentQuizQuestionIndex % QUESTIONS_PER_ROUND) + 1;
-            
-            if (questionInRound === QUESTIONS_PER_ROUND && currentRound < TOTAL_ROUNDS) {
-                nextButton.textContent = 'Ver resultados de la ronda 📊';
-                nextButton.onclick = () => showPartialResults();
-            } else if (currentQuizQuestionIndex === quizQuestions.length - 1) {
-                nextButton.textContent = 'Ver Resultados Finales 🏆';
-                nextButton.onclick = () => endQuiz();
-            } else {
-                nextButton.textContent = 'Siguiente Pregunta ➡️';
-                nextButton.onclick = () => {
-                    currentQuizQuestionIndex++;
-                    displayQuizQuestion();
-                };
+            // Update score
+            if (isCorrect) {
+                score++;
             }
             
-            nextButton.className = 'bg-[var(--vida-btn-green)] text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-[var(--vida-btn-green-hover)] transition-all';
-            quizNavigation.innerHTML = '';
-            quizNavigation.appendChild(nextButton);
+            // Show explanation
+            explanationText.textContent = question.explanation;
+            explanation.classList.remove('hidden');
+            nextQuestionBtn.classList.remove('hidden');
+            
+            // Update score display
+            scoreDisplay.textContent = `Puntaje: ${score}/${currentQuestion + 1}`;
         }
 
-        function showPartialResults() {
-            const roundStartIndex = (currentRound - 1) * QUESTIONS_PER_ROUND;
-            const roundEndIndex = currentRound * QUESTIONS_PER_ROUND;
-            const roundQuestionsCount = QUESTIONS_PER_ROUND;
-            
-            // Calcular puntaje de la ronda actual
-            let roundScore = 0;
-            for (let i = roundStartIndex; i < roundEndIndex && i < quizQuestions.length; i++) {
-                const questionData = quizQuestions[i];
-                // Necesitamos una forma de saber si la respuesta fue correcta
-                // Por simplicidad, calculamos basado en el puntaje total acumulado
-            }
-            
-            // Aproximación del puntaje de la ronda
-            const previousRoundsTotalScore = roundScores.reduce((sum, score) => sum + score, 0);
-            roundScore = quizScore - previousRoundsTotalScore;
-            roundScores.push(roundScore);
-            
-            quizActiveView.classList.add('hidden');
-            quizPartialResultsView.classList.remove('hidden');
-            
-            roundScoreText.textContent = `Ronda ${currentRound}: ${roundScore} de ${roundQuestionsCount} correctas`;
-            totalProgressText.textContent = `Progreso total: ${quizScore} de ${currentQuizQuestionIndex + 1} preguntas`;
-            
-            // Feedback basado en el rendimiento de la ronda
-            let feedback = '';
-            const percentage = (roundScore / roundQuestionsCount) * 100;
-            if (percentage >= 80) {
-                feedback = '¡Excelente! Tienes un gran conocimiento sobre donación de órganos.';
-            } else if (percentage >= 60) {
-                feedback = '¡Bien hecho! Vas por buen camino, sigue así.';
-            } else if (percentage >= 40) {
-                feedback = 'Vas aprendiendo. Cada pregunta te acerca más a la verdad.';
-            } else {
-                feedback = 'No te preocupes, lo importante es aprender. ¡Continúa!';
-            }
-            roundFeedback.textContent = feedback;
-            
-            currentQuizQuestionIndex++;
-            currentRound++;
+        function nextQuestion() {
+            currentQuestion++;
+            loadQuestion();
         }
 
-        function endQuiz() {
-            quizActiveView.classList.add('hidden');
-            quizResultsView.classList.remove('hidden');
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
             
-            const finalPercentage = (quizScore / TOTAL_QUESTIONS) * 100;
-            quizScoreText.textContent = `Obtuviste ${quizScore} de ${TOTAL_QUESTIONS} respuestas correctas (${finalPercentage.toFixed(1)}%)`;
+            const percentage = Math.round((score / questions.length) * 100);
+            finalScore.textContent = `Tu puntuación: ${score}/${questions.length} (${percentage}%)`;
             
-            // Feedback final detallado
-            let finalFeedbackText = '';
-            if (finalPercentage >= 90) {
-                finalFeedbackText = '¡Eres un experto en donación de órganos! Tu conocimiento puede ayudar a salvar vidas.';
-            } else if (finalPercentage >= 75) {
-                finalFeedbackText = '¡Excelente! Tienes un sólido conocimiento sobre donación de órganos.';
-            } else if (finalPercentage >= 60) {
-                finalFeedbackText = '¡Bien hecho! Tienes buenas bases, sigue aprendiendo para convertirte en un embajador de la donación.';
-            } else if (finalPercentage >= 45) {
-                finalFeedbackText = 'Vas por buen camino. Cada respuesta te acerca más a comprender la importancia de la donación.';
-            } else {
-                finalFeedbackText = 'El conocimiento es poder. Sigue aprendiendo sobre donación de órganos para ayudar a desmitificar este tema tan importante.';
-            }
-            finalFeedback.textContent = finalFeedbackText;
+            // Complete progress bar
+            progressFill.style.width = '100%';
         }
 
+        function restartQuiz() {
+            resultsScreen.classList.add('hidden');
+            welcomeScreen.classList.remove('hidden');
+            
+            currentQuestion = 0;
+            score = 0;
+            progressFill.style.width = '0%';
+        }
+
+        // Generar preguntas desde la API (comentado para usar preguntas de ejemplo)
+        async function generateQuestions() {
+            try {
+                const response = await fetch('/api/openai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: [
+                            { role: "system", content: "Eres VIDA, un asistente de donación de órganos. Genera 5 preguntas de verdadero/falso sobre mitos de donación de órganos en México. Devuelve un array JSON con objetos que tengan: question, isTrue, explanation." },
+                            { role: "user", content: "Genera 5 preguntas de verdadero/falso sobre donación de órganos" }
+                        ]
+                    })
+                });
+
+                const result = await response.json();
+                if (result.choices && result.choices[0]) {
+                    const content = result.choices[0].message.content;
+                    try {
+                        questions = JSON.parse(content);
+                    } catch (e) {
+                        console.error('Error parsing questions:', e);
+                        questions = sampleQuestions;
+                    }
+                }
+            } catch (error) {
+                console.error('Error generating questions:', error);
+                questions = sampleQuestions;
+            }
+        }
     </script>
 </body>
 </html>

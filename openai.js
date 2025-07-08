@@ -19,115 +19,9 @@ export default async function handler(req, res) {
     return;
   }
 
-  // --- NUEVA LÓGICA DE ORQUESTADOR ---
-  // Espera: { historial: [...], mensaje: 'texto' } para chat
-  // O: { messages: [...] } para quiz directo
-  // O: { prompt: [...] } para compatibilidad con index.html
-  const { historial, mensaje, messages: directMessages, prompt, model } = req.body;
-
-  console.log('API Request received:', { 
-    method: req.method, 
-    hasMessages: !!directMessages,
-    hasHistorial: !!historial,
-    hasPrompt: !!prompt,
-    hasApiKey: !!apiKey,
-    bodyKeys: Object.keys(req.body)
-  });
-
-  // Si viene con 'prompt', es el formato usado por index.html
-  if (prompt && Array.isArray(prompt)) {
-    console.log('Processing prompt messages (index.html format)...');
-    const openaiPayload = {
-      model: model || 'gpt-3.5-turbo',
-      messages: prompt,
-      temperature: 0.7,
-      max_tokens: 1000
-    };
-
-    console.log('Sending to OpenAI:', JSON.stringify(openaiPayload, null, 2));
-
-    try {
-      const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify(openaiPayload)
-      });
-      
-      console.log('OpenAI response status:', openaiRes.status);
-      
-      const data = await openaiRes.json();
-      
-      if (!openaiRes.ok) {
-        console.error('OpenAI API Error:', data);
-        res.status(openaiRes.status).json({ error: data.error?.message || 'Error de OpenAI', openaiError: data });
-        return;
-      }
-      
-      console.log('OpenAI success response received');
-      res.status(200).json(data);
-      return;
-    } catch (err) {
-      console.error('Network error:', err);
-      res.status(500).json({ error: 'Error al conectar con OpenAI.', details: err.message });
-      return;
-    }
-  }
-
-  // Si viene con 'messages', es una llamada directa (como el quiz)
-  if (directMessages && Array.isArray(directMessages)) {
-    console.log('Processing direct messages for quiz...');
-    const openaiPayload = {
-      model: model || 'gpt-3.5-turbo',
-      messages: directMessages,
-      temperature: 0.7,
-      max_tokens: 1000
-    };
-
-    console.log('Sending to OpenAI:', JSON.stringify(openaiPayload, null, 2));
-
-    try {
-      const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify(openaiPayload)
-      });
-      
-      console.log('OpenAI response status:', openaiRes.status);
-      
-      const data = await openaiRes.json();
-      
-      if (!openaiRes.ok) {
-        console.error('OpenAI API Error:', data);
-        res.status(openaiRes.status).json({ error: data.error?.message || 'Error de OpenAI', openaiError: data });
-        return;
-      }
-      
-      console.log('OpenAI success response received');
-      res.status(200).json(data);
-      return;
-    } catch (err) {
-      console.error('Network error:', err);
-      res.status(500).json({ error: 'Error al conectar con OpenAI.', details: err.message });
-      return;
-    }
-  }
-
-  // Si no tiene messages directos ni prompt, verifica si es el formato del chat
-  if (!historial && !mensaje) {
-    console.error('Invalid request format. Missing messages, historial, or mensaje.');
-    res.status(400).json({ 
-      error: 'Formato de prompt no soportado.',
-      payload: req.body,
-      expected: 'Either { messages: [...] }, { prompt: [...] }, or { historial: [...], mensaje: "..." }'
-    });
-    return;
-  }
+  // --- LÓGICA COMPATIBLE CON EL FRONTEND ---
+  // Espera tanto el formato nuevo como el actual del frontend
+  const { historial, mensaje, model, prompt } = req.body;
 
   // Prompt del sistema para orquestador
   const systemPrompt = `
@@ -147,11 +41,17 @@ Recuerda: El JSON debe ir al final, en una sola línea, solo si corresponde acti
   let messages = [
     { role: 'system', content: systemPrompt }
   ];
-  if (Array.isArray(historial)) {
+  
+  // Compatibilidad con ambos formatos
+  if (Array.isArray(prompt)) {
+    // Formato actual del frontend: { prompt: [...] }
+    messages = prompt;
+  } else if (Array.isArray(historial)) {
+    // Formato nuevo: { historial: [...], mensaje: 'texto' }
     messages = messages.concat(historial);
-  }
-  if (mensaje) {
-    messages.push({ role: 'user', content: mensaje });
+    if (mensaje) {
+      messages.push({ role: 'user', content: mensaje });
+    }
   }
 
   const openaiPayload = {

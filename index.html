@@ -917,7 +917,23 @@
 
             await getBotResponse(donorIntentPrompt, systemPrompt + "\n\nResponde de forma completamente natural y humana. NO ofrezcas botones ni opciones múltiples. Deja que la conversación fluya naturalmente preguntando qué específicamente le interesa saber.");
             
-            // NO mostrar botones automáticamente - dejar que la conversación continúe naturalmente
+            // Después de la respuesta natural, ofrecer sutilmente la opción de guía
+            setTimeout(() => {
+                suggestedQuestionsContainer.innerHTML = '';
+                const guideButton = document.createElement('button');
+                guideButton.textContent = "¿Te gustaría que te acompañe paso a paso?";
+                guideButton.className = `px-4 py-2 rounded-lg bg-[var(--vida-suggest-btn-bg)] text-[var(--vida-text-dark)] text-sm font-medium 
+                                       hover:bg-[var(--vida-suggest-btn-hover)] transition-colores shadow-sm opacity-75`;
+                guideButton.onclick = () => {
+                    addMessageToChat('user', guideButton.textContent);
+                    suggestedQuestionsContainer.classList.add('hidden');
+                    suggestedQuestionsContainer.innerHTML = '';
+                    currentDonorPathStep = 'introduction';
+                    displayDonorPathStep(currentDonorPathStep);
+                };
+                suggestedQuestionsContainer.appendChild(guideButton);
+                suggestedQuestionsContainer.classList.remove('hidden');
+            }, 2000); // Aparece después de 2 segundos para que se sienta natural
         }
 
         // --- Removed: Automatic button display functions ---

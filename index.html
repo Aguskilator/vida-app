@@ -792,13 +792,8 @@
 
         // --- Event Listeners ---
         startChatBtn.addEventListener('click', () => {
-            showChat();
-            chatHistory = []; 
-            chatContainer.innerHTML = ''; 
-            currentDonorPathStep = null;
-            currentQuizQuestionIndex = -1;
-            quizQuestions = [];
-            addInitialBotMessage();
+            // Redirigir a la página del chat
+            window.location.href = 'chat.html';
         });
 
         closeChatBtn.addEventListener('click', hideChat);

@@ -284,12 +284,14 @@
             opacity: 0;
             transform: translateY(20px) translateZ(0);
             animation: feedbackFadeIn 0.8s ease-out forwards;
+            animation-delay: inherit; /* Respeta el delay del HTML */
         }
 
         /* En móviles, después de la animación inicial, forzar estabilidad */
         @media (max-width: 640px) {
             #feedback-btn.fade-in-element {
                 animation: feedbackFadeInMobile 0.8s ease-out forwards;
+                animation-delay: inherit; /* Respeta el delay del HTML */
             }
         }
 
@@ -332,10 +334,6 @@
                 z-index: 999 !important;
                 /* Evitar que se mueva con el scroll */
                 transform-origin: center;
-                /* Desactivar TODAS las transiciones problemáticas en móviles */
-                transition: none !important;
-                /* Asegurar que no haya interferencias */
-                animation: none !important;
                 /* Forzar posición fija sin movimiento */
                 top: auto !important;
                 right: auto !important;
@@ -346,6 +344,25 @@
                 -moz-transform: translateZ(0) !important;
                 -ms-transform: translateZ(0) !important;
                 -o-transform: translateZ(0) !important;
+                /* FORZAR VISIBILIDAD EN MÓVILES */
+                opacity: 1 !important;
+                display: flex !important;
+                visibility: visible !important;
+            }
+            
+            /* Permitir animación inicial solo en móviles */
+            #feedback-btn.fade-in-element {
+                /* Permitir la animación inicial */
+                animation: feedbackFadeInMobile 0.8s ease-out forwards !important;
+                animation-delay: inherit !important;
+            }
+            
+            /* Después de la animación, forzar estabilidad */
+            #feedback-btn.animation-complete {
+                animation: none !important;
+                transition: none !important;
+                opacity: 1 !important;
+                transform: translateZ(0) !important;
             }
             
             /* Remover hover effects en móviles para evitar movimiento */
@@ -355,6 +372,7 @@
                 transform: translateZ(0) !important;
                 transition: none !important;
                 animation: none !important;
+                opacity: 1 !important;
             }
         }
 
@@ -483,6 +501,16 @@
         .fade-in-element {
             opacity: 0;
             animation: fadeIn 1s ease-out forwards;
+        }
+        
+        /* Mobile override para el botón de feedback */
+        @media (max-width: 640px) {
+            #feedback-btn {
+                /* Forzar visibilidad por defecto en móviles */
+                opacity: 1 !important;
+                display: flex !important;
+                visibility: visible !important;
+            }
         }
 
         @keyframes fadeIn {
@@ -2289,6 +2317,10 @@
                         feedbackBtn.style.willChange = 'auto';
                         feedbackBtn.style.backfaceVisibility = 'hidden';
                         feedbackBtn.style.webkitBackfaceVisibility = 'hidden';
+                        // Asegurar que sea visible
+                        feedbackBtn.style.opacity = '1';
+                        feedbackBtn.style.display = 'flex';
+                        feedbackBtn.style.visibility = 'visible';
                         
                         // Restaurar posición de scroll para evitar saltos
                         window.scrollTo(0, scrollY);
@@ -2303,6 +2335,10 @@
                         feedbackBtn.style.transform = 'translateZ(0)';
                         feedbackBtn.style.transition = '';
                         feedbackBtn.style.animation = '';
+                        // Asegurar que sea visible
+                        feedbackBtn.style.opacity = '1';
+                        feedbackBtn.style.display = 'flex';
+                        feedbackBtn.style.visibility = 'visible';
                         
                         console.log('Desktop: Feedback button at 20px from bottom');
                     }
@@ -2316,36 +2352,117 @@
                 }
             };
             
+            // Forzar visibilidad del botón de feedback
+            const ensureFeedbackButtonVisible = () => {
+                const feedbackBtn = document.getElementById('feedback-btn');
+                if (feedbackBtn) {
+                    feedbackBtn.style.opacity = '1';
+                    feedbackBtn.style.display = 'flex';
+                    feedbackBtn.style.visibility = 'visible';
+                    
+                    // En móviles, agregar clase para finalizar animación
+                    if (window.innerWidth <= 640) {
+                        feedbackBtn.classList.add('animation-complete');
+                    }
+                    
+                    console.log('Feedback button visibility forced');
+                }
+            };
+            
+            // Función específica para móviles
+            const forceMobileButtonVisibility = () => {
+                if (window.innerWidth <= 640) {
+                    const feedbackBtn = document.getElementById('feedback-btn');
+                    if (feedbackBtn) {
+                        // Forzar todos los estilos críticos
+                        feedbackBtn.style.setProperty('opacity', '1', 'important');
+                        feedbackBtn.style.setProperty('display', 'flex', 'important');
+                        feedbackBtn.style.setProperty('visibility', 'visible', 'important');
+                        feedbackBtn.style.setProperty('position', 'fixed', 'important');
+                        feedbackBtn.style.setProperty('z-index', '999', 'important');
+                        feedbackBtn.style.setProperty('left', '1.25rem', 'important');
+                        
+                        // Eliminar la clase fade-in-element si sigue activa
+                        if (feedbackBtn.classList.contains('fade-in-element')) {
+                            feedbackBtn.classList.remove('fade-in-element');
+                        }
+                        
+                        console.log('Mobile: Feedback button forced visible');
+                    }
+                }
+            };
+            
             // Ejecutar inicialmente
             ensurePageCentered();
             positionFeedbackButton();
+            
+            // BACKUP INMEDIATO: Si es móvil, forzar visibilidad ya
+            if (window.innerWidth <= 640) {
+                forceMobileButtonVisibility();
+            }
+            
+            // Verificar inmediatamente si el botón está visible
+            setTimeout(() => {
+                const feedbackBtn = document.getElementById('feedback-btn');
+                if (feedbackBtn && feedbackBtn.style.opacity === '0') {
+                    console.log('Feedback button not visible, forcing visibility');
+                    ensureFeedbackButtonVisible();
+                }
+                // Forzar visibilidad específicamente en móviles
+                forceMobileButtonVisibility();
+            }, 100); // Verificar después de 100ms
+            
+            // Asegurar que el botón aparezca después del delay de animación
+            setTimeout(() => {
+                ensureFeedbackButtonVisible();
+                forceMobileButtonVisibility();
+                positionFeedbackButton();
+            }, 1500); // 1.4s delay + 0.1s margen
+            
+            // Backup: Forzar visibilidad después de un tiempo más largo
+            setTimeout(() => {
+                ensureFeedbackButtonVisible();
+                forceMobileButtonVisibility();
+                positionFeedbackButton();
+            }, 3000); // Backup después de 3 segundos
             
             // Forzar posición fija después de la animación inicial
             setTimeout(() => {
                 ensurePageCentered();
                 positionFeedbackButton();
+                forceMobileButtonVisibility();
                 const feedbackBtn = document.getElementById('feedback-btn');
                 if (feedbackBtn && window.innerWidth <= 640) {
                     feedbackBtn.style.transition = 'none';
                     feedbackBtn.style.animation = 'none';
                     feedbackBtn.style.transform = 'translateZ(0)';
+                    feedbackBtn.classList.add('animation-complete');
                     console.log('Mobile: Feedback button animations disabled after initial load');
                 }
             }, 2000); // Después de 2 segundos (animación + delay)
             
             // Actualizar en cambios de tamaño de ventana
             window.addEventListener('resize', () => {
-                setTimeout(positionFeedbackButton, 100);
+                setTimeout(() => {
+                    positionFeedbackButton();
+                    forceMobileButtonVisibility();
+                }, 100);
             });
             
             // Actualizar después de que las imágenes se carguen (puede afectar el footer)
             window.addEventListener('load', () => {
-                setTimeout(positionFeedbackButton, 200);
+                setTimeout(() => {
+                    positionFeedbackButton();
+                    forceMobileButtonVisibility();
+                }, 200);
             });
             
             // Actualizar en cambios de orientación
             window.addEventListener('orientationchange', () => {
-                setTimeout(positionFeedbackButton, 300);
+                setTimeout(() => {
+                    positionFeedbackButton();
+                    forceMobileButtonVisibility();
+                }, 300);
             });
             
             window.addEventListener('orientationchange', () => {

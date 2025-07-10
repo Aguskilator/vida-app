@@ -360,6 +360,8 @@
         let donorPathButtonCounter = 0;
         let cenatraButtonActive = false;
         let donorPathButtonActive = false;
+        let cenatraContinueButtonCounter = 0;
+        let cenatraContinueButtonActive = false;
 
         // --- System Prompt for OpenAI ---
         const systemPrompt = `
@@ -506,6 +508,10 @@
                 addBotMessageWithTyping('Te llevo al portal oficial de CENATRA. Se abrirá una nueva ventana.');
                 setTimeout(() => {
                     window.open('https://dv.cenatra.salud.gob.mx/registrar.php', '_blank');
+                    // Mostrar botones de continuación después de abrir el link
+                    setTimeout(() => {
+                        mostrarBotonesContinuacionCenatra();
+                    }, 3000);
                 }, 1200);
             };
             suggestedQuestionsContainer.appendChild(button);
@@ -514,6 +520,42 @@
             cenatraButtonCounter = 0;
             donorPathButtonActive = false;
             donorPathButtonCounter = 0;
+            cenatraContinueButtonActive = false;
+            cenatraContinueButtonCounter = 0;
+        }
+
+        function mostrarBotonesContinuacionCenatra() {
+            suggestedQuestionsContainer.innerHTML = '';
+            const continueButtons = [
+                { text: "Ya me registré, continuar 👍", action: "donor_path_step5" },
+                { text: "Lo haré después, continuar 📅", action: "donor_path_step5" },
+                { text: "Enséñame un ejemplo de carta", action: "donor_path_example_carta" }
+            ];
+            continueButtons.forEach((btn, index) => {
+                const button = document.createElement('button');
+                button.textContent = btn.text;
+                button.className = 'px-4 py-2 rounded-lg bg-green-50 text-green-700 text-sm font-medium hover:bg-green-100 transition-all duration-200 shadow-sm m-1 opacity-0 transform translate-y-2';
+                button.onclick = () => {
+                    cenatraContinueButtonActive = false;
+                    cenatraContinueButtonCounter = 0;
+                    donorPathButtonActive = false;
+                    donorPathButtonCounter = 0;
+                    cenatraButtonActive = false;
+                    cenatraButtonCounter = 0;
+                    handleDonorPathAction(btn.action, btn);
+                };
+                suggestedQuestionsContainer.appendChild(button);
+                setTimeout(() => {
+                    button.classList.remove('opacity-0', 'translate-y-2');
+                }, index * 100);
+            });
+            suggestedQuestionsContainer.classList.remove('hidden');
+            cenatraContinueButtonActive = true;
+            cenatraContinueButtonCounter = 0;
+            donorPathButtonActive = false;
+            donorPathButtonCounter = 0;
+            cenatraButtonActive = false;
+            cenatraButtonCounter = 0;
         }
 
         // --- Module Buttons: override to track donor path button state ---
@@ -597,6 +639,15 @@
                         suggestedQuestionsContainer.innerHTML = '';
                         donorPathButtonActive = false;
                         donorPathButtonCounter = 0;
+                    }
+                }
+                if (cenatraContinueButtonActive) {
+                    cenatraContinueButtonCounter++;
+                    if (cenatraContinueButtonCounter >= 2) {
+                        suggestedQuestionsContainer.classList.add('hidden');
+                        suggestedQuestionsContainer.innerHTML = '';
+                        cenatraContinueButtonActive = false;
+                        cenatraContinueButtonCounter = 0;
                     }
                 }
             }
@@ -792,114 +843,92 @@
             if (stepKey === 'explain_muerte_encefalica') {
                 viewedExplanations.muerte_encefalica = true;
             } else if (stepKey === 'explain_paro_cardiaco') {
-                viewedExplanations.paro_cardiaco = true;
-            }
-            
-            // Para el paso de introducción, solo mostrar el botón después de 2 segundos (sin texto adicional)
-            if (stepKey === 'introduction') {
-                // Solo mostrar botón después de exactamente 2 segundos
-                if (stepContent.buttons && stepContent.buttons.length > 0) {
-                    setTimeout(() => {
-                        displayModuleButtons(stepContent.buttons, handleDonorPathAction);
-                    }, 2000);
-                }
-            } else {
-                // Para otros pasos, comportamiento normal con efecto de escritura
-                if (stepContent.text) {
-                    // Usar efecto de escritura para el mensaje
-                    await addBotMessageWithTyping(stepContent.text);
-                    
-                    // Mostrar botones después de que aparezca el mensaje
-                    const buttonsToShow = typeof stepContent.buttons === 'function' ? stepContent.buttons() : stepContent.buttons;
-                    if (buttonsToShow && buttonsToShow.length > 0) {
-                        setTimeout(() => {
-                            displayModuleButtons(buttonsToShow, handleDonorPathAction);
-                        }, 800);
+                        }, 800);ns.paro_cardiaco = true;
                     }
                 } else {
-                    // Si no hay texto, mostrar botones directamente
+                    // Si no hay texto, mostrar botones directamenteespués de 2 segundos (sin texto adicional)
                     const buttonsToShow = typeof stepContent.buttons === 'function' ? stepContent.buttons() : stepContent.buttons;
-                    if (buttonsToShow && buttonsToShow.length > 0) {
+                    if (buttonsToShow && buttonsToShow.length > 0) {dos
                         displayModuleButtons(buttonsToShow, handleDonorPathAction);
-                    }
-                }
-            }
-        }
-
-        async function handleDonorPathAction(action, buttonData = {}) {
+                    }etTimeout(() => {
+                }       displayModuleButtons(stepContent.buttons, handleDonorPathAction);
+            }       }, 2000);
+        }       }
+            } else {
+        async function handleDonorPathAction(action, buttonData = {}) {e escritura
             // Ocultar botones previos con animación suave
             const buttons = suggestedQuestionsContainer.querySelectorAll('button');
-            buttons.forEach((btn, index) => {
+            buttons.forEach((btn, index) => {ping(stepContent.text);
                 setTimeout(() => {
                     btn.classList.add('opacity-0', 'transform', 'scale-95');
-                }, index * 50);
-            });
-            
-            // Ocultar completamente después de las animaciones
-            setTimeout(() => {
+                }, index * 50);nsToShow = typeof stepContent.buttons === 'function' ? stepContent.buttons() : stepContent.buttons;
+            });     if (buttonsToShow && buttonsToShow.length > 0) {
+                        setTimeout(() => {
+            // Ocultar completamente después de las animaciones handleDonorPathAction);
+            setTimeout(() => {);
                 suggestedQuestionsContainer.classList.add('hidden');
             }, buttons.length * 50 + 200);
-            
-            // Ejecutar acción después de un pequeño delay para naturalidad
-            setTimeout(async () => {
-                switch(action) {
+                    // Si no hay texto, mostrar botones directamente
+            // Ejecutar acción después de un pequeño delay para naturalidadunction' ? stepContent.buttons() : stepContent.buttons;
+            setTimeout(async () => {w && buttonsToShow.length > 0) {
+                switch(action) {oduleButtons(buttonsToShow, handleDonorPathAction);
                     case 'donor_path_step1':
                     case 'donor_path_step2':
                     case 'donor_path_step3':
                     case 'donor_path_step4':
                     case 'donor_path_step5':
                         await displayDonorPathStep(action.replace('donor_path_', ''));
-                        break;
-                    case 'donor_path_explain_muerte_encefalica':
+                        break; previos con animación suave
+                    case 'donor_path_explain_muerte_encefalica':ectorAll('button');
                         await displayDonorPathStep('explain_muerte_encefalica');
-                        break;
-                    case 'donor_path_explain_paro_cardiaco':
+                        break;=> {
+                    case 'donor_path_explain_paro_cardiaco':m', 'scale-95');
                         await displayDonorPathStep('explain_paro_cardiaco');
                         break;
                     case 'donor_path_examples_family_talk':
                         await displayDonorPathStep('examples_family_talk');
                         break;
-                    case 'donor_path_example_carta':
+                    case 'donor_path_example_carta':t.add('hidden');
                         await displayDonorPathStep('example_carta');
                         break;
-                    case 'donor_path_cierre':
+                    case 'donor_path_cierre':pequeño delay para naturalidad
                         await displayDonorPathStep('cierre');
-                        break;
-                    case 'cenatra_link':
+                        break; {
+                    case 'cenatra_link':p1':
                         await addBotMessageWithTyping('¡Perfecto! Te voy a llevar al portal oficial de CENATRA donde puedes registrarte como donante. Se abrirá una nueva ventana.');
-                        setTimeout(() => {
+                        setTimeout(() => {':
                             window.open('https://dv.cenatra.salud.gob.mx/registrar.php', '_blank');
                             // Después de abrir el enlace, mostrar opciones para continuar
-                            setTimeout(async () => {
+                            setTimeout(async () => {ction.replace('donor_path_', ''));
                                 await addBotMessageWithTyping('Ya abrí el portal de CENATRA para ti. Cuando termines de registrarte (o si prefieres hacerlo después), podemos continuar con el siguiente paso.');
-                                const continueButtons = [
+                                const continueButtons = [alica':
                                     { text: "Ya me registré, continuar 👍", action: "donor_path_step5" },
                                     { text: "Lo haré después, continuar 📅", action: "donor_path_step5" },
                                     { text: "Enséñame un ejemplo de carta", action: "donor_path_example_carta" }
-                                ];
+                                ];layDonorPathStep('explain_paro_cardiaco');
                                 setTimeout(() => {
                                     displayModuleButtons(continueButtons, handleDonorPathAction);
-                                }, 800);
+                                }, 800);orPathStep('examples_family_talk');
                             }, 3000);
-                        }, 1000);
-                        break;
+                        }, 1000);ath_example_carta':
+                        break;displayDonorPathStep('example_carta');
                     case 'share_whatsapp':
                         if (buttonData.shareText) {
                             await addBotMessageWithTyping('¡Perfecto! Te voy a ayudar a compartir tu decisión por WhatsApp. Se abrirá una nueva ventana.');
                             setTimeout(() => {
                                 const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(buttonData.shareText)}`;
-                                window.open(whatsappUrl, '_blank');
-                            }, 1000);
-                        }
-                        break;
-                    case 'suggest_questions':
-                        // Mostrar mensaje explicativo antes de las sugerencias
+                                window.open(whatsappUrl, '_blank');e voy a llevar al portal oficial de CENATRA donde puedes registrarte como donante. Se abrirá una nueva ventana.');
+                            }, 1000); => {
+                        }   window.open('https://dv.cenatra.salud.gob.mx/registrar.php', '_blank');
+                        break; Después de abrir el enlace, mostrar opciones para continuar
+                    case 'suggest_questions':() => {
+                        // Mostrar mensaje explicativo antes de las sugerenciasl de CENATRA para ti. Cuando termines de registrarte (o si prefieres hacerlo después), podemos continuar con el siguiente paso.');
                         await addBotMessageWithTyping('Te voy a generar algunas preguntas que podrían interesarte:');
-                        setTimeout(async () => {
-                            await toggleSuggestedQuestions();
-                        }, 800);
-                        break;
-                    case 'reset_chat':
+                        setTimeout(async () => {me registré, continuar 👍", action: "donor_path_step5" },
+                            await toggleSuggestedQuestions(); continuar 📅", action: "donor_path_step5" },
+                        }, 800);    { text: "Enséñame un ejemplo de carta", action: "donor_path_example_carta" }
+                        break;  ];
+                    case 'reset_chat':eout(() => {
                         await addBotMessageWithTyping('Por supuesto, vamos a empezar de nuevo. ¡Estoy aquí para ayudarte!');
                         setTimeout(() => {
                             reset_chat_and_offer_suggestions();
@@ -907,66 +936,66 @@
                         break;
                     case 'indecision_start':
                         await addBotMessageWithTyping('Es completamente normal tener dudas sobre la donación. Es una decisión importante. ¿Qué te preocupa más: el proceso médico, hablar con tu familia, o algo más específico?');
-                        break;
-                    default:
-                        console.warn("Unknown donor path action:", action);
+                        break;ait addBotMessageWithTyping('¡Perfecto! Te voy a ayudar a compartir tu decisión por WhatsApp. Se abrirá una nueva ventana.');
+                    default:setTimeout(() => {
+                        console.warn("Unknown donor path action:", action);encodeURIComponent(buttonData.shareText)}`;
                         await addBotMessageWithTyping("Lo siento, no reconozco esa acción. ¿Puedes intentar de nuevo?");
-                }
-            }, 400);
-        }
-
+                }           }, 1000);
+            }, 400);    }
+        }               break;
+                    case 'suggest_questions':
         // --- Sugerencias IA: Generar preguntas sugeridas aleatorias y sin repeticiones ---
-        let suggestedQuestionsHistory = [];
-
-        async function generateSuggestedQuestions() {
+        let suggestedQuestionsHistory = [];WithTyping('Te voy a generar algunas preguntas que podrían interesarte:');
+                        setTimeout(async () => {
+        async function generateSuggestedQuestions() {tions();
             // Prompt específico para la IA
             const prompt = `Genera una lista de 4 preguntas frecuentes, variadas y útiles sobre donación de órganos, tejidos o sangre en México, máximo 6 palabras cada preguntas, concisas, que se entienda el contexto de lo preguntado. No repitas preguntas ya sugeridas en esta sesión. Devuelve solo la lista, sin numerar ni explicar, cada pregunta en una línea.`;
             // Construir historial para evitar repeticiones
             const history = suggestedQuestionsHistory.length > 0 ? `Ya se han sugerido estas preguntas: ${suggestedQuestionsHistory.join(' | ')}` : '';
-            const messages = [
-                { role: 'system', content: systemPrompt },
+            const messages = [eout(() => {
+                { role: 'system', content: systemPrompt },ns();
                 { role: 'user', content: prompt + (history ? '\n' + history : '') }
-            ];
-            try {
-                const result = await callOpenAI(messages);
+            ];          break;
+            try {   case 'indecision_start':
+                const result = await callOpenAI(messages);completamente normal tener dudas sobre la donación. Es una decisión importante. ¿Qué te preocupa más: el proceso médico, hablar con tu familia, o algo más específico?');
                 let text = result.choices?.[0]?.message?.content || '';
                 // Separar preguntas por salto de línea y limpiar
                 let questions = text.split('\n').map(q => q.trim()).filter(q => q.length > 0);
-                // Limpiar guiones, numeraciones y espacios iniciales
+                // Limpiar guiones, numeraciones y espacios inicialesreconozco esa acción. ¿Puedes intentar de nuevo?");
                 questions = questions.map(q => q.replace(/^[-•\d.\s]+/, '').trim());
                 // Filtrar repetidas
                 questions = questions.filter(q => !suggestedQuestionsHistory.includes(q));
                 // Barajar aleatoriamente
-                for (let i = questions.length - 1; i > 0; i--) {
+                for (let i = questions.length - 1; i > 0; i--) {orias y sin repeticiones ---
                     const j = Math.floor(Math.random() * (i + 1));
                     [questions[i], questions[j]] = [questions[j], questions[i]];
-                }
-                // Actualizar historial
-                suggestedQuestionsHistory.push(...questions);
+                }ction generateSuggestedQuestions() {
+                // Actualizar historiala IA
+                suggestedQuestionsHistory.push(...questions);recuentes, variadas y útiles sobre donación de órganos, tejidos o sangre en México, máximo 6 palabras cada preguntas, concisas, que se entienda el contexto de lo preguntado. No repitas preguntas ya sugeridas en esta sesión. Devuelve solo la lista, sin numerar ni explicar, cada pregunta en una línea.`;
                 // Si se agotan las opciones, reiniciar historial
-                if (suggestedQuestionsHistory.length > 30) suggestedQuestionsHistory = [];
+                if (suggestedQuestionsHistory.length > 30) suggestedQuestionsHistory = [];as preguntas: ${suggestedQuestionsHistory.join(' | ')}` : '';
                 return questions;
-            } catch (e) {
-                return [];
-            }
-        }
-
+            } catch (e) {system', content: systemPrompt },
+                return [];ser', content: prompt + (history ? '\n' + history : '') }
+            };
+        }   try {
+                const result = await callOpenAI(messages);
         // --- Mejoras sugerencias: botón "Ver más dudas frecuentes" y sugerir preguntas ---
-        async function toggleSuggestedQuestions() {
-            const container = suggestedQuestionsContainer;
-            if (container.classList.contains('hidden')) {
-                container.classList.remove('hidden');
+        async function toggleSuggestedQuestions() {ínea y limpiar
+            const container = suggestedQuestionsContainer;q.trim()).filter(q => q.length > 0);
+            if (container.classList.contains('hidden')) {os iniciales
+                container.classList.remove('hidden');ace(/^[-•\d.\s]+/, '').trim());
                 container.innerHTML = '';
-                // Mostrar indicador de carga
+                // Mostrar indicador de cargaq => !suggestedQuestionsHistory.includes(q));
                 const loadingDiv = document.createElement('div');
                 loadingDiv.className = 'flex items-center justify-center py-4';
-                loadingDiv.innerHTML = `
-                    <div class="flex items-center space-x-2 text-blue-600">
+                loadingDiv.innerHTML = `(Math.random() * (i + 1));
+                    <div class="flex items-center space-x-2 text-blue-600">[i]];
                         <div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                         <span class="text-sm">Generando preguntas...</span>
-                    </div>
-                `;
-                container.appendChild(loadingDiv);
+                    </div>uestionsHistory.push(...questions);
+                `; Si se agotan las opciones, reiniciar historial
+                container.appendChild(loadingDiv);th > 30) suggestedQuestionsHistory = [];
                 // Generar preguntas con IA
                 const questions = await generateSuggestedQuestions();
                 container.innerHTML = '';
@@ -979,52 +1008,52 @@
                             addMessageToChat('user', question);
                             container.classList.add('hidden');
                             getBotResponse(question, true);
-                        });
-                        container.appendChild(button);
-                        setTimeout(() => {
+                        });indicador de carga
+                        container.appendChild(button);ent('div');
+                        setTimeout(() => {ex items-center justify-center py-4';
                             button.classList.remove('opacity-0', 'translate-y-2');
-                        }, index * 150);
-                    });
-                } else {
+                        }, index * 150);ms-center space-x-2 text-blue-600">
+                    }); <div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                } else {<span class="text-sm">Generando preguntas...</span>
                     const errorDiv = document.createElement('div');
                     errorDiv.className = 'text-red-600 text-sm py-2';
                     errorDiv.textContent = 'No se pudieron generar preguntas. Por favor, intenta de nuevo.';
                     container.appendChild(errorDiv);
-                }
+                }onst questions = await generateSuggestedQuestions();
                 suggestButtonText.textContent = 'Ocultar';
-            } else {
-                container.classList.add('hidden');
-                suggestButtonText.textContent = 'Sugerir';
-            }
-        }
-
-        // --- Event Listeners ---
-        chatForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+            } else {questions && questions.length > 0) {
+                container.classList.add('hidden');ndex) => {
+                suggestButtonText.textContent = 'Sugerir';ent('button');
+            }           button.className = 'bg-blue-50 text-blue-700 px-3 py-2 rounded-full text-sm hover:bg-blue-100 transition-colors opacity-0 transform translate-y-2';
+        }               button.textContent = question;
+                        button.addEventListener('click', () => {
+        // --- Event Listeners ---sageToChat('user', question);
+        chatForm.addEventListener('submit', (e) => {'hidden');
+            e.preventDefault();BotResponse(question, true);
             const userMessage = chatInput.value.trim();
-            if (!userMessage) return;
-            
-            addMessageToChat('user', userMessage);
-            chatInput.value = '';
+            if (!userMessage) return;endChild(button);
+                        setTimeout(() => {
+            addMessageToChat('user', userMessage);e('opacity-0', 'translate-y-2');
+            chatInput.value = '';* 150);
             getBotResponse(userMessage);
-        });
-
-        closeChatBtn.addEventListener('click', () => {
-            window.location.href = 'index.html';
-        });
-
+        });     } else {
+                    const errorDiv = document.createElement('div');
+        closeChatBtn.addEventListener('click', () => { text-sm py-2';
+            window.location.href = 'index.html';e pudieron generar preguntas. Por favor, intenta de nuevo.';
+        });         container.appendChild(errorDiv);
+                }
         suggestQuestionsBtn.addEventListener('click', toggleSuggestedQuestions);
-        
-        // --- Microinteractions & UI Helpers ---
-        function applyButtonFeedback(button) {
+            } else {
+        // --- Microinteractions & UI Helpers ---;
+        function applyButtonFeedback(button) {= 'Sugerir';
             button.addEventListener('mousedown', () => button.classList.add('active-feedback'));
             button.addEventListener('mouseup', () => button.classList.remove('active-feedback'));
             button.addEventListener('mouseleave', () => button.classList.remove('active-feedback'));
-        }
-
+        }/ --- Event Listeners ---
+        chatForm.addEventListener('submit', (e) => {
         applyButtonFeedback(sendBtn);
-        applyButtonFeedback(suggestQuestionsBtn);
-
+        applyButtonFeedback(suggestQuestionsBtn);rim();
+            if (!userMessage) return;
         chatContainerWrapper.addEventListener('scroll', () => {
             const isScrolledToBottom = chatContainerWrapper.scrollHeight - chatContainerWrapper.clientHeight <= chatContainerWrapper.scrollTop + 1;
             if (isScrolledToBottom) {
@@ -1035,18 +1064,40 @@
                 scrollToBottomBtn.classList.add('scale-100');
             }
         });
-
+        suggestQuestionsBtn.addEventListener('click', toggleSuggestedQuestions);
         scrollToBottomBtn.addEventListener('click', () => {
-            chatContainerWrapper.scrollTo({
+            chatContainerWrapper.scrollTo({rs ---
                 top: chatContainerWrapper.scrollHeight,
-                behavior: 'smooth'
-            });
-        });
-
+                behavior: 'smooth'r('mousedown', () => button.classList.add('active-feedback'));
+            });ton.addEventListener('mouseup', () => button.classList.remove('active-feedback'));
+        }); button.addEventListener('mouseleave', () => button.classList.remove('active-feedback'));
+        }
         // --- Interactive Background with three.js ---
         let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
-
+        applyButtonFeedback(suggestQuestionsBtn);
         function initBackground() {
+            const canvas = document.getElementById('bg-canvas');
+            scene = new THREE.Scene(); chatContainerWrapper.scrollHeight - chatContainerWrapper.clientHeight <= chatContainerWrapper.scrollTop + 1;
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
+            renderer.setClearColor(0xE0E7FF, 0); // Fondo transparente
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            const particleCount = 600;sList.remove('scale-0');
+            const geometry = new THREE.BufferGeometry();00');
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const color = new THREE.Color();
+            for (let i = 0; i < particleCount; i++) {) => {
+                positions[i * 3] = (Math.random() - 0.5) * 14;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 14;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 14;
+                color.setHSL(Math.random() * 0.6 + 0.5, 0.7, 0.8);
+                colors[i * 3] = color.r;
+                colors[i * 3 + 1] = color.g;
+                colors[i * 3 + 2] = color.b;hree.js ---
+            }cene, camera, renderer, particles, mouseX = 0, mouseY = 0;
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             const canvas = document.getElementById('bg-canvas');
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);

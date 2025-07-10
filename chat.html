@@ -355,6 +355,11 @@
             muerte_encefalica: false,
             paro_cardiaco: false
         };
+        // Contadores y flags para ocultar botones tras 2 interacciones
+        let cenatraButtonCounter = 0;
+        let donorPathButtonCounter = 0;
+        let cenatraButtonActive = false;
+        let donorPathButtonActive = false;
 
         // --- System Prompt for OpenAI ---
         const systemPrompt = `
@@ -369,8 +374,8 @@
         - No uses asteriscos en ninguna respuesta. Puedes usar listas numeradas o guiones si es necesario.
         - Si detectas duelo o dolor, prioriza el apoyo emocional.
         - Solo responde sobre donación de órganos, tejidos y sangre.
-        - Puedes reponter sobre la estructura de donación de órganos, pero no sobre otros temas.
-        - Puedes responder sobre el CENATRA y estructura, personal y funciones en México.
+        - Puedes responder sobre la estructura de donación de órganos, el CENATRA, su personal, funciones y datos de contacto oficiales en México.
+        - Si el usuario pregunta por el director actual del CENATRA o medios de contacto oficiales, responde con la información pública más reciente que tengas disponible.
         - Si el usuario pregunta por otros temas, redirige amablemente con el uso de IA entendiendo el contexto de la conversación.
         - Si está fuera de tema: "Lo siento, solo puedo ayudarte con preguntas sobre donación de órganos, tejidos o sangre."
 
@@ -484,35 +489,63 @@
             }
         };
 
-        // --- Función para generar sugerencias con IA ---
-        async function generateSuggestedQuestions() {
-            try {
-                // Recopilar preguntas ya respondidas o sugeridas en la sesión
-                const previousQuestions = chatHistory
-                    .filter(msg => msg.role === 'user' || msg.role === 'assistant')
-                    .map(msg => msg.content)
-                    .join('\n');
-                
-                const suggestionPrompt = [
-                    { 
-                        role: "system", 
-                        content: `Eres VIDA. Genera exactamente 4 preguntas cortas (máximo 6 palabras cada una) sobre donación de órganos que una persona común haría. Deben ser preguntas concisas, en donde se entienda perfectamente lo que se está preguntandol, sin ser muy general. Responde SOLO con las 4 preguntas, una por línea, sin numeración ni puntos. No repitas ninguna pregunta que ya haya sido respondida o sugerida en la conversación. Ejemplos: '¿Duele donar órganos?', '¿Qué órganos se donan?', '¿Cómo me registro?', '¿Es seguro donar?'\n\nHistorial reciente:\n${previousQuestions}` 
-                    },
-                    { role: "user", content: "Genera 4 preguntas cortas sobre donación de órganos, diferentes a las ya respondidas o sugeridas." }
-                ];
-                
-                const result = await callOpenAI(suggestionPrompt);
-                const response = result.choices?.[0]?.message?.content || "";
-                // Dividir las preguntas por líneas y limpiar
-                const questions = response.split('\n')
-                    .map(q => q.trim())
-                    .filter(q => q.length > 0 && q.includes('?'))
-                    .slice(0, 4);
-                return questions.length >= 3 ? questions : null;
-            } catch (error) {
-                console.error("Error generating suggestions:", error);
-                return null;
+        // --- Mostrar botón de registro CENATRA ---
+        function mostrarBotonRegistroCenatra() {
+            suggestedQuestionsContainer.innerHTML = '';
+            const button = document.createElement('button');
+            button.textContent = 'Ir al registro oficial de CENATRA 📝';
+            button.className = 'px-4 py-2 rounded-lg bg-green-50 text-green-700 text-sm font-medium hover:bg-green-100 transition-all duration-200 shadow-sm m-1';
+            button.onclick = () => {
+                cenatraButtonActive = false;
+                cenatraButtonCounter = 0;
+                button.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    suggestedQuestionsContainer.classList.add('hidden');
+                    suggestedQuestionsContainer.innerHTML = '';
+                }, 200);
+                addBotMessageWithTyping('Te llevo al portal oficial de CENATRA. Se abrirá una nueva ventana.');
+                setTimeout(() => {
+                    window.open('https://dv.cenatra.salud.gob.mx/registrar.php', '_blank');
+                }, 1200);
+            };
+            suggestedQuestionsContainer.appendChild(button);
+            suggestedQuestionsContainer.classList.remove('hidden');
+            cenatraButtonActive = true;
+            cenatraButtonCounter = 0;
+            donorPathButtonActive = false;
+            donorPathButtonCounter = 0;
+        }
+
+        // --- Module Buttons: override to track donor path button state ---
+        function displayModuleButtons(buttons, handler) {
+            suggestedQuestionsContainer.innerHTML = '';
+            if (!buttons || !Array.isArray(buttons) || buttons.length === 0) {
+                suggestedQuestionsContainer.classList.add('hidden');
+                donorPathButtonActive = false;
+                donorPathButtonCounter = 0;
+                return;
             }
+            buttons.forEach((btn, index) => {
+                const button = document.createElement('button');
+                button.textContent = btn.text;
+                button.className = `px-4 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium hover:bg-blue-100 transition-all duration-200 shadow-sm m-1 opacity-0 transform translate-y-2`;
+                button.onclick = () => {
+                    donorPathButtonActive = false;
+                    donorPathButtonCounter = 0;
+                    cenatraButtonActive = false;
+                    cenatraButtonCounter = 0;
+                    handler(btn.action, btn);
+                };
+                suggestedQuestionsContainer.appendChild(button);
+                setTimeout(() => {
+                    button.classList.remove('opacity-0', 'translate-y-2');
+                }, index * 100);
+            });
+            suggestedQuestionsContainer.classList.remove('hidden');
+            donorPathButtonActive = true;
+            donorPathButtonCounter = 0;
+            cenatraButtonActive = false;
+            cenatraButtonCounter = 0;
         }
 
         // --- API Call Function ---
@@ -542,18 +575,33 @@
         // --- Chat Functions ---
         function addMessageToChat(role, text) {
             chatHistory.push({ role: role, content: text });
-            
-            // Verificar si el usuario está cerca del final antes de agregar el mensaje
+            // Ocultar botones de módulos tras 2 interacciones si están activos
+            if (role === 'user') {
+                if (cenatraButtonActive) {
+                    cenatraButtonCounter++;
+                    if (cenatraButtonCounter >= 2) {
+                        suggestedQuestionsContainer.classList.add('hidden');
+                        suggestedQuestionsContainer.innerHTML = '';
+                        cenatraButtonActive = false;
+                        cenatraButtonCounter = 0;
+                    }
+                }
+                if (donorPathButtonActive) {
+                    donorPathButtonCounter++;
+                    if (donorPathButtonCounter >= 2) {
+                        suggestedQuestionsContainer.classList.add('hidden');
+                        suggestedQuestionsContainer.innerHTML = '';
+                        donorPathButtonActive = false;
+                        donorPathButtonCounter = 0;
+                    }
+                }
+            }
             const isNearBottom = chatContainerWrapper.scrollHeight - chatContainerWrapper.clientHeight <= chatContainerWrapper.scrollTop + 150;
-            
             const messageWrapper = document.createElement('div');
             messageWrapper.className = `flex items-start gap-3 max-w-xl lg:max-w-2xl chat-bubble ${role === 'user' ? 'self-end flex-row-reverse' : 'self-start'}`;
-            
             const textContent = text.replace(/\n/g, '<br>');
-
             const textBubbleDiv = document.createElement('div');
             textBubbleDiv.className = `px-4 py-3 shadow-lg chat-bubble-text relative`;
-            
             if (role === 'user') {
                 textBubbleDiv.className += ` user-bubble order-1 bg-[var(--user-bubble-bg)] text-white rounded-2xl rounded-br-lg`;
             } else {
@@ -563,13 +611,9 @@
                 messageWrapper.appendChild(botAvatarDiv);
                 textBubbleDiv.className += ` bot-bubble bg-[var(--bot-bubble-bg)] text-[var(--text-dark)] rounded-2xl rounded-bl-lg`;
             }
-
             textBubbleDiv.innerHTML = textContent;
             messageWrapper.appendChild(textBubbleDiv);
-            
             chatContainer.appendChild(messageWrapper);
-            
-            // Solo hacer scroll automático si es un mensaje del usuario O si el usuario estaba al final
             if (role === 'user' || isNearBottom) {
                 setTimeout(() => {
                     chatContainerWrapper.scrollTo({
@@ -686,6 +730,8 @@
             suggestedQuestionsContainer.innerHTML = '';
             if (!buttons || !Array.isArray(buttons) || buttons.length === 0) {
                 suggestedQuestionsContainer.classList.add('hidden');
+                donorPathButtonActive = false;
+                donorPathButtonCounter = 0;
                 return;
             }
             

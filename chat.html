@@ -491,6 +491,99 @@
             }
         };
 
+        // --- CENATRA Module Definition ---
+        const cenatraModule = {
+            link: {
+                text: "Te llevo al portal oficial de CENATRA. Se abrirá una nueva ventana.",
+                buttons: [
+                    { text: "Ir al registro oficial de CENATRA 📝", action: "cenatra_open_link" }
+                ]
+            },
+            after_link: {
+                text: "Cuando termines de registrarte (o si prefieres hacerlo después), podemos continuar con el siguiente paso.",
+                buttons: [
+                    { text: "Ya me registré, continuar 👍", action: "cenatra_registered" },
+                    { text: "Lo haré después, continuar 📅", action: "cenatra_later" },
+                    { text: "Enséñame un ejemplo de carta", action: "donor_path_example_carta" }
+                ]
+            }
+        };
+
+        // --- CENATRA State ---
+        let cenatraModuleStep = null;
+        let cenatraModuleButtonCounter = 0;
+        let cenatraModuleActive = false;
+
+        function displayCenatraModuleStep(stepKey) {
+            const stepContent = cenatraModule[stepKey];
+            if (!stepContent) return;
+            cenatraModuleStep = stepKey;
+            // Mostrar mensaje
+            addBotMessageWithTyping(stepContent.text).then(() => {
+                displayCenatraModuleButtons(stepContent.buttons, handleCenatraModuleAction);
+            });
+        }
+
+        function displayCenatraModuleButtons(buttons, handler) {
+            suggestedQuestionsContainer.innerHTML = '';
+            if (!buttons || !Array.isArray(buttons) || buttons.length === 0) {
+                suggestedQuestionsContainer.classList.add('hidden');
+                cenatraModuleActive = false;
+                cenatraModuleButtonCounter = 0;
+                return;
+            }
+            buttons.forEach((btn, index) => {
+                const button = document.createElement('button');
+                button.textContent = btn.text;
+                button.className = 'px-4 py-2 rounded-lg bg-green-50 text-green-700 text-sm font-medium hover:bg-green-100 transition-all duration-200 shadow-sm m-1 opacity-0 transform translate-y-2';
+                button.onclick = () => {
+                    cenatraModuleActive = false;
+                    cenatraModuleButtonCounter = 0;
+                    handler(btn.action, btn);
+                };
+                suggestedQuestionsContainer.appendChild(button);
+                setTimeout(() => {
+                    button.classList.remove('opacity-0', 'translate-y-2');
+                }, index * 100);
+            });
+            suggestedQuestionsContainer.classList.remove('hidden');
+            cenatraModuleActive = true;
+            cenatraModuleButtonCounter = 0;
+        }
+
+        function handleCenatraModuleAction(action, buttonData = {}) {
+            // Ocultar botones previos con animación
+            const buttons = suggestedQuestionsContainer.querySelectorAll('button');
+            buttons.forEach((btn, index) => {
+                setTimeout(() => {
+                    btn.classList.add('opacity-0', 'transform', 'scale-95');
+                }, index * 50);
+            });
+            setTimeout(() => {
+                suggestedQuestionsContainer.classList.add('hidden');
+            }, buttons.length * 50 + 200);
+            setTimeout(() => {
+                switch(action) {
+                    case 'cenatra_open_link':
+                        window.open('https://dv.cenatra.salud.gob.mx/registrar.php', '_blank');
+                        setTimeout(() => {
+                            displayCenatraModuleStep('after_link');
+                        }, 1200);
+                        break;
+                    case 'cenatra_registered':
+                    case 'cenatra_later':
+                        // Continuar con el flujo donante (paso 5)
+                        displayDonorPathStep('step5');
+                        break;
+                    case 'donor_path_example_carta':
+                        displayDonorPathStep('example_carta');
+                        break;
+                    default:
+                        break;
+                }
+            }, 400);
+        }
+
         // --- Mostrar botón de registro CENATRA ---
         function mostrarBotonRegistroCenatra() {
             suggestedQuestionsContainer.innerHTML = '';
@@ -623,15 +716,6 @@
             chatHistory.push({ role: role, content: text });
             // Ocultar botones de módulos tras 2 interacciones si están activos
             if (role === 'user') {
-                if (cenatraButtonActive) {
-                    cenatraButtonCounter++;
-                    if (cenatraButtonCounter >= 2) {
-                        suggestedQuestionsContainer.classList.add('hidden');
-                        suggestedQuestionsContainer.innerHTML = '';
-                        cenatraButtonActive = false;
-                        cenatraButtonCounter = 0;
-                    }
-                }
                 if (donorPathButtonActive) {
                     donorPathButtonCounter++;
                     if (donorPathButtonCounter >= 2) {
@@ -641,13 +725,13 @@
                         donorPathButtonCounter = 0;
                     }
                 }
-                if (cenatraContinueButtonActive) {
-                    cenatraContinueButtonCounter++;
-                    if (cenatraContinueButtonCounter >= 2) {
+                if (cenatraModuleActive) {
+                    cenatraModuleButtonCounter++;
+                    if (cenatraModuleButtonCounter >= 2) {
                         suggestedQuestionsContainer.classList.add('hidden');
                         suggestedQuestionsContainer.innerHTML = '';
-                        cenatraContinueButtonActive = false;
-                        cenatraContinueButtonCounter = 0;
+                        cenatraModuleActive = false;
+                        cenatraModuleButtonCounter = 0;
                     }
                 }
             }
@@ -755,7 +839,7 @@
                     if (accion === 'registroCenatra') {
                         addMessageToChat('assistant', botResponseText);
                         setTimeout(() => {
-                            mostrarBotonRegistroCenatra();
+                            displayCenatraModuleStep('link');
                         }, 600);
                     } else if (accion === 'caminoDonante' && !currentDonorPathStep) {
                         addMessageToChat('assistant', botResponseText);

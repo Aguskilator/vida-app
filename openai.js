@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
   // --- LÓGICA COMPATIBLE CON EL FRONTEND ---
   // Espera tanto el formato nuevo como el actual del frontend
-  const { historial, mensaje, model, prompt } = req.body;
+  const { historial, mensaje, model, prompt, temperature, max_tokens } = req.body;
 
   // Prompt del sistema para orquestador
   const systemPrompt = `
@@ -57,8 +57,8 @@ Recuerda: El JSON debe ir al final, en una sola línea, solo si corresponde acti
   const openaiPayload = {
     model: model || 'gpt-3.5-turbo',
     messages,
-    temperature: 0.7,
-    max_tokens: 700
+    temperature: temperature || 0.7,
+    max_tokens: max_tokens || 700
   };
 
   try {

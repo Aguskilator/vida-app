@@ -904,6 +904,40 @@
             }, 400);
         }
 
+        // --- Sugerencias IA: Generar preguntas sugeridas aleatorias y sin repeticiones ---
+        let suggestedQuestionsHistory = [];
+
+        async function generateSuggestedQuestions() {
+            // Prompt específico para la IA
+            const prompt = `Genera una lista de 5 preguntas frecuentes, variadas y útiles sobre donación de órganos, tejidos o sangre en México. No repitas preguntas ya sugeridas en esta sesión. Devuelve solo la lista, sin numerar ni explicar, cada pregunta en una línea.`;
+            // Construir historial para evitar repeticiones
+            const history = suggestedQuestionsHistory.length > 0 ? `Ya se han sugerido estas preguntas: ${suggestedQuestionsHistory.join(' | ')}` : '';
+            const messages = [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: prompt + (history ? '\n' + history : '') }
+            ];
+            try {
+                const result = await callOpenAI(messages);
+                let text = result.choices?.[0]?.message?.content || '';
+                // Separar preguntas por salto de línea y limpiar
+                let questions = text.split('\n').map(q => q.trim()).filter(q => q.length > 0);
+                // Filtrar repetidas
+                questions = questions.filter(q => !suggestedQuestionsHistory.includes(q));
+                // Barajar aleatoriamente
+                for (let i = questions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [questions[i], questions[j]] = [questions[j], questions[i]];
+                }
+                // Actualizar historial
+                suggestedQuestionsHistory.push(...questions);
+                // Si se agotan las opciones, reiniciar historial
+                if (suggestedQuestionsHistory.length > 30) suggestedQuestionsHistory = [];
+                return questions;
+            } catch (e) {
+                return [];
+            }
+        }
+
         // --- Mejoras sugerencias: botón "Ver más dudas frecuentes" y sugerir preguntas ---
         async function toggleSuggestedQuestions() {
             const container = suggestedQuestionsContainer;

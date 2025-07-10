@@ -1186,6 +1186,34 @@
         document.getElementById('start-quiz-btn').addEventListener('click', function() {
             window.location.href = 'quiz.html';
         });
+
+        // --- Restaurar funcionalidad de modales ---
+        // Privacidad
+        document.getElementById('privacy-btn').addEventListener('click', function() {
+            document.getElementById('privacy-modal').style.display = 'flex';
+        });
+        document.getElementById('close-privacy-modal-btn').addEventListener('click', function() {
+            document.getElementById('privacy-modal').style.display = 'none';
+        });
+        // ¿Qué hace VIDA?
+        document.getElementById('about-btn').addEventListener('click', function() {
+            document.getElementById('about-modal').style.display = 'flex';
+        });
+        document.getElementById('close-about-modal-btn').addEventListener('click', function() {
+            document.getElementById('about-modal').style.display = 'none';
+        });
+        // Feedback (desktop y móvil)
+        function openFeedbackModal() {
+            document.getElementById('feedback-modal').style.display = 'flex';
+        }
+        function closeFeedbackModal() {
+            document.getElementById('feedback-modal').style.display = 'none';
+        }
+        var feedbackBtn = document.getElementById('feedback-btn');
+        if (feedbackBtn) feedbackBtn.addEventListener('click', openFeedbackModal);
+        var feedbackBtnMobile = document.getElementById('feedback-btn-mobile');
+        if (feedbackBtnMobile) feedbackBtnMobile.addEventListener('click', openFeedbackModal);
+        document.getElementById('close-feedback-modal-btn').addEventListener('click', closeFeedbackModal);
     </script>
 </body>
 </html>

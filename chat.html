@@ -716,6 +716,100 @@
             suggestedQuestionsContainer.appendChild(confirmBtn);
             suggestedQuestionsContainer.classList.remove('hidden');
         }
+
+        function displayDonorPathStep(step) {
+            currentDonorPathStep = step;
+            let stepData = donorPathModule[step];
+            if (!stepData) return;
+            // Si es función, ejecuta para obtener los botones
+            let buttons = typeof stepData.buttons === 'function' ? stepData.buttons() : (stepData.buttons || []);
+            // Marca explicaciones vistas
+            if (step === 'explain_muerte_encefalica') viewedExplanations.muerte_encefalica = true;
+            if (step === 'explain_paro_cardiaco') viewedExplanations.paro_cardiaco = true;
+            // Muestra el texto
+            addMessageToChat('assistant', stepData.text || '');
+            // Muestra los botones
+            mostrarBotonesDonorPath(buttons);
+        }
+
+        function mostrarBotonesDonorPath(buttons) {
+            suggestedQuestionsContainer.innerHTML = '';
+            if (!buttons || buttons.length === 0) {
+                suggestedQuestionsContainer.classList.add('hidden');
+                return;
+            }
+            buttons.forEach(btn => {
+                const button = document.createElement('button');
+                button.textContent = btn.text;
+                button.className = 'px-4 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium hover:bg-blue-100 transition-all duration-200 shadow-sm m-1';
+                button.onclick = () => handleDonorPathButton(btn.action, btn.shareText);
+                suggestedQuestionsContainer.appendChild(button);
+            });
+            suggestedQuestionsContainer.classList.remove('hidden');
+        }
+
+        function handleDonorPathButton(action, shareText) {
+            switch(action) {
+                case 'donor_path_step1':
+                    displayDonorPathStep('step1');
+                    break;
+                case 'donor_path_explain_muerte_encefalica':
+                    displayDonorPathStep('explain_muerte_encefalica');
+                    break;
+                case 'donor_path_explain_paro_cardiaco':
+                    displayDonorPathStep('explain_paro_cardiaco');
+                    break;
+                case 'donor_path_step2':
+                    displayDonorPathStep('step2');
+                    break;
+                case 'donor_path_step3':
+                    displayDonorPathStep('step3');
+                    break;
+                case 'donor_path_examples_family_talk':
+                    displayDonorPathStep('examples_family_talk');
+                    break;
+                case 'donor_path_step4':
+                    displayDonorPathStep('step4');
+                    break;
+                case 'donor_path_example_carta':
+                    displayDonorPathStep('example_carta');
+                    break;
+                case 'donor_path_step5':
+                    displayDonorPathStep('step5');
+                    break;
+                case 'donor_path_cierre':
+                    displayDonorPathStep('cierre');
+                    donorPathActive = false;
+                    currentDonorPathStep = null;
+                    break;
+                case 'cenatra_link':
+                    mostrarBotonRegistroCenatra();
+                    break;
+                case 'suggest_questions':
+                    // Aquí podrías llamar a la función de sugerencias IA
+                    break;
+                case 'reset_chat':
+                    location.reload();
+                    break;
+                case 'share_whatsapp':
+                    if (shareText) {
+                        window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank');
+                    }
+                    break;
+                case 'indecision_start':
+                    addMessageToChat('assistant', '¡No te preocupes! Si tienes dudas, puedes preguntarme lo que quieras sobre la donación. Estoy aquí para ayudarte a tomar una decisión informada.');
+                    suggestedQuestionsContainer.classList.add('hidden');
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        function hideDonorPathButtons() {
+            suggestedQuestionsContainer.classList.add('hidden');
+            donorPathActive = false;
+            currentDonorPathStep = null;
+        }
     </script>
 </body>
 </html>

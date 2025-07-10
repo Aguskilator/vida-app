@@ -369,6 +369,8 @@
         - No uses asteriscos en ninguna respuesta. Puedes usar listas numeradas o guiones si es necesario.
         - Si detectas duelo o dolor, prioriza el apoyo emocional.
         - Solo responde sobre donación de órganos, tejidos y sangre.
+        - Puedes reponter sobre la estructura de donación de órganos, pero no sobre otros temas.
+        - Puedes responder sobre el CENATRA.
         - Si el usuario pregunta por otros temas, redirige amablemente con el uso de IA entendiendo el contexto de la conversación.
         - Si está fuera de tema: "Lo siento, solo puedo ayudarte con preguntas sobre donación de órganos, tejidos o sangre."
 
@@ -483,20 +485,27 @@
         // --- Función para generar sugerencias con IA ---
         async function generateSuggestedQuestions() {
             try {
+                // Recopilar preguntas ya respondidas o sugeridas en la sesión
+                const previousQuestions = chatHistory
+                    .filter(msg => msg.role === 'user' || msg.role === 'assistant')
+                    .map(msg => msg.content)
+                    .join('\n');
+                
                 const suggestionPrompt = [
-                    { role: "system", content: "Eres VIDA. Genera exactamente 4 preguntas cortas (máximo 6 palabras cada una) sobre donación de órganos que una persona común haría. Deben ser preguntas concisas, en donde se entienda perfectamente lo que se esta preguntado.Responde SOLO con las 4 preguntas, una por línea, sin numeración ni puntos. Ejemplos: '¿Duele donar órganos?', '¿Qué órganos se donan?', '¿Cómo me registro?', '¿Es seguro donar?'" },
-                    { role: "user", content: "Genera 4 preguntas cortas sobre donación de órganos" }
+                    { 
+                        role: "system", 
+                        content: `Eres VIDA. Genera exactamente 4 preguntas cortas (máximo 6 palabras cada una) sobre donación de órganos que una persona común haría. Deben ser preguntas concisas, en donde se entienda perfectamente lo que se está preguntandol, sin ser muy general. Responde SOLO con las 4 preguntas, una por línea, sin numeración ni puntos. No repitas ninguna pregunta que ya haya sido respondida o sugerida en la conversación. Ejemplos: '¿Duele donar órganos?', '¿Qué órganos se donan?', '¿Cómo me registro?', '¿Es seguro donar?'\n\nHistorial reciente:\n${previousQuestions}` 
+                    },
+                    { role: "user", content: "Genera 4 preguntas cortas sobre donación de órganos, diferentes a las ya respondidas o sugeridas." }
                 ];
                 
                 const result = await callOpenAI(suggestionPrompt);
                 const response = result.choices?.[0]?.message?.content || "";
-                
                 // Dividir las preguntas por líneas y limpiar
                 const questions = response.split('\n')
                     .map(q => q.trim())
                     .filter(q => q.length > 0 && q.includes('?'))
                     .slice(0, 4);
-                
                 return questions.length >= 3 ? questions : null;
             } catch (error) {
                 console.error("Error generating suggestions:", error);

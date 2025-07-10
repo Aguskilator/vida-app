@@ -389,7 +389,6 @@
         - Si dice "me interesa donar": "Te agradezco que compartas esta intención. Es hermoso que quieras hacer la diferencia."
         - Si dice "tengo dudas": "Es normal tener dudas sobre algo tan importante. Te voy a ayudar."
         - Si dice "cómo puedo ser donante": "Te voy a explicar todo el proceso paso a paso."
-        - Si despues de la intencion no siguio con el camino como donador, quita el boton y sigue la conversación normal.
         
         Responde según el contexto pero SIEMPRE incluye al final: { "activarModulo": "donorPath" }
         
@@ -646,49 +645,31 @@
                 // Solo activar el camino del donador si NO es una pregunta sugerida
                 if (!isFromSuggestedQuestion) {
                     // Detectar si hay un comando de módulo en la respuesta
-                    const moduleMatch = botResponseText.match(/\{\s*"activarModulo"\s*:\s*"([^"]+)"\s*\}/);
-                    if (moduleMatch) {
-                        const moduleName = moduleMatch[1];
-                        botResponseText = botResponseText.replace(moduleMatch[0], '').trim();
-                        
-                        // Agregar respuesta del bot (sin el JSON)
-                        addMessageToChat('assistant', botResponseText);
-                        
-                        // Activar el módulo apropiado
-                        if (moduleName === 'donorPath') {
-                            setTimeout(() => {
-                                displayDonorPathStep('introduction');
-                            }, 500); // Reducir a 500ms para que aparezca rápido
-                        } else if (moduleName === 'indecision') {
-                            setTimeout(() => {
-                                addMessageToChat('assistant', 'Es completamente normal tener dudas sobre la donación. Es una decisión importante. ¿Qué te preocupa más: el proceso médico, hablar con tu familia, o algo más específico?');
-                            }, 1500);
-                        }
+                    const moduleMatch = botResponseText.match(/\{\s*"activarModulo"\s*:\s*"([^\"]+)"\s*\}/);
+                    // Detectar intención real del usuario
+                    const donorIntentions = [
+                        'quiero ser donante', 'me interesa donar', 'quiero ayudar', 'ser donante', 
+                        'donar organos', 'quiero donar', 'deseo ser donante', 'me gustaría donar',
+                        'pienso ser donante', 'creo que quiero ser donante', 'quisiera ser donante',
+                        'me interesa ser donante', 'quiero ser donador', 'deseo donar', 'me gustaría ser donante',
+                        'estoy interesado en donar', 'estoy pensando en ser donante', 'como ser donante',
+                        'como puedo ser donante', 'como me hago donante', 'quiero registrarme como donante'
+                    ];
+                    const userMessageLower = userMessage.toLowerCase();
+                    const hasDonorIntention = donorIntentions.some(intention => userMessageLower.includes(intention));
+
+                    if (hasDonorIntention && !currentDonorPathStep) {
+                        addMessageToChat('assistant', botResponseText.replace(/\{\s*"activarModulo"\s*:\s*"([^\"]+)"\s*\}/, '').trim());
+                        setTimeout(() => {
+                            displayDonorPathStep('introduction');
+                        }, 500);
                     } else {
-                        // Si no hay módulo detectado, verificar manualmente si el usuario quiere ser donante
-                        const donorIntentions = [
-                            'quiero ser donante', 'me interesa donar', 'quiero ayudar', 'ser donante', 
-                            'donar organos', 'quiero donar', 'deseo ser donante', 'me gustaría donar',
-                            'pienso ser donante', 'creo que quiero ser donante', 'quisiera ser donante',
-                            'me interesa ser donante', 'quiero ser donador', 'deseo donar', 'me gustaría ser donante',
-                            'estoy interesado en donar', 'estoy pensando en ser donante', 'como ser donante',
-                            'como puedo ser donante', 'como me hago donante', 'quiero registrarme como donante'
-                        ];
-                        const userMessageLower = userMessage.toLowerCase();
-                        const hasDonorIntention = donorIntentions.some(intention => userMessageLower.includes(intention));
-                        
-                        if (hasDonorIntention && !currentDonorPathStep) {
-                            addMessageToChat('assistant', botResponseText);
-                            setTimeout(() => {
-                                displayDonorPathStep('introduction');
-                            }, 500); // Reducir a 500ms para que aparezca rápido
-                        } else {
-                            addMessageToChat('assistant', botResponseText);
-                        }
+                        // Solo mostrar el mensaje, ignorar el JSON si no hay intención real
+                        addMessageToChat('assistant', botResponseText.replace(/\{\s*"activarModulo"\s*:\s*"([^\"]+)"\s*\}/, '').trim());
                     }
                 } else {
                     // Si es una pregunta sugerida, limpiar el JSON pero no activar módulos
-                    const moduleMatch = botResponseText.match(/\{\s*"activarModulo"\s*:\s*"([^"]+)"\s*\}/);
+                    const moduleMatch = botResponseText.match(/\{\s*"activarModulo"\s*:\s*"([^\"]+)"\s*\}/);
                     if (moduleMatch) {
                         botResponseText = botResponseText.replace(moduleMatch[0], '').trim();
                     }

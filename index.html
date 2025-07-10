@@ -1178,6 +1178,14 @@
         // Si necesitas agregar scripts para animaciones visuales, hazlo aquí
         // Elimina referencias a chat, quiz y módulos que no se usan en la landing principal
         // ...aquí puedes agregar scripts propios de la landing si los necesitas...
+
+        // Restaurar navegación a chat.html y quiz.html
+        document.getElementById('start-chat-btn').addEventListener('click', function() {
+            window.location.href = 'chat.html';
+        });
+        document.getElementById('start-quiz-btn').addEventListener('click', function() {
+            window.location.href = 'quiz.html';
+        });
     </script>
 </body>
 </html>

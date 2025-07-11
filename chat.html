@@ -702,9 +702,22 @@
         }
         
         // =====================
-        // CONTADOR DE INTERACCIONES DE BOTONES DE MODULOS
+        // CONTADOR DE INTERACCIONES DE BOTONES Y CONVERSACIONES DE MODULOS
         // =====================
         let moduleButtonClicks = 0;
+        let donorPathConversationCount = 0;
+        let cenatraConversationCount = 0;
+        let activeModule = null; // 'donorPath' | 'cenatra' | null
+
+        function closeActiveModule() {
+            const container = suggestedQuestionsContainer;
+            container.classList.add('hidden');
+            moduleButtonClicks = 0;
+            donorPathConversationCount = 0;
+            cenatraConversationCount = 0;
+            activeModule = null;
+        }
+
         function displayModuleButtons(buttons, handler) {
             const container = suggestedQuestionsContainer;
             container.innerHTML = '';
@@ -716,10 +729,9 @@
                 button.textContent = btn.text;
                 button.addEventListener('click', () => {
                     moduleButtonClicks++;
-                    container.classList.add('hidden');
                     handler(btn.action);
                     if (moduleButtonClicks >= 2) {
-                        container.classList.add('hidden');
+                        closeActiveModule();
                     }
                 });
                 container.appendChild(button);
@@ -738,6 +750,19 @@
             chatForm.querySelector('button[type="submit"]').disabled = true; 
             suggestQuestionsBtn.disabled = true; 
 
+            // Detectar si hay un módulo activo y contar conversación
+            if (activeModule === 'donorPath') {
+                donorPathConversationCount++;
+                if (donorPathConversationCount >= 2) {
+                    closeActiveModule();
+                }
+            } else if (activeModule === 'cenatra') {
+                cenatraConversationCount++;
+                if (cenatraConversationCount >= 2) {
+                    closeActiveModule();
+                }
+            }
+
             const messages = [
                 { role: "system", content: systemPrompt },
                 ...chatHistory
@@ -752,10 +777,14 @@
                     botResponseText = botResponseText.replace(moduleMatch[0], '').trim();
                     addMessageToChat('assistant', botResponseText);
                     if (moduleName === 'donorPath') {
+                        activeModule = 'donorPath';
+                        donorPathConversationCount = 0;
                         setTimeout(() => {
                             displayDonorPathStep('introduction');
                         }, 500);
                     } else if (moduleName === 'cenatra') {
+                        activeModule = 'cenatra';
+                        cenatraConversationCount = 0;
                         setTimeout(() => {
                             cenatraModule.openPortal();
                         }, 500);
@@ -765,7 +794,7 @@
                         }, 1500);
                     }
                 } else {
-                    // Detectar intención manual para donante
+                    // Detectar intención manual para donante y cenatra
                     const donorIntentions = [
                         'quiero ser donante', 'me interesa donar', 'quiero ayudar', 'ser donante', 
                         'donar organos', 'quiero donar', 'deseo ser donante', 'me gustaría donar',
@@ -775,17 +804,21 @@
                         'como puedo ser donante', 'como me hago donante', 'quiero registrarme como donante'
                     ];
                     const cenatraIntentions = [
-                        'registrarme en cenatra', 'registro cenatra', 'quiero registrarme cenatra', 'portal cenatra', 'registro nacional de donantes', 'cenatra', 'quiero ser donante cenatra'
+                        'registrarme en cenatra', 'registro cenatra', 'quiero registrarme cenatra', 'portal cenatra', 'registro nacional de donantes', 'cenatra', 'quiero ser donante cenatra', 'quiero registrarme en el cenatra', 'quiero registrarme en el registro nacional de donantes', 'quiero el registro cenatra', 'quiero el portal cenatra'
                     ];
                     const userMessageLower = userMessage.toLowerCase();
                     const hasDonorIntention = donorIntentions.some(intention => userMessageLower.includes(intention));
                     const hasCenatraIntention = cenatraIntentions.some(intention => userMessageLower.includes(intention));
                     if (hasDonorIntention && !currentDonorPathStep) {
+                        activeModule = 'donorPath';
+                        donorPathConversationCount = 0;
                         addMessageToChat('assistant', botResponseText);
                         setTimeout(() => {
                             displayDonorPathStep('introduction');
                         }, 500);
                     } else if (hasCenatraIntention) {
+                        activeModule = 'cenatra';
+                        cenatraConversationCount = 0;
                         addMessageToChat('assistant', botResponseText);
                         setTimeout(() => {
                             cenatraModule.openPortal();
@@ -829,6 +862,8 @@
         function handleDonorPathAction(action) {
             // Separar registro CENATRA del camino donador
             if (action === "cenatra_link") {
+                activeModule = 'cenatra';
+                cenatraConversationCount = 0;
                 cenatraModule.openPortal();
                 return;
             }
@@ -852,7 +887,10 @@
                 window.open('https://wa.me/?text=' + encodeURIComponent('He decidido que quiero donar mis órganos si algún día muero. Es una forma de seguir ayudando. VIDA me ayudó a informarme.'), '_blank');
                 return;
             }
-            if (action === "donor_path_cierre") return displayDonorPathStep('cierre');
+            if (action === "donor_path_cierre") {
+                closeActiveModule();
+                return displayDonorPathStep('cierre');
+            }
             if (action === "suggest_questions") return suggestedQuestionsModule.show();
             if (action === "reset_chat") {
                 chatHistory = [];

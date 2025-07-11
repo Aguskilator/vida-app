@@ -488,7 +488,7 @@
         };
 
         // =====================
-        // MODULO: Registro CENATRA
+        // MODULO: Registro CENATRA (independiente)
         // =====================
         const cenatraModule = {
             openPortal: function() {
@@ -496,19 +496,23 @@
                 setTimeout(() => {
                     window.open('https://dv.cenatra.salud.gob.mx/registrar.php', '_blank');
                     setTimeout(async () => {
-                        await addBotMessageWithTyping('Ya abrí el portal de CENATRA para ti. Cuando termines de registrarte (o si prefieres hacerlo después), podemos continuar con el siguiente paso.');
-                        const continueButtons = [
-                            { text: "Ya me registré, continuar 👍", action: "donor_path_step5" },
-                            { text: "Lo haré después, continuar 📅", action: "donor_path_step5" },
-                            { text: "Enséñame un ejemplo de carta", action: "donor_path_example_carta" }
-                        ];
-                        setTimeout(() => {
-                            displayModuleButtons(continueButtons, handleDonorPathAction);
-                        }, 800);
-                    }, 3000);
+                        await addBotMessageWithTyping('Cuando termines tu registro en CENATRA, puedes indicarme si ya lo hiciste o si prefieres hacerlo en otro momento.');
+                        displayModuleButtons([
+                            { text: "Ya me registré 👍", action: "cenatra_done" },
+                            { text: "Lo haré en otro momento 📅", action: "cenatra_later" }
+                        ], handleCenatraAction);
+                    }, 2500);
                 }, 1000);
             }
         };
+
+        function handleCenatraAction(action) {
+            if (action === "cenatra_done") {
+                addBotMessageWithTyping('¡Felicidades por registrarte como donante en CENATRA! Si tienes más dudas, puedes preguntarme.');
+            } else if (action === "cenatra_later") {
+                addBotMessageWithTyping('No hay problema, puedes registrarte cuando lo desees. Si tienes más dudas, aquí estoy para ayudarte.');
+            }
+        }
 
         // =====================
         // MODULO: Preguntas Sugeridas
@@ -775,6 +779,12 @@
             }
         }
 
+        // =====================
+        // FUNCION GLOBAL: Toggle Preguntas Sugeridas
+        // =====================
+        function toggleSuggestedQuestions() {
+            suggestedQuestionsModule.show();
+        }
         // =====================
         // EVENTOS Y MICROINTERACCIONES
         // =====================
